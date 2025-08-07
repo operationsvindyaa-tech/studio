@@ -1,0 +1,192 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Sidebar,
+  SidebarProvider,
+  SidebarInset,
+  SidebarHeader,
+  SidebarTrigger,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  useSidebar,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarSeparator,
+} from "@/components/ui/sidebar";
+import {
+  BookOpen,
+  Bot,
+  Calendar,
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  GraduationCap,
+  Building2,
+  Wallet,
+  CalendarCheck,
+  Camera,
+  Award,
+  UserSquare,
+  ClipboardList,
+  CalendarClock,
+  MessageCircleQuestion,
+  AreaChart,
+  BookUser,
+  School,
+  FilePenLine,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "../ui/badge";
+
+const navItems = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/students", icon: Users, label: "Students" },
+  { href: "/courses", icon: BookOpen, label: "Courses" },
+  { href: "/schedule", icon: Calendar, label: "Schedule" },
+  { href: "/communication", icon: MessageSquare, label: "Communication" },
+  { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
+];
+
+const otherNavItems = [
+    { href: "/admissions", icon: BookUser, label: "Admissions" },
+    { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/billing", icon: Wallet, label: "Billing" },
+    { href: "/staff", icon: Building2, label: "Staff" },
+    { href: "/teachers", icon: UserSquare, label: "Teachers" },
+    { href: "/payroll", icon: Wallet, label: "Payroll" },
+    { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
+    { href: "/certificates", icon: Award, label: "Certificates" },
+    { href: "/ptm", icon: School, label: "PTM" },
+    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
+    { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
+    { href: "/reports", icon: AreaChart, label: "Reports" },
+];
+
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+            <div className="flex items-center gap-2">
+                <div className="bg-primary p-2 rounded-lg text-primary-foreground">
+                    <GraduationCap className="h-6 w-6" />
+                </div>
+                <div className="flex flex-col">
+                    <h2 className="text-lg font-headline font-semibold">CampusConnect</h2>
+                </div>
+            </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            {navItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} legacyBehavior passHref>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith(item.href)}
+                    asChild
+                  >
+                    <span>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>More</SidebarGroupLabel>
+                <SidebarMenu>
+                    {otherNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} legacyBehavior passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="justify-start w-full p-2 h-auto">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="https://placehold.co/100x100.png" alt="Admin" data-ai-hint="person" />
+                    <AvatarFallback>AD</AvatarFallback>
+                  </Avatar>
+                  <div className="text-left">
+                    <p className="font-medium text-sm">Admin User</p>
+                    <p className="text-xs text-muted-foreground">admin@campus.com</p>
+                  </div>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mb-2" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">Admin User</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    admin@campus.com
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-4">
+                <SidebarTrigger className="md:hidden" />
+                <h1 className="text-2xl font-headline font-semibold tracking-tight">
+                {
+                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href))?.label || "CampusConnect"
+                }
+                </h1>
+            </div>
+             <div className="flex items-center gap-2">
+                <Button variant="outline">Need Help?</Button>
+                <Badge variant="secondary" className="hidden sm:inline-flex">v1.0.0</Badge>
+            </div>
+        </header>
+        <main className="p-4 sm:p-6 lg:p-8 bg-background">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
