@@ -279,7 +279,19 @@ export default function NewStudentPage() {
                         <FormItem><FormLabel>Previous School/College (Optional)</FormLabel><FormControl><Input placeholder="Anytown High School" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="desiredCourse" render={({ field }) => (
-                        <FormItem><FormLabel>Desired Course</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a course" /></SelectTrigger></FormControl><SelectContent><SelectItem value="web-dev">Introduction to Web Development</SelectItem><SelectItem value="data-science">Advanced Data Science with Python</SelectItem><SelectItem value="digital-marketing">Digital Marketing Fundamentals</SelectItem><SelectItem value="graphic-design">Graphic Design Masterclass</SelectItem><SelectItem value="pmp">Project Management Professionals (PMP)</SelectItem><SelectItem value="well-being">The Science of Well-being</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Desired Course</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a course" /></SelectTrigger></FormControl><SelectContent>
+                            <SelectItem value="bharatanatyam">Bharatanatyam</SelectItem>
+                            <SelectItem value="vocal-carnatic">Vocal Carnatic</SelectItem>
+                            <SelectItem value="keyboard-piano">Keyboard/Piano</SelectItem>
+                            <SelectItem value="guitar">Guitar</SelectItem>
+                            <SelectItem value="yoga">Yoga</SelectItem>
+                            <SelectItem value="western-dance">Western Dance</SelectItem>
+                            <SelectItem value="art-craft">Art & Craft</SelectItem>
+                            <SelectItem value="karate">Karate</SelectItem>
+                            <SelectItem value="kalaripayattu">Kalaripayattu</SelectItem>
+                            <SelectItem value="zumba">Zumba</SelectItem>
+                            <SelectItem value="gymnastics">Gymnastics</SelectItem>
+                        </SelectContent></Select><FormMessage /></FormItem>
                     )} />
                 </div>
                 <FormField control={form.control} name="activitiesInterested" render={({ field }) => (
