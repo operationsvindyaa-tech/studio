@@ -32,10 +32,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { createAdmission } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useActionState } from "react";
 import { useRouter } from "next/navigation";
 
 
@@ -69,7 +69,7 @@ function SubmitButton() {
 
 
 export default function NewAdmissionPage() {
-  const [state, formAction] = useFormState(createAdmission, initialState);
+  const [state, formAction] = useActionState(createAdmission, initialState);
   const { toast } = useToast();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
