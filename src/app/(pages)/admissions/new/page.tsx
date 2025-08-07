@@ -211,7 +211,7 @@ export default function NewAdmissionPage() {
                                 <FormItem className="flex flex-col items-center text-center">
                                 <FormLabel className="sr-only">Student Photo</FormLabel>
                                 <FormControl>
-                                    <>
+                                    <div>
                                         <Input
                                             type="file"
                                             accept="image/*"
@@ -228,7 +228,7 @@ export default function NewAdmissionPage() {
                                                 )}
                                             </div>
                                         </label>
-                                    </>
+                                    </div>
                                 </FormControl>
                                 <FormDescription>Click above to upload a photo.</FormDescription>
                                 <FormMessage />
