@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, FileDown, PlusCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link"
 
 const students = [
   { id: "S001", name: "Amelia Rodriguez", email: "amelia.r@example.com", joined: "2023-01-15", status: "Active", courses: 5, avatar: "https://placehold.co/100x100/E6C37B/4A4A4A.png", initials: "AR" },
@@ -41,9 +42,11 @@ export default function StudentsPage() {
                 <FileDown className="h-4 w-4 mr-2" />
                 Export
             </Button>
-            <Button>
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add Student
+            <Button asChild>
+                <Link href="/students/new">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Add Student
+                </Link>
             </Button>
         </div>
       </div>
