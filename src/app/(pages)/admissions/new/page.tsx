@@ -160,69 +160,82 @@ export default function NewAdmissionPage() {
             action={form.handleSubmit(data => formAction(data))}
             className="space-y-12"
           >
-            {/* Student Details */}
-            <div className="space-y-6">
-                <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
-                 <FormField
-                    control={form.control}
-                    name="photo"
-                    render={() => (
-                        <FormItem className="flex flex-col items-center">
-                        <FormLabel>Student Photo</FormLabel>
-                        <FormControl>
-                            <>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className="hidden"
-                                    id="photo-upload"
-                                    onChange={handlePhotoChange}
-                                />
-                                <label htmlFor="photo-upload" className="cursor-pointer">
-                                    <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center border-2 border-dashed">
-                                        {photoPreview ? (
-                                            <Image src={photoPreview} alt="Student photo" width={128} height={128} className="rounded-full object-cover w-full h-full" />
-                                        ) : (
-                                            <span className="text-sm text-muted-foreground text-center">Upload Photo</span>
-                                        )}
-                                    </div>
-                                </label>
-                            </>
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="grid md:grid-cols-3 gap-6">
-                    <FormField control={form.control} name="studentName" render={({ field }) => (
-                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="dateOfJoining" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Date of Joining</FormLabel>
-                            <Popover><PopoverTrigger asChild>
-                                <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
-                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="dob" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel>
-                            <Popover><PopoverTrigger asChild>
-                                <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
-                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField control={form.control} name="age" render={({ field }) => (
-                        <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="18" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="gender" render={({ field }) => (
-                        <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                    )} />
-                     <FormField control={form.control} name="nationality" render={({ field }) => (
-                        <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="bloodGroup" render={({ field }) => (
-                        <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                    )} />
+            <div className="grid md:grid-cols-3 gap-8">
+                {/* Form Fields Column */}
+                <div className="md:col-span-2 space-y-12">
+                     {/* Student Details */}
+                    <div className="space-y-6">
+                        <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <FormField control={form.control} name="studentName" render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="dateOfJoining" render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel>Date of Joining</FormLabel>
+                                    <Popover><PopoverTrigger asChild>
+                                        <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                                    </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField control={form.control} name="dob" render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel>
+                                    <Popover><PopoverTrigger asChild>
+                                        <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                                    </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage />
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="age" render={({ field }) => (
+                                <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="18" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="gender" render={({ field }) => (
+                                <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name="nationality" render={({ field }) => (
+                                <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="bloodGroup" render={({ field }) => (
+                                <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Photo Upload Column */}
+                <div className="md:col-span-1">
+                    <div className="space-y-6">
+                        <h3 className="text-xl font-semibold border-b pb-2">Student Photo</h3>
+                        <FormField
+                            control={form.control}
+                            name="photo"
+                            render={() => (
+                                <FormItem className="flex flex-col items-center text-center">
+                                <FormLabel className="sr-only">Student Photo</FormLabel>
+                                <FormControl>
+                                    <>
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            id="photo-upload"
+                                            onChange={handlePhotoChange}
+                                        />
+                                        <label htmlFor="photo-upload" className="cursor-pointer">
+                                            <div className="w-40 h-40 rounded-full bg-muted flex items-center justify-center border-2 border-dashed mx-auto">
+                                                {photoPreview ? (
+                                                    <Image src={photoPreview} alt="Student photo" width={160} height={160} className="rounded-full object-cover w-full h-full" />
+                                                ) : (
+                                                    <span className="text-sm text-muted-foreground text-center">Upload Photo</span>
+                                                )}
+                                            </div>
+                                        </label>
+                                    </>
+                                </FormControl>
+                                <FormDescription>Click above to upload a photo.</FormDescription>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                 </div>
             </div>
 
