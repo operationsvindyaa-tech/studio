@@ -38,18 +38,34 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, useActionState } from "react";
 import { useRouter } from "next/navigation";
 
-
 const admissionFormSchema = z.object({
   studentName: z.string().min(2, "Name must be at least 2 characters."),
+  dateOfJoining: z.date({ required_error: "Date of joining is required." }),
   dob: z.date({ required_error: "A date of birth is required." }),
-  gender: z.enum(["male", "female", "other"]),
-  parentName: z.string().min(2, "Parent's name must be at least 2 characters."),
-  parentEmail: z.string().email("Please enter a valid email address."),
-  parentPhone: z.string().min(10, "Phone number must be at least 10 digits."),
+  age: z.string().min(1, "Age is required."),
+  gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
+  nationality: z.string().min(2, "Nationality is required."),
+  bloodGroup: z.string().optional(),
+  
+  fatherName: z.string().min(2, "Father's name is required."),
+  fatherContact: z.string().min(10, "Father's contact number is required."),
+  motherName: z.string().min(2, "Mother's name is required."),
+  motherContact: z.string().min(10, "Mother's contact number is required."),
+  whatsappNumber: z.string().min(10, "WhatsApp number is required."),
+  email: z.string().email("A valid email is required."),
+  address: z.string().min(10, "Address is required."),
+  
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
-  additionalInfo: z.string().max(500, "Message must not exceed 500 characters.").optional(),
+  activitiesInterested: z.string().optional(),
+  howDidYouKnow: z.string({ required_error: "This field is required."}),
+  
+  healthIssues: z.string().optional(),
+  emergencyContact: z.string().min(10, "Emergency contact is required."),
+  
+  signature: z.string().min(1, "Signature is required to authorize.").nonempty("Signature is required."),
 });
+
 
 export type AdmissionFormValues = z.infer<typeof admissionFormSchema>;
 
@@ -67,7 +83,6 @@ function SubmitButton() {
     );
 }
 
-
 export default function NewAdmissionPage() {
   const [state, formAction] = useActionState(createAdmission, initialState);
   const { toast } = useToast();
@@ -78,11 +93,20 @@ export default function NewAdmissionPage() {
     resolver: zodResolver(admissionFormSchema),
     defaultValues: {
       studentName: "",
-      parentName: "",
-      parentEmail: "",
-      parentPhone: "",
+      age: "",
+      nationality: "",
+      fatherName: "",
+      fatherContact: "",
+      motherName: "",
+      motherContact: "",
+      whatsappNumber: "",
+      email: "",
+      address: "",
       previousSchool: "",
-      additionalInfo: "",
+      activitiesInterested: "",
+      healthIssues: "",
+      emergencyContact: "",
+      signature: "",
     },
   });
   
@@ -113,190 +137,115 @@ export default function NewAdmissionPage() {
           <form
             ref={formRef}
             action={form.handleSubmit(data => formAction(data))}
-            className="space-y-8"
+            className="space-y-12"
           >
-            <div className="grid md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Student Information</h3>
-                    <FormField
-                    control={form.control}
-                    name="studentName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="John Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
+            {/* Student Details */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                    <FormField control={form.control} name="studentName" render={({ field }) => (
+                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="dateOfJoining" render={({ field }) => (
+                        <FormItem className="flex flex-col"><FormLabel>Date of Joining</FormLabel>
+                            <Popover><PopoverTrigger asChild>
+                                <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage />
                         </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="dob"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                        <FormLabel>Date of Birth</FormLabel>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                            <FormControl>
-                                <Button
-                                variant={"outline"}
-                                className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                )}
-                                >
-                                {field.value ? (
-                                    format(field.value, "PPP")
-                                ) : (
-                                    <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                            </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                date > new Date() || date < new Date("1900-01-01")
-                                }
-                                initialFocus
-                            />
-                            </PopoverContent>
-                        </Popover>
-                        <FormMessage />
+                    )} />
+                    <FormField control={form.control} name="dob" render={({ field }) => (
+                        <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel>
+                            <Popover><PopoverTrigger asChild>
+                                <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
+                            </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus /></PopoverContent></Popover><FormMessage />
                         </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="gender"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Gender</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                     <FormField
-                    control={form.control}
-                    name="previousSchool"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Previous School (Optional)</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Springfield Elementary" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                </div>
-                 <div className="space-y-4">
-                    <h3 className="text-lg font-medium">Parent/Guardian Information</h3>
-                    <FormField
-                    control={form.control}
-                    name="parentName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="Jane Doe" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    <FormField
-                    control={form.control}
-                    name="parentEmail"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                            <Input placeholder="jane.doe@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                     <FormField
-                    control={form.control}
-                    name="parentPhone"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                            <Input placeholder="(555) 123-4567" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
+                    )} />
+                    <FormField control={form.control} name="age" render={({ field }) => (
+                        <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="18" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="gender" render={({ field }) => (
+                        <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                     <FormField control={form.control} name="nationality" render={({ field }) => (
+                        <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="bloodGroup" render={({ field }) => (
+                        <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    )} />
                 </div>
             </div>
+
+            {/* Parent/Guardian Information */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold border-b pb-2">Parent/Guardian Information</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="fatherName" render={({ field }) => (
+                        <FormItem><FormLabel>Father's Name</FormLabel><FormControl><Input placeholder="Robert Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                     <FormField control={form.control} name="fatherContact" render={({ field }) => (
+                        <FormItem><FormLabel>Father's Contact No.</FormLabel><FormControl><Input placeholder="(555) 111-2222" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="motherName" render={({ field }) => (
+                        <FormItem><FormLabel>Mother's Name</FormLabel><FormControl><Input placeholder="Susan Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                     <FormField control={form.control} name="motherContact" render={({ field }) => (
+                        <FormItem><FormLabel>Mother's Contact No.</FormLabel><FormControl><Input placeholder="(555) 333-4444" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="whatsappNumber" render={({ field }) => (
+                        <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input placeholder="(555) 555-5555" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                        <FormItem><FormLabel>Email ID</FormLabel><FormControl><Input type="email" placeholder="parent@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+                 <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Main Street, Anytown, USA 12345" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
             
-            <FormField
-                control={form.control}
-                name="desiredCourse"
-                render={({ field }) => (
+             {/* Academic and Other Details */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold border-b pb-2">Academic & Other Details</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="previousSchool" render={({ field }) => (
+                        <FormItem><FormLabel>Previous School/College (Optional)</FormLabel><FormControl><Input placeholder="Anytown High School" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="desiredCourse" render={({ field }) => (
+                        <FormItem><FormLabel>Desired Course</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a course" /></SelectTrigger></FormControl><SelectContent><SelectItem value="web-dev">Introduction to Web Development</SelectItem><SelectItem value="data-science">Advanced Data Science with Python</SelectItem><SelectItem value="digital-marketing">Digital Marketing Fundamentals</SelectItem><SelectItem value="graphic-design">Graphic Design Masterclass</SelectItem><SelectItem value="pmp">Project Management Professionals (PMP)</SelectItem><SelectItem value="well-being">The Science of Well-being</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <FormField control={form.control} name="activitiesInterested" render={({ field }) => (
+                    <FormItem><FormLabel>Activities Interested In (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Sports, Music, Coding Club" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                 <FormField control={form.control} name="howDidYouKnow" render={({ field }) => (
+                    <FormItem><FormLabel>How did you know about the academy?</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select an option" /></SelectTrigger></FormControl><SelectContent><SelectItem value="social-media">Social Media</SelectItem><SelectItem value="friend-referral">Friend/Referral</SelectItem><SelectItem value="advertisement">Advertisement</SelectItem><SelectItem value="search-engine">Search Engine</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                )} />
+            </div>
+
+            {/* Health and Emergency */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold border-b pb-2">Health & Emergency Information</h3>
+                <FormField control={form.control} name="healthIssues" render={({ field }) => (
+                    <FormItem><FormLabel>Any known health issues? (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Allergies, asthma" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+                <FormField control={form.control} name="emergencyContact" render={({ field }) => (
+                    <FormItem><FormLabel>Emergency Contact Number</FormLabel><FormControl><Input placeholder="(555) 999-0000" {...field} /></FormControl><FormMessage /></FormItem>
+                )} />
+            </div>
+
+            {/* Authorization */}
+            <div className="space-y-6">
+                 <h3 className="text-xl font-semibold border-b pb-2">Authorization</h3>
+                <FormField control={form.control} name="signature" render={({ field }) => (
                     <FormItem>
-                    <FormLabel>Desired Course</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a course to apply for" />
-                        </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            <SelectItem value="web-dev">Introduction to Web Development</SelectItem>
-                            <SelectItem value="data-science">Advanced Data Science with Python</SelectItem>
-                            <SelectItem value="digital-marketing">Digital Marketing Fundamentals</SelectItem>
-                            <SelectItem value="graphic-design">Graphic Design Masterclass</SelectItem>
-                            <SelectItem value="pmp">Project Management Professionals (PMP)</SelectItem>
-                            <SelectItem value="well-being">The Science of Well-being</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
+                        <FormLabel>Signature of Authorization</FormLabel>
+                        <FormControl><Input placeholder="Type your full name to sign" {...field} /></FormControl>
+                        <FormDescription>By typing your name, you certify that all information is correct and authorize the school to verify it.</FormDescription>
+                        <FormMessage />
                     </FormItem>
-                )}
-            />
-             <FormField
-                control={form.control}
-                name="additionalInfo"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Additional Information (Optional)</FormLabel>
-                    <FormControl>
-                        <Textarea
-                        placeholder="Please provide any other information you think is relevant."
-                        className="resize-none"
-                        {...field}
-                        />
-                    </FormControl>
-                     <FormDescription>
-                        You can mention achievements, special needs, or any questions you have.
-                    </FormDescription>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
+                )} />
+            </div>
+
             <SubmitButton />
           </form>
         </Form>
