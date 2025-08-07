@@ -1,8 +1,10 @@
+
 "use server";
 
 import { z } from "zod";
 
 const admissionFormSchema = z.object({
+  photo: z.string().optional(),
   studentName: z.string().min(2, "Name must be at least 2 characters."),
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
   dob: z.date({ required_error: "A date of birth is required." }),
@@ -44,6 +46,8 @@ export async function createAdmission(prevState: State, formData: z.infer<typeof
     console.log(formData);
     
     // You can add logic here to send confirmation emails, etc.
+    // The `photo` field will contain a base64 data URI if a photo was uploaded.
+    // You might want to save this to a file storage service.
 
     return {
       message: "Your application has been submitted successfully! We will get back to you soon.",
@@ -57,3 +61,5 @@ export async function createAdmission(prevState: State, formData: z.infer<typeof
     };
   }
 }
+
+    

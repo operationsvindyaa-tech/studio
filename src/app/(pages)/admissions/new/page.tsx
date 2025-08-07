@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, School } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,10 +36,12 @@ import { format } from "date-fns";
 import { useFormStatus } from "react-dom";
 import { createAdmission } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const admissionFormSchema = z.object({
+  photo: z.string().optional(),
   studentName: z.string().min(2, "Name must be at least 2 characters."),
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
   dob: z.date({ required_error: "A date of birth is required." }),
@@ -88,6 +91,7 @@ export default function NewAdmissionPage() {
   const { toast } = useToast();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const form = useForm<AdmissionFormValues>({
     resolver: zodResolver(admissionFormSchema),
@@ -119,14 +123,31 @@ export default function NewAdmissionPage() {
       });
       if(state.success) {
         form.reset();
+        setPhotoPreview(null);
         router.push('/admissions');
       }
     }
   }, [state, toast, form, router]);
 
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setPhotoPreview(dataUrl);
+        form.setValue("photo", dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <Card className="max-w-4xl mx-auto">
-      <CardHeader>
+      <CardHeader className="text-center">
+        <div className="mx-auto bg-muted p-4 rounded-full w-fit mb-2">
+            <School className="h-12 w-12 text-muted-foreground" />
+        </div>
         <CardTitle>New Admission Application</CardTitle>
         <CardDescription>
           Fill out the form below to apply for admission.
@@ -142,6 +163,36 @@ export default function NewAdmissionPage() {
             {/* Student Details */}
             <div className="space-y-6">
                 <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
+                 <FormField
+                    control={form.control}
+                    name="photo"
+                    render={() => (
+                        <FormItem className="flex flex-col items-center">
+                        <FormLabel>Student Photo</FormLabel>
+                        <FormControl>
+                            <>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    id="photo-upload"
+                                    onChange={handlePhotoChange}
+                                />
+                                <label htmlFor="photo-upload" className="cursor-pointer">
+                                    <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center border-2 border-dashed">
+                                        {photoPreview ? (
+                                            <Image src={photoPreview} alt="Student photo" width={128} height={128} className="rounded-full object-cover w-full h-full" />
+                                        ) : (
+                                            <span className="text-sm text-muted-foreground text-center">Upload Photo</span>
+                                        )}
+                                    </div>
+                                </label>
+                            </>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
                 <div className="grid md:grid-cols-3 gap-6">
                     <FormField control={form.control} name="studentName" render={({ field }) => (
                         <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
@@ -245,6 +296,9 @@ export default function NewAdmissionPage() {
                     </FormItem>
                 )} />
             </div>
+             <div className="flex items-center justify-center pt-4">
+                <p className="text-sm text-muted-foreground">Seal of Institution</p>
+            </div>
 
             <SubmitButton />
           </form>
@@ -253,3 +307,5 @@ export default function NewAdmissionPage() {
     </Card>
   );
 }
+
+    
