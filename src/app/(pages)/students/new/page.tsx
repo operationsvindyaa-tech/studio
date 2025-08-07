@@ -49,6 +49,7 @@ const studentFormSchema = z.object({
   gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
   nationality: z.string().min(2, "Nationality is required."),
   bloodGroup: z.string().optional(),
+  status: z.enum(["Active", "Inactive", "Suspended"], { required_error: "Please select a status." }),
   
   fatherName: z.string().min(2, "Father's name is required."),
   fatherContact: z.string().min(10, "Father's contact number is required."),
@@ -195,6 +196,9 @@ export default function NewStudentPage() {
                             )} />
                             <FormField control={form.control} name="bloodGroup" render={({ field }) => (
                                 <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="status" render={({ field }) => (
+                                <FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Suspended">Suspended</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
                         </div>
                     </div>
