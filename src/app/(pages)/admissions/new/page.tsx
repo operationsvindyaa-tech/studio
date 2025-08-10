@@ -33,10 +33,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useFormStatus } from "react-dom";
+import { useActionState, useFormStatus } from "react";
 import { createAdmission } from "./actions";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect, useRef, useActionState, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -66,7 +66,7 @@ const admissionFormSchema = z.object({
   healthIssues: z.string().optional(),
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
-  signature: z.string().min(1, "Signature is required to authorize.").nonempty("Signature is required."),
+  signature: z.string().min(1, "Signature is required to authorize."),
 });
 
 
@@ -142,6 +142,10 @@ export default function NewAdmissionPage() {
     }
   };
 
+  const onFormSubmit = (data: AdmissionFormValues) => {
+    formAction(data);
+  };
+
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader className="text-center">
@@ -157,7 +161,7 @@ export default function NewAdmissionPage() {
         <Form {...form}>
           <form
             ref={formRef}
-            action={form.handleSubmit(data => formAction(data))}
+            action={() => form.handleSubmit(onFormSubmit)()}
             className="space-y-12"
           >
             <div className="grid md:grid-cols-3 gap-8">
@@ -256,7 +260,7 @@ export default function NewAdmissionPage() {
                         <FormItem><FormLabel>Mother's Contact No.</FormLabel><FormControl><Input placeholder="(555) 333-4444" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="whatsappNumber" render={({ field }) => (
-                        <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input placeholder="(555) 555-5555" {...field} /></FormControl><FormMessage /></FormMessage>
+                        <FormItem><FormLabel>WhatsApp Number</FormLabel><FormControl><Input placeholder="(555) 555-5555" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="email" render={({ field }) => (
                         <FormItem><FormLabel>Email ID</FormLabel><FormControl><Input type="email" placeholder="parent@example.com" {...field} /></FormControl><FormMessage /></FormItem>
