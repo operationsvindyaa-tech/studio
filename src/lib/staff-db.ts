@@ -32,7 +32,7 @@ export type Staff = {
             accountNumber: string;
             ifscCode: string;
         };
-        benefitsNumber: string; // PF/ESI
+        benefitsNumber: string; // PF/ESI/PAN
     };
 };
 
@@ -60,8 +60,8 @@ const initialStaff: Staff[] = [
         },
         payroll: {
             salary: 75000,
-            bankDetails: { accountNumber: "123456789012", ifscCode: "HDFC000123" },
-            benefitsNumber: "BN12345678",
+            bankDetails: { accountNumber: "********9012", ifscCode: "HDFC000123" },
+            benefitsNumber: "ABCDE1234F", // PAN
         },
     },
     {
@@ -87,12 +87,120 @@ const initialStaff: Staff[] = [
         },
         payroll: {
             salary: 72000,
-            bankDetails: { accountNumber: "234567890123", ifscCode: "ICIC000234" },
-            benefitsNumber: "BN23456789",
+            bankDetails: { accountNumber: "********0123", ifscCode: "ICIC000234" },
+            benefitsNumber: "FGHIJ5678K", // PAN
         },
     },
     {
         id: "EMP003",
+        fullName: "Anjali Mehta",
+        initials: "AM",
+        personalInfo: {
+            dob: "1992-04-10",
+            gender: "Female",
+            contactNumber: "(555) 333-4444",
+            email: "anjali.mehta@example.com",
+            address: "789 Artistry Ln, Bangalore",
+            emergencyContact: { name: "Sanjay Mehta", number: "(555) 333-4445" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Academics",
+            role: "Keyboard & Piano Instructor",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2021-01-20",
+            employmentType: "Part-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 55000,
+            bankDetails: { accountNumber: "********1234", ifscCode: "AXIS000345" },
+            benefitsNumber: "KLMNO9012L", // PAN
+        },
+    },
+    {
+        id: "EMP004",
+        fullName: "Vikram Singh",
+        initials: "VS",
+        personalInfo: {
+            dob: "1988-09-05",
+            gender: "Male",
+            contactNumber: "(555) 444-5555",
+            email: "vikram.singh@example.com",
+            address: "101 Melody Rd, Bangalore",
+            emergencyContact: { name: "Deepa Singh", number: "(555) 444-5556" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Academics",
+            role: "Guitar Teacher",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2022-05-15",
+            employmentType: "Full-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 52000,
+            bankDetails: { accountNumber: "********2345", ifscCode: "KOTK000456" },
+            benefitsNumber: "PQRST3456M", // PAN
+        },
+    },
+    {
+        id: "EMP005",
+        fullName: "Sunita Reddy",
+        initials: "SR",
+        personalInfo: {
+            dob: "1980-12-30",
+            gender: "Female",
+            contactNumber: "(555) 555-6666",
+            email: "sunita.reddy@example.com",
+            address: "202 Wellness Way, Bangalore",
+            emergencyContact: { name: "Anil Reddy", number: "(555) 555-6667" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Academics",
+            role: "Yoga Acharya",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2019-11-01",
+            employmentType: "Part-time",
+            workLocation: "Wellness Center",
+        },
+        payroll: {
+            salary: 60000,
+            bankDetails: { accountNumber: "********3456", ifscCode: "YESB000567" },
+            benefitsNumber: "UVWXY7890N", // PAN
+        },
+    },
+    {
+        id: "EMP006",
+        fullName: "Arjun Desai",
+        initials: "AD",
+        personalInfo: {
+            dob: "1986-07-22",
+            gender: "Male",
+            contactNumber: "(555) 666-7777",
+            email: "arjun.desai@example.com",
+            address: "303 Warrior Path, Bangalore",
+            emergencyContact: { name: "Priya Desai", number: "(555) 666-7778" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Academics",
+            role: "Kalaripayattu Master",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2020-02-18",
+            employmentType: "Full-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 68000,
+            bankDetails: { accountNumber: "********4567", ifscCode: "IDFC000678" },
+            benefitsNumber: "ZABCD1234P", // PAN
+        },
+    },
+    {
+        id: "EMP007",
         fullName: "Meera Iyer",
         initials: "MI",
         personalInfo: {
@@ -114,8 +222,8 @@ const initialStaff: Staff[] = [
         },
         payroll: {
             salary: 85000,
-            bankDetails: { accountNumber: "345678901234", ifscCode: "SBIN000345" },
-            benefitsNumber: "BN34567890",
+            bankDetails: { accountNumber: "********5678", ifscCode: "SBIN000345" },
+            benefitsNumber: "EFGHI5678Q", // PAN
         },
     },
 ];

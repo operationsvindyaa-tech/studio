@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,10 +41,12 @@ import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import * as XLSX from 'xlsx';
+import { getStaff as fetchStaffFromDB, type Staff } from "@/lib/staff-db";
+import { Skeleton } from '@/components/ui/skeleton';
 
 type StaffStatus = "Paid" | "Pending";
 
-interface StaffMember {
+interface PayrollStaffMember {
   id: string;
   name: string;
   role: string;
@@ -60,16 +62,6 @@ interface StaffMember {
   uan: string;
   department: string;
 }
-
-const staffData: StaffMember[] = [
-  { id: "EMP001", name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2018-03-01", pan: "ABCDE1234F", bankAccount: "********9012", uan: "100987654321", department: "Academics" },
-  { id: "EMP002", name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending", joiningDate: "2020-07-10", pan: "FGHIJ5678K", bankAccount: "********0123", uan: "100123456789", department: "Academics" },
-  { id: "EMP003", name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid", joiningDate: "2021-01-20", pan: "KLMNO9012L", bankAccount: "********1234", uan: "100234567890", department: "Academics" },
-  { id: "EMP004", name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending", joiningDate: "2022-05-15", pan: "PQRST3456M", bankAccount: "********2345", uan: "100345678901", department: "Academics" },
-  { id: "EMP005", name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending", joiningDate: "2019-11-01", pan: "UVWXY7890N", bankAccount: "********3456", uan: "100456789012", department: "Academics" },
-  { id: "EMP006", name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid", joiningDate: "2020-02-18", pan: "ZABCD1234P", bankAccount: "********4567", uan: "100567890123", department: "Academics" },
-  { id: "EMP007", name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2015-01-15", pan: "EFGHI5678Q", bankAccount: "********5678", uan: "100678901234", department: "Administration" },
-];
 
 const TOTAL_WORKING_DAYS = 22;
 
@@ -93,14 +85,51 @@ const numberToWords = (num: number): string => {
 
 export default function PayrollPage() {
   const { toast } = useToast();
-  const [staff, setStaff] = useState(staffData);
+  const [staff, setStaff] = useState<PayrollStaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isPayslipOpen, setIsPayslipOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
-  const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<PayrollStaffMember | null>(null);
+  const [editingStaff, setEditingStaff] = useState<PayrollStaffMember | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [staffToDelete, setStaffToDelete] = useState<StaffMember | null>(null);
+  const [staffToDelete, setStaffToDelete] = useState<PayrollStaffMember | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  useEffect(() => {
+    async function fetchStaff() {
+        setLoading(true);
+        try {
+            const dbStaff = await fetchStaffFromDB();
+            const payrollData = dbStaff.map(s => ({
+                id: s.id,
+                name: s.fullName,
+                role: s.jobDetails.role,
+                avatar: s.personalInfo.photo,
+                initials: s.initials,
+                monthlySalary: s.payroll.salary,
+                presentDays: 22, // Placeholder, can be replaced by real attendance data
+                absentDays: 0, // Placeholder
+                status: "Pending" as StaffStatus,
+                joiningDate: s.jobDetails.dateOfJoining,
+                pan: s.payroll.benefitsNumber, // Assuming PAN is stored here for now
+                bankAccount: s.payroll.bankDetails.accountNumber,
+                uan: s.payroll.benefitsNumber, // Assuming UAN is stored here for now
+                department: s.jobDetails.department,
+            }));
+            setStaff(payrollData);
+        } catch (error) {
+            toast({
+                title: "Error fetching staff",
+                description: "Could not load staff data. Please try again.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
+    }
+    fetchStaff();
+  }, [toast]);
+
 
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
     const perDaySalary = monthlySalary / TOTAL_WORKING_DAYS;
@@ -174,7 +203,7 @@ export default function PayrollPage() {
         } : s));
         toast({ title: "Staff Updated", description: `${name}'s details have been updated.` });
     } else {
-        const newStaffMember: StaffMember = {
+        const newStaffMember: PayrollStaffMember = {
             id: `EMP${String(staff.length + 1).padStart(3, '0')}`,
             name,
             role,
@@ -198,7 +227,7 @@ export default function PayrollPage() {
     setEditingStaff(null);
   };
   
-  const handleOpenEditDialog = (staffMember: StaffMember) => {
+  const handleOpenEditDialog = (staffMember: PayrollStaffMember) => {
     setEditingStaff(staffMember);
     setIsFormOpen(true);
   };
@@ -208,12 +237,12 @@ export default function PayrollPage() {
     setIsFormOpen(true);
   };
   
-  const handleViewPayslip = (staffMember: StaffMember) => {
+  const handleViewPayslip = (staffMember: PayrollStaffMember) => {
     setSelectedStaff(staffMember);
     setIsPayslipOpen(true);
   }
 
-  const handleDelete = (staffMember: StaffMember) => {
+  const handleDelete = (staffMember: PayrollStaffMember) => {
     setStaffToDelete(staffMember);
     setIsDeleteDialogOpen(true);
   };
@@ -294,7 +323,7 @@ export default function PayrollPage() {
             };
         });
 
-        setStaff(importedStaff);
+        setStaff(prevStaff => [...prevStaff, ...importedStaff]);
         toast({
           title: "Import Successful",
           description: `${importedStaff.length} staff members have been imported.`,
@@ -309,7 +338,6 @@ export default function PayrollPage() {
       }
     };
     reader.readAsBinaryString(file);
-    // Reset file input value to allow re-uploading the same file
     if(fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -366,7 +394,25 @@ export default function PayrollPage() {
                   </TableRow>
               </TableHeader>
               <TableBody>
-                  {staff.map((s) => {
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-9 w-9 rounded-full" />
+                                    <div className="space-y-1">
+                                        <Skeleton className="h-4 w-24" />
+                                        <Skeleton className="h-3 w-32" />
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))
+                ) : staff.map((s) => {
                       const { netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
                       return (
                           <TableRow key={s.id}>
@@ -575,6 +621,3 @@ export default function PayrollPage() {
     </>
   );
 }
-
-    
-
