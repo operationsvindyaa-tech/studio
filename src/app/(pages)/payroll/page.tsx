@@ -7,12 +7,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap, Upload } from "lucide-react";
+import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap, Upload, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -25,6 +26,16 @@ import {
   DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
@@ -88,6 +99,8 @@ export default function PayrollPage() {
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [staffToDelete, setStaffToDelete] = useState<StaffMember | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
     const perDaySalary = monthlySalary / TOTAL_WORKING_DAYS;
@@ -199,6 +212,24 @@ export default function PayrollPage() {
     setSelectedStaff(staffMember);
     setIsPayslipOpen(true);
   }
+
+  const handleDelete = (staffMember: StaffMember) => {
+    setStaffToDelete(staffMember);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (staffToDelete) {
+      setStaff(staff.filter(s => s.id !== staffToDelete.id));
+      toast({
+        title: "Staff Member Deleted",
+        description: `${staffToDelete.name} has been removed from the payroll.`,
+      });
+      setStaffToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
 
   const handleExport = () => {
     const headers = ["ID", "Name", "Role", "Monthly Salary (INR)", "Gross Salary (INR)", "PF (INR)", "PT (INR)", "TDS (INR)", "Total Deductions (INR)", "Net Salary (INR)", "Status"];
@@ -384,6 +415,10 @@ export default function PayrollPage() {
                                       <DropdownMenuItem onClick={() => handleOpenEditDialog(s)}>
                                         Edit Details
                                       </DropdownMenuItem>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem onClick={() => handleDelete(s)} className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                      </DropdownMenuItem>
                                       </DropdownMenuContent>
                                   </DropdownMenu>
                               </TableCell>
@@ -518,8 +553,28 @@ export default function PayrollPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete {staffToDelete?.name}'s record
+                from the payroll.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setStaffToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+                Delete
+            </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     </>
   );
 }
 
     
+
