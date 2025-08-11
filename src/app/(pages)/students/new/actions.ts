@@ -2,6 +2,8 @@
 "use server";
 
 import { z } from "zod";
+import { addStudent } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 const studentFormSchema = z.object({
   photo: z.string().optional(),
@@ -41,14 +43,19 @@ type State = {
 
 export async function createStudent(prevState: State, formData: z.infer<typeof studentFormSchema>): Promise<State> {
   try {
-    // Here you would typically save the data to a database.
-    // For this example, we'll just log it to the console.
-    console.log("New Student Created:");
-    console.log(formData);
-    
-    // You can add logic here to send confirmation emails, etc.
-    // The `photo` field will contain a base64 data URI if a photo was uploaded.
-    // You might want to save this to a file storage service.
+    const parsedData = studentFormSchema.parse(formData);
+
+    await addStudent({
+      name: parsedData.studentName,
+      status: parsedData.status,
+      dateOfJoining: parsedData.dateOfJoining,
+      dob: parsedData.dob,
+      email: parsedData.email,
+      // Pass other necessary fields from formData to addStudent if needed
+      // For now, addStudent will generate the rest.
+    } as any); // Using 'as any' for simplicity, should be properly typed.
+
+    revalidatePath("/students");
 
     return {
       message: "Student has been created successfully!",
@@ -56,6 +63,12 @@ export async function createStudent(prevState: State, formData: z.infer<typeof s
     };
   } catch (error) {
     console.error("Error creating student:", error);
+    if (error instanceof z.ZodError) {
+        return {
+            message: "Validation failed: " + error.errors.map(e => e.message).join(', '),
+            success: false,
+        }
+    }
     return {
       message: "There was an error creating the student. Please try again.",
       success: false,

@@ -2,6 +2,8 @@
 "use server";
 
 import { z } from "zod";
+import { addStudent } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 const admissionFormSchema = z.object({
   photo: z.string().optional(),
@@ -40,26 +42,34 @@ type State = {
 
 export async function createAdmission(prevState: State, formData: z.infer<typeof admissionFormSchema>): Promise<State> {
   try {
-    // Here you would typically save the data to a database.
-    // For this example, we'll just log it to the console.
-    console.log("New Admission Application Received:");
-    console.log(formData);
-    
-    // You can add logic here to send confirmation emails, etc.
-    // The `photo` field will contain a base64 data URI if a photo was uploaded.
-    // You might want to save this to a file storage service.
+     const parsedData = admissionFormSchema.parse(formData);
 
+    await addStudent({
+      name: parsedData.studentName,
+      status: "Active", // New admissions are active by default
+      dateOfJoining: parsedData.dateOfJoining,
+      dob: parsedData.dob,
+      email: parsedData.email,
+    } as any);
+
+    // This tells Next.js to re-fetch the data for the /students page on the next visit.
+    revalidatePath("/students");
+    
     return {
       message: "Your application has been submitted successfully! We will get back to you soon.",
       success: true,
     };
   } catch (error) {
     console.error("Error creating admission:", error);
+    if (error instanceof z.ZodError) {
+        return {
+            message: "Validation failed: " + error.errors.map(e => e.message).join(', '),
+            success: false,
+        }
+    }
     return {
       message: "There was an error submitting your application. Please try again.",
       success: false,
     };
   }
 }
-
-    
