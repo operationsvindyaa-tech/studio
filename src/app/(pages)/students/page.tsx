@@ -1,3 +1,6 @@
+
+"use client";
+
 import {
   Table,
   TableBody,
@@ -31,6 +34,35 @@ const students = [
 ];
 
 export default function StudentsPage() {
+
+  const handleExport = () => {
+    const headers = ["ID", "Name", "Email", "Date Joined", "Status", "Courses Enrolled"];
+    const csvContent = [
+      headers.join(','),
+      ...students.map(student => [
+        student.id,
+        `"${student.name}"`,
+        student.email,
+        student.joined,
+        student.status,
+        student.courses,
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', 'students.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -38,7 +70,7 @@ export default function StudentsPage() {
           <Input placeholder="Search students..." />
         </div>
         <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
                 <FileDown className="h-4 w-4 mr-2" />
                 Export
             </Button>
