@@ -178,7 +178,7 @@ export default function PayrollPage() {
                             <Input id="role" value={newStaffRole} onChange={(e) => setNewStaffRole(e.target.value)} className="col-span-3" placeholder="e.g., Guitar Teacher"/>
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="salary" className="text-right">Monthly Salary</Label>
+                            <Label htmlFor="salary" className="text-right">Monthly Salary (INR)</Label>
                             <Input id="salary" type="number" value={newStaffSalary} onChange={(e) => setNewStaffSalary(e.target.value)} className="col-span-3" placeholder="e.g., 50000"/>
                         </div>
                     </div>
