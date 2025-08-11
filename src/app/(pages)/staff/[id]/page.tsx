@@ -8,7 +8,7 @@ import { Building, Cake, CalendarDays, Edit, Hash, Home, Mail, MapPin, Phone, Sh
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-function InfoField({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string | null }) {
+function InfoField({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string | number | null }) {
     if (!value) return null;
     return (
         <div className="flex items-start gap-3">
@@ -29,6 +29,14 @@ export default async function StaffProfilePage({ params }: { params: { id: strin
     }
 
     const { fullName, initials, personalInfo, jobDetails, payroll } = staffMember;
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 0,
+        }).format(amount);
+    };
 
     return (
         <div className="max-w-5xl mx-auto space-y-6">
@@ -94,7 +102,7 @@ export default async function StaffProfilePage({ params }: { params: { id: strin
                             <div>
                                 <h3 className="text-lg font-semibold mb-4 border-b pb-2">Payroll Information</h3>
                                 <div className="grid sm:grid-cols-2 gap-6">
-                                    <InfoField icon={Wallet} label="Salary" value={`₹${payroll.salary.toLocaleString('en-IN')} / month`} />
+                                    <InfoField icon={Wallet} label="Salary" value={`${formatCurrency(payroll.salary)} / month`} />
                                     <InfoField icon={ShieldCheck} label="PF/ESI Number" value={payroll.benefitsNumber} />
                                 </div>
                             </div>
