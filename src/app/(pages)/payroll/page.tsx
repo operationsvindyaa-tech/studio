@@ -14,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -46,16 +45,18 @@ interface StaffMember {
   joiningDate: string;
   pan: string;
   bankAccount: string;
+  uan: string;
+  department: string;
 }
 
 const staffData: StaffMember[] = [
-  { id: "EMP001", name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2018-03-01", pan: "ABCDE1234F", bankAccount: "********9012" },
-  { id: "EMP002", name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending", joiningDate: "2020-07-10", pan: "FGHIJ5678K", bankAccount: "********0123" },
-  { id: "EMP003", name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid", joiningDate: "2021-01-20", pan: "KLMNO9012L", bankAccount: "********1234" },
-  { id: "EMP004", name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending", joiningDate: "2022-05-15", pan: "PQRST3456M", bankAccount: "********2345" },
-  { id: "EMP005", name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending", joiningDate: "2019-11-01", pan: "UVWXY7890N", bankAccount: "********3456" },
-  { id: "EMP006", name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid", joiningDate: "2020-02-18", pan: "ZABCD1234P", bankAccount: "********4567" },
-  { id: "EMP007", name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2015-01-15", pan: "EFGHI5678Q", bankAccount: "********5678" },
+  { id: "EMP001", name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2018-03-01", pan: "ABCDE1234F", bankAccount: "********9012", uan: "100987654321", department: "Academics" },
+  { id: "EMP002", name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending", joiningDate: "2020-07-10", pan: "FGHIJ5678K", bankAccount: "********0123", uan: "100123456789", department: "Academics" },
+  { id: "EMP003", name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid", joiningDate: "2021-01-20", pan: "KLMNO9012L", bankAccount: "********1234", uan: "100234567890", department: "Academics" },
+  { id: "EMP004", name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending", joiningDate: "2022-05-15", pan: "PQRST3456M", bankAccount: "********2345", uan: "100345678901", department: "Academics" },
+  { id: "EMP005", name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending", joiningDate: "2019-11-01", pan: "UVWXY7890N", bankAccount: "********3456", uan: "100456789012", department: "Academics" },
+  { id: "EMP006", name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid", joiningDate: "2020-02-18", pan: "ZABCD1234P", bankAccount: "********4567", uan: "100567890123", department: "Academics" },
+  { id: "EMP007", name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2015-01-15", pan: "EFGHI5678Q", bankAccount: "********5678", uan: "100678901234", department: "Administration" },
 ];
 
 const TOTAL_WORKING_DAYS = 22;
@@ -141,6 +142,7 @@ export default function PayrollPage() {
     const name = formData.get('name') as string;
     const role = formData.get('role') as string;
     const salary = formData.get('salary') as string;
+    const department = formData.get('department') as string;
 
     if (!name || !role || !salary) {
       toast({ title: "Error", description: "Please fill out all fields.", variant: "destructive" });
@@ -152,14 +154,16 @@ export default function PayrollPage() {
             ...s,
             name,
             role,
+            department,
             monthlySalary: parseFloat(salary),
         } : s));
         toast({ title: "Staff Updated", description: `${name}'s details have been updated.` });
     } else {
         const newStaffMember: StaffMember = {
-            id: `EMP${staff.length + 1}`,
+            id: `EMP${String(staff.length + 1).padStart(3, '0')}`,
             name,
             role,
+            department,
             avatar: "https://placehold.co/100x100.png",
             initials: name.split(' ').map(n => n[0]).join('').toUpperCase(),
             monthlySalary: parseFloat(salary),
@@ -168,7 +172,8 @@ export default function PayrollPage() {
             status: "Pending" as StaffStatus,
             joiningDate: new Date().toISOString().split('T')[0],
             pan: "AXXXX0000Z",
-            bankAccount: "********0000"
+            bankAccount: "********0000",
+            uan: "100000000000"
         };
         setStaff(prevStaff => [...prevStaff, newStaffMember]);
         toast({ title: "Staff Added", description: `${name} has been added to the payroll.` });
@@ -346,6 +351,10 @@ export default function PayrollPage() {
                         <Label htmlFor="role" className="text-right">Role</Label>
                         <Input id="role" name="role" defaultValue={editingStaff?.role} className="col-span-3" placeholder="e.g., Guitar Teacher"/>
                     </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="department" className="text-right">Department</Label>
+                        <Input id="department" name="department" defaultValue={editingStaff?.department} className="col-span-3" placeholder="e.g., Academics"/>
+                    </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="salary" className="text-right">Monthly Salary (INR)</Label>
                         <Input id="salary" name="salary" type="number" defaultValue={editingStaff?.monthlySalary} className="col-span-3" placeholder="e.g., 50000"/>
@@ -361,29 +370,29 @@ export default function PayrollPage() {
       
       {/* View Payslip Dialog */}
       <Dialog open={isPayslipOpen} onOpenChange={setIsPayslipOpen}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <div className="flex items-center gap-4">
-                <div className="bg-primary p-2 rounded-lg text-primary-foreground">
-                    <GraduationCap className="h-6 w-6" />
+            <div className="flex flex-col items-center text-center">
+                <div className="flex items-center gap-2">
+                    <GraduationCap className="h-8 w-8 text-primary" />
+                    <h1 className="text-2xl font-bold font-headline">CampusConnect Academy</h1>
                 </div>
-                <div>
-                    <DialogTitle className="text-xl">CampusConnect Academy</DialogTitle>
-                    <DialogDescription>
-                        Payslip for the month of {currentMonthYear}
-                    </DialogDescription>
-                </div>
+                <p className="text-sm text-muted-foreground">123 Learning Lane, Knowledge City, 560100</p>
+                <p className="text-sm text-muted-foreground">Phone: (080) 1234 5678 | Email: contact@campusconnect.edu</p>
+                <DialogTitle className="text-xl mt-4">Payslip for {currentMonthYear}</DialogTitle>
             </div>
           </DialogHeader>
           {selectedStaff && payslipDetails && (
-            <div className="text-sm">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-4 rounded-lg border p-4">
-                    <div><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
-                    <div><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
-                    <div><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
-                    <div><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
-                    <div><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
-                    <div><span className="text-muted-foreground">PAN No:</span> <span className="font-medium">{selectedStaff.pan}</span></div>
+            <div className="text-sm mt-4">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-2 rounded-lg border p-4">
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Department:</span> <span className="font-medium">{selectedStaff.department}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">PAN No:</span> <span className="font-medium">{selectedStaff.pan}</span></div>
+                    <div className="grid grid-cols-2"><span className="text-muted-foreground">UAN:</span> <span className="font-medium">{selectedStaff.uan}</span></div>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-4">
@@ -407,7 +416,7 @@ export default function PayrollPage() {
                             <div className="flex justify-between"><span>Professional Tax (PT)</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
                             <div className="flex justify-between"><span>Income Tax (TDS)</span> <span>{formatCurrency(payslipDetails.incomeTax)}</span></div>
                         </div>
-                        <Separator />
+                         <Separator />
                         <div className="flex justify-between px-4 py-2 font-semibold">
                            <span>Total Deductions</span>
                            <span>{formatCurrency(payslipDetails.totalDeductions)}</span>
@@ -415,17 +424,19 @@ export default function PayrollPage() {
                     </div>
                 </div>
 
-                <div className="mt-4 rounded-lg border bg-muted/50 p-4">
+                <div className="mt-4 rounded-lg border bg-primary/10 p-4">
                     <div className="flex justify-between font-bold text-base">
                         <span>Net Salary</span>
                         <span>{formatCurrency(payslipDetails.netSalary)}</span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                        In words: {numberToWords(Math.round(payslipDetails.netSalary))} Rupees Only
+                    <div className="text-xs text-muted-foreground mt-1 font-medium text-right">
+                        (In words: {numberToWords(Math.round(payslipDetails.netSalary))} Rupees Only)
                     </div>
                 </div>
 
                 <div className="mt-6 text-center text-xs text-muted-foreground">
+                     Payment Date: {new Date().toLocaleDateString()} | Payment Mode: Bank Transfer
+                     <br />
                     This is a computer-generated payslip and does not require a signature.
                 </div>
             </div>
@@ -437,8 +448,6 @@ export default function PayrollPage() {
       </Dialog>
     </>
   );
-
-    
 }
 
     
