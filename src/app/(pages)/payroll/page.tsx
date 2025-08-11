@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye } from "lucide-react";
+import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,7 +34,7 @@ import { Separator } from '@/components/ui/separator';
 type StaffStatus = "Paid" | "Pending";
 
 interface StaffMember {
-  id: number;
+  id: string;
   name: string;
   role: string;
   avatar: string;
@@ -43,19 +43,40 @@ interface StaffMember {
   presentDays: number;
   absentDays: number;
   status: StaffStatus;
+  joiningDate: string;
+  pan: string;
+  bankAccount: string;
 }
 
 const staffData: StaffMember[] = [
-  { id: 1, name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid" },
-  { id: 2, name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending" },
-  { id: 3, name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid" },
-  { id: 4, name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending" },
-  { id: 5, name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending" },
-  { id: 6, name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid" },
-  { id: 7, name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid" },
+  { id: "EMP001", name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2018-03-01", pan: "ABCDE1234F", bankAccount: "********9012" },
+  { id: "EMP002", name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending", joiningDate: "2020-07-10", pan: "FGHIJ5678K", bankAccount: "********0123" },
+  { id: "EMP003", name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid", joiningDate: "2021-01-20", pan: "KLMNO9012L", bankAccount: "********1234" },
+  { id: "EMP004", name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending", joiningDate: "2022-05-15", pan: "PQRST3456M", bankAccount: "********2345" },
+  { id: "EMP005", name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending", joiningDate: "2019-11-01", pan: "UVWXY7890N", bankAccount: "********3456" },
+  { id: "EMP006", name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid", joiningDate: "2020-02-18", pan: "ZABCD1234P", bankAccount: "********4567" },
+  { id: "EMP007", name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid", joiningDate: "2015-01-15", pan: "EFGHI5678Q", bankAccount: "********5678" },
 ];
 
 const TOTAL_WORKING_DAYS = 22;
+
+const numberToWords = (num: number): string => {
+    const a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+    const b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];
+    
+    if ((num = num.toString()).length > 9) return 'overflow';
+    const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return ''; 
+    let str = '';
+    str += (n[1] != '00') ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'crore ' : '';
+    str += (n[2] != '00') ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'lakh ' : '';
+    str += (n[3] != '00') ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
+    str += (n[4] != '00') ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
+    str += (n[5] != '00') ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : '';
+    
+    return str.trim().split(' ').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
+}
+
 
 export default function PayrollPage() {
   const { toast } = useToast();
@@ -68,11 +89,21 @@ export default function PayrollPage() {
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
     const perDaySalary = monthlySalary / TOTAL_WORKING_DAYS;
     const grossSalary = perDaySalary * presentDays;
+
+    // Earnings breakdown
+    const basic = grossSalary * 0.50;
+    const hra = basic * 0.40;
+    const specialAllowance = grossSalary - basic - hra;
+
+    // Deductions
     const professionalTax = 200;
-    const providentFund = grossSalary * 0.12;
-    const totalDeductions = professionalTax + providentFund;
+    const providentFund = basic * 0.12;
+    const incomeTax = grossSalary > 60000 ? grossSalary * 0.10 : 0; // Simple TDS calculation
+    
+    const totalDeductions = professionalTax + providentFund + incomeTax;
     const netSalary = grossSalary - totalDeductions;
-    return { grossSalary, professionalTax, providentFund, totalDeductions, netSalary };
+    
+    return { grossSalary, basic, hra, specialAllowance, professionalTax, providentFund, incomeTax, totalDeductions, netSalary };
   };
 
   const formatCurrency = (amount: number) => {
@@ -83,7 +114,7 @@ export default function PayrollPage() {
     }).format(amount);
   };
 
-  const handleProcessPayment = (staffId: number) => {
+  const handleProcessPayment = (staffId: string) => {
     setStaff(prevStaff => prevStaff.map(s => s.id === staffId ? {...s, status: 'Paid'} : s));
     toast({
       title: "Payment Processed!",
@@ -125,8 +156,8 @@ export default function PayrollPage() {
         } : s));
         toast({ title: "Staff Updated", description: `${name}'s details have been updated.` });
     } else {
-        const newStaffMember = {
-            id: staff.length + 1,
+        const newStaffMember: StaffMember = {
+            id: `EMP${staff.length + 1}`,
             name,
             role,
             avatar: "https://placehold.co/100x100.png",
@@ -135,6 +166,9 @@ export default function PayrollPage() {
             presentDays: TOTAL_WORKING_DAYS,
             absentDays: 0,
             status: "Pending" as StaffStatus,
+            joiningDate: new Date().toISOString().split('T')[0],
+            pan: "AXXXX0000Z",
+            bankAccount: "********0000"
         };
         setStaff(prevStaff => [...prevStaff, newStaffMember]);
         toast({ title: "Staff Added", description: `${name} has been added to the payroll.` });
@@ -160,14 +194,14 @@ export default function PayrollPage() {
   }
 
   const handleExport = () => {
-    const headers = ["ID", "Name", "Role", "Monthly Salary (INR)", "Gross Salary (INR)", "PF (INR)", "PT (INR)", "Total Deductions (INR)", "Net Salary (INR)", "Status"];
+    const headers = ["ID", "Name", "Role", "Monthly Salary (INR)", "Gross Salary (INR)", "PF (INR)", "PT (INR)", "TDS (INR)", "Total Deductions (INR)", "Net Salary (INR)", "Status"];
     const csvContent = [
       headers.join(','),
       ...staff.map(s => {
-        const { grossSalary, providentFund, professionalTax, totalDeductions, netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
+        const { grossSalary, providentFund, professionalTax, incomeTax, totalDeductions, netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
         return [
             s.id, `"${s.name}"`, s.role, s.monthlySalary.toFixed(2),
-            grossSalary.toFixed(2), providentFund.toFixed(2), professionalTax.toFixed(2),
+            grossSalary.toFixed(2), providentFund.toFixed(2), professionalTax.toFixed(2), incomeTax.toFixed(2),
             totalDeductions.toFixed(2), netSalary.toFixed(2), s.status,
         ].join(',');
       })
@@ -184,6 +218,7 @@ export default function PayrollPage() {
   };
 
   const payslipDetails = selectedStaff ? calculateNetSalary(selectedStaff.monthlySalary, selectedStaff.presentDays) : null;
+  const currentMonthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
     <>
@@ -326,48 +361,84 @@ export default function PayrollPage() {
       
       {/* View Payslip Dialog */}
       <Dialog open={isPayslipOpen} onOpenChange={setIsPayslipOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Payslip for {selectedStaff?.name}</DialogTitle>
-            <DialogDescription>
-              Salary breakdown for the current period.
-            </DialogDescription>
+            <div className="flex items-center gap-4">
+                <div className="bg-primary p-2 rounded-lg text-primary-foreground">
+                    <GraduationCap className="h-6 w-6" />
+                </div>
+                <div>
+                    <DialogTitle className="text-xl">CampusConnect Academy</DialogTitle>
+                    <DialogDescription>
+                        Payslip for the month of {currentMonthYear}
+                    </DialogDescription>
+                </div>
+            </div>
           </DialogHeader>
           {selectedStaff && payslipDetails && (
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center"><span>Monthly Salary:</span> <span className="font-medium">{formatCurrency(selectedStaff.monthlySalary)}</span></div>
-                    <div className="flex justify-between items-center"><span>Working Days:</span> <span className="font-medium">{selectedStaff.presentDays} / {TOTAL_WORKING_DAYS}</span></div>
+            <div className="text-sm">
+                <div className="grid grid-cols-2 gap-x-8 gap-y-4 rounded-lg border p-4">
+                    <div><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
+                    <div><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
+                    <div><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
+                    <div><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
+                    <div><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
+                    <div><span className="text-muted-foreground">PAN No:</span> <span className="font-medium">{selectedStaff.pan}</span></div>
                 </div>
-                <Separator />
-                <div>
-                    <h4 className="font-semibold mb-2">Earnings</h4>
-                    <div className="flex justify-between items-center text-muted-foreground"><span>Gross Salary:</span> <span className="font-medium text-foreground">{formatCurrency(payslipDetails.grossSalary)}</span></div>
-                </div>
-                <Separator />
-                <div>
-                    <h4 className="font-semibold mb-2">Deductions (Tax Heads)</h4>
-                    <div className="flex justify-between items-center text-muted-foreground"><span>Provident Fund (PF):</span> <span>{formatCurrency(payslipDetails.providentFund)}</span></div>
-                    <div className="flex justify-between items-center text-muted-foreground"><span>Professional Tax (PT):</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
-                    <Separator className="my-2" />
-                    <div className="flex justify-between items-center text-muted-foreground">
-                        <strong>Total Deductions:</strong>
-                        <strong className="text-destructive">{formatCurrency(payslipDetails.totalDeductions)}</strong>
+
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="rounded-lg border">
+                        <div className="bg-muted px-4 py-2 font-semibold">Earnings</div>
+                        <div className="space-y-2 p-4">
+                            <div className="flex justify-between"><span>Basic Salary</span> <span>{formatCurrency(payslipDetails.basic)}</span></div>
+                            <div className="flex justify-between"><span>House Rent Allowance (HRA)</span> <span>{formatCurrency(payslipDetails.hra)}</span></div>
+                            <div className="flex justify-between"><span>Special Allowance</span> <span>{formatCurrency(payslipDetails.specialAllowance)}</span></div>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between px-4 py-2 font-semibold">
+                            <span>Gross Earnings</span>
+                            <span>{formatCurrency(payslipDetails.grossSalary)}</span>
+                        </div>
+                    </div>
+                    <div className="rounded-lg border">
+                        <div className="bg-muted px-4 py-2 font-semibold">Deductions</div>
+                        <div className="space-y-2 p-4">
+                            <div className="flex justify-between"><span>Provident Fund (PF)</span> <span>{formatCurrency(payslipDetails.providentFund)}</span></div>
+                            <div className="flex justify-between"><span>Professional Tax (PT)</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
+                            <div className="flex justify-between"><span>Income Tax (TDS)</span> <span>{formatCurrency(payslipDetails.incomeTax)}</span></div>
+                        </div>
+                        <Separator />
+                        <div className="flex justify-between px-4 py-2 font-semibold">
+                           <span>Total Deductions</span>
+                           <span>{formatCurrency(payslipDetails.totalDeductions)}</span>
+                        </div>
                     </div>
                 </div>
-                <Separator />
-                <div className="flex justify-between items-center text-lg">
-                    <strong className="text-lg">Net Salary Payable:</strong>
-                    <strong className="text-lg text-green-600">{formatCurrency(payslipDetails.netSalary)}</strong>
+
+                <div className="mt-4 rounded-lg border bg-muted/50 p-4">
+                    <div className="flex justify-between font-bold text-base">
+                        <span>Net Salary</span>
+                        <span>{formatCurrency(payslipDetails.netSalary)}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                        In words: {numberToWords(Math.round(payslipDetails.netSalary))} Rupees Only
+                    </div>
+                </div>
+
+                <div className="mt-6 text-center text-xs text-muted-foreground">
+                    This is a computer-generated payslip and does not require a signature.
                 </div>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsPayslipOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
   );
+
+    
+}
 
     
