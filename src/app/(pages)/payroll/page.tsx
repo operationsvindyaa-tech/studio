@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap } from "lucide-react";
+import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
+import * as XLSX from 'xlsx';
 
 type StaffStatus = "Paid" | "Pending";
 
@@ -86,6 +87,7 @@ export default function PayrollPage() {
   const [isPayslipOpen, setIsPayslipOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
     const perDaySalary = monthlySalary / TOTAL_WORKING_DAYS;
@@ -222,6 +224,65 @@ export default function PayrollPage() {
     document.body.removeChild(link);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        const importedStaff = json.map((row, index) => {
+            const name = row.Name || row.name || `Staff ${index + 1}`;
+            return {
+                id: row.ID || `EMP${String(staff.length + index + 1).padStart(3, '0')}`,
+                name: name,
+                role: row.Role || row.role || "N/A",
+                department: row.Department || row.department || "N/A",
+                monthlySalary: parseFloat(row["Monthly Salary"] || row.monthlySalary || 0),
+                presentDays: parseInt(row["Present Days"] || row.presentDays || TOTAL_WORKING_DAYS),
+                absentDays: parseInt(row["Absent Days"] || row.absentDays || 0),
+                status: (row.Status || row.status || "Pending") as StaffStatus,
+                joiningDate: new Date().toISOString().split('T')[0],
+                pan: row.PAN || row.pan || "AXXXX0000Z",
+                bankAccount: row["Bank Account"] || row.bankAccount || "********0000",
+                uan: row.UAN || row.uan || "100000000000",
+                avatar: "https://placehold.co/100x100.png",
+                initials: name.split(' ').map((n: string) => n[0]).join('').toUpperCase(),
+            };
+        });
+
+        setStaff(importedStaff);
+        toast({
+          title: "Import Successful",
+          description: `${importedStaff.length} staff members have been imported.`,
+        });
+      } catch (error) {
+        console.error("Error parsing file:", error);
+        toast({
+          title: "Import Failed",
+          description: "Could not parse the file. Please ensure it is a valid Excel or CSV file.",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsBinaryString(file);
+    // Reset file input value to allow re-uploading the same file
+    if(fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+
   const payslipDetails = selectedStaff ? calculateNetSalary(selectedStaff.monthlySalary, selectedStaff.presentDays) : null;
   const currentMonthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
@@ -236,6 +297,17 @@ export default function PayrollPage() {
               </CardDescription>
           </div>
           <div className="flex items-center gap-2">
+               <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".xlsx, .xls, .csv"
+                />
+              <Button variant="outline" onClick={handleImportClick}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Sheet
+              </Button>
               <Button variant="outline" onClick={handleOpenAddDialog}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add Staff
