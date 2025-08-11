@@ -18,11 +18,13 @@ import {
 import { useToast } from '@/hooks/use-toast';
 
 const staffData = [
-  { id: 1, name: "Dr. Evelyn Reed", role: "Principal", avatar: "https://placehold.co/100x100.png", initials: "ER", monthlySalary: 80000, presentDays: 22, absentDays: 0, status: "Pending" },
-  { id: 2, name: "Prof. Samuel Jones", role: "Science Head", avatar: "https://placehold.co/100x100.png", initials: "SJ", monthlySalary: 65000, presentDays: 20, absentDays: 2, status: "Pending" },
-  { id: 3, name: "Maria Garcia", role: "Arts Teacher", avatar: "https://placehold.co/100x100.png", initials: "MG", monthlySalary: 50000, presentDays: 21, absentDays: 1, status: "Paid" },
-  { id: 4, name: "Leo Chen", role: "Admin Officer", avatar: "https://placehold.co/100x100.png", initials: "LC", monthlySalary: 45000, presentDays: 22, absentDays: 0, status: "Pending" },
-  { id: 5, name: "Dr. Alan Grant", role: "History Professor", avatar: "https://placehold.co/100x100.png", initials: "AG", monthlySalary: 62000, presentDays: 19, absentDays: 3, status: "Paid" },
+  { id: 1, name: "Priya Sharma", role: "Bharatanatyam Guru", avatar: "https://placehold.co/100x100.png", initials: "PS", monthlySalary: 75000, presentDays: 22, absentDays: 0, status: "Paid" },
+  { id: 2, name: "Ravi Kumar", role: "Vocal Carnatic Ustad", avatar: "https://placehold.co/100x100.png", initials: "RK", monthlySalary: 72000, presentDays: 21, absentDays: 1, status: "Pending" },
+  { id: 3, name: "Anjali Mehta", role: "Keyboard & Piano Instructor", avatar: "https://placehold.co/100x100.png", initials: "AM", monthlySalary: 55000, presentDays: 20, absentDays: 2, status: "Paid" },
+  { id: 4, name: "Vikram Singh", role: "Guitar Teacher", avatar: "https://placehold.co/100x100.png", initials: "VS", monthlySalary: 52000, presentDays: 22, absentDays: 0, status: "Pending" },
+  { id: 5, name: "Sunita Reddy", role: "Yoga Acharya", avatar: "https://placehold.co/100x100.png", initials: "SR", monthlySalary: 60000, presentDays: 19, absentDays: 3, status: "Pending" },
+  { id: 6, name: "Arjun Desai", role: "Kalaripayattu Master", avatar: "https://placehold.co/100x100.png", initials: "AD", monthlySalary: 68000, presentDays: 21, absentDays: 1, status: "Paid" },
+  { id: 7, name: "Meera Iyer", role: "Admin & Operations Head", avatar: "https://placehold.co/100x100.png", initials: "MI", monthlySalary: 85000, presentDays: 22, absentDays: 0, status: "Paid" },
 ];
 
 const TOTAL_WORKING_DAYS = 22;
