@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, FileDown, CheckCircle, Wallet } from "lucide-react";
+import { MoreHorizontal, FileDown, CheckCircle, PlusCircle, UserPlus, Wallet } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 
 const staffData = [
@@ -32,6 +44,9 @@ const TOTAL_WORKING_DAYS = 22;
 export default function PayrollPage() {
   const { toast } = useToast();
   const [staff, setStaff] = useState(staffData);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffRole, setNewStaffRole] = useState('');
+  const [newStaffSalary, setNewStaffSalary] = useState('');
 
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
     // Basic salary calculation
@@ -62,6 +77,40 @@ export default function PayrollPage() {
       title: "Payment Processed!",
       description: `Salary for ${staff.find(s => s.id === staffId)?.name} has been marked as paid.`,
     });
+  };
+
+  const handleAddStaff = () => {
+    if (!newStaffName || !newStaffRole || !newStaffSalary) {
+      toast({
+        title: "Error",
+        description: "Please fill out all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newStaffMember = {
+      id: staff.length + 1,
+      name: newStaffName,
+      role: newStaffRole,
+      avatar: "https://placehold.co/100x100.png",
+      initials: newStaffName.split(' ').map(n => n[0]).join('').toUpperCase(),
+      monthlySalary: parseFloat(newStaffSalary),
+      presentDays: TOTAL_WORKING_DAYS, // Default to full attendance
+      absentDays: 0,
+      status: "Pending" as "Pending" | "Paid",
+    };
+
+    setStaff(prevStaff => [...prevStaff, newStaffMember]);
+    toast({
+      title: "Staff Added",
+      description: `${newStaffName} has been added to the payroll.`,
+    });
+
+    // Reset form fields
+    setNewStaffName('');
+    setNewStaffRole('');
+    setNewStaffSalary('');
   };
 
   const handleExport = () => {
@@ -105,6 +154,42 @@ export default function PayrollPage() {
             </CardDescription>
         </div>
         <div className="flex items-center gap-2">
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button variant="outline">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add Staff
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add New Staff Member</DialogTitle>
+                        <DialogDescription>
+                            Enter the details for the new staff member.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input id="name" value={newStaffName} onChange={(e) => setNewStaffName(e.target.value)} className="col-span-3" placeholder="e.g., John Doe"/>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="role" className="text-right">Role</Label>
+                            <Input id="role" value={newStaffRole} onChange={(e) => setNewStaffRole(e.target.value)} className="col-span-3" placeholder="e.g., Guitar Teacher"/>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="salary" className="text-right">Monthly Salary</Label>
+                            <Input id="salary" type="number" value={newStaffSalary} onChange={(e) => setNewStaffSalary(e.target.value)} className="col-span-3" placeholder="e.g., 50000"/>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                           <Button type="button" onClick={handleAddStaff}>Add Staff Member</Button>
+                        </DialogClose>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Button variant="outline" onClick={handleExport}>
                 <FileDown className="h-4 w-4 mr-2" />
                 Export
