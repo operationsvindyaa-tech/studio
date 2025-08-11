@@ -32,7 +32,26 @@ export default function PayrollPage() {
   const [staff, setStaff] = useState(staffData);
 
   const calculateNetSalary = (monthlySalary: number, presentDays: number) => {
-    return (monthlySalary / TOTAL_WORKING_DAYS) * presentDays;
+    // Basic salary calculation
+    const perDaySalary = monthlySalary / TOTAL_WORKING_DAYS;
+    const grossSalary = perDaySalary * presentDays;
+
+    // Simplified Tax Calculation (example)
+    const professionalTax = 200; // Fixed PT
+    const providentFund = grossSalary * 0.12; // 12% PF deduction
+    
+    const totalDeductions = professionalTax + providentFund;
+    const netSalary = grossSalary - totalDeductions;
+    
+    return { grossSalary, professionalTax, providentFund, totalDeductions, netSalary };
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 2,
+    }).format(amount);
   };
 
   const handleProcessPayment = (staffId: number) => {
@@ -44,19 +63,24 @@ export default function PayrollPage() {
   };
 
   const handleExport = () => {
-    const headers = ["ID", "Name", "Role", "Monthly Salary", "Present Days", "Absent Days", "Net Salary", "Status"];
+    const headers = ["ID", "Name", "Role", "Monthly Salary (INR)", "Gross Salary (INR)", "PF (INR)", "PT (INR)", "Total Deductions (INR)", "Net Salary (INR)", "Status"];
     const csvContent = [
       headers.join(','),
-      ...staff.map(s => [
-        s.id,
-        `"${s.name}"`,
-        s.role,
-        s.monthlySalary,
-        s.presentDays,
-        s.absentDays,
-        calculateNetSalary(s.monthlySalary, s.presentDays).toFixed(2),
-        s.status,
-      ].join(','))
+      ...staff.map(s => {
+        const { grossSalary, providentFund, professionalTax, totalDeductions, netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
+        return [
+            s.id,
+            `"${s.name}"`,
+            s.role,
+            s.monthlySalary.toFixed(2),
+            grossSalary.toFixed(2),
+            providentFund.toFixed(2),
+            professionalTax.toFixed(2),
+            totalDeductions.toFixed(2),
+            netSalary.toFixed(2),
+            s.status,
+        ].join(',');
+      })
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -95,16 +119,15 @@ export default function PayrollPage() {
             <TableHeader>
                 <TableRow>
                     <TableHead>Staff Member</TableHead>
-                    <TableHead className="hidden md:table-cell">Monthly Salary</TableHead>
-                    <TableHead>Attendance</TableHead>
-                    <TableHead>Net Salary</TableHead>
+                    <TableHead className="hidden md:table-cell text-right">Monthly Salary</TableHead>
+                    <TableHead className="text-right">Net Salary</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {staff.map((s) => {
-                    const netSalary = calculateNetSalary(s.monthlySalary, s.presentDays);
+                    const { netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
                     return (
                         <TableRow key={s.id}>
                             <TableCell>
@@ -119,17 +142,14 @@ export default function PayrollPage() {
                                     </div>
                                 </div>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                                ₹{s.monthlySalary.toLocaleString()}
+                            <TableCell className="hidden md:table-cell text-right">
+                                {formatCurrency(s.monthlySalary)}
                             </TableCell>
-                            <TableCell>
-                                <div className="text-sm">
-                                    <span className="text-green-600 font-medium">{s.presentDays}</span> / <span className="text-red-600">{s.absentDays}</span>
+                            <TableCell className="font-medium text-right">
+                                {formatCurrency(netSalary)}
+                                <div className="text-xs text-muted-foreground">
+                                    {s.presentDays}/{TOTAL_WORKING_DAYS} days
                                 </div>
-                                <div className="text-xs text-muted-foreground">Present / Absent</div>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                                ₹{netSalary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </TableCell>
                             <TableCell>
                                 <Badge variant={s.status === 'Paid' ? 'secondary' : 'default'} className={s.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
@@ -162,7 +182,7 @@ export default function PayrollPage() {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Showing <strong>{staff.length}</strong> staff members.
+          Showing <strong>{staff.length}</strong> staff members. All amounts are in INR.
         </div>
       </CardFooter>
     </Card>
