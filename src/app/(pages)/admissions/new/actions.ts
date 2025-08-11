@@ -48,7 +48,6 @@ export async function createAdmission(prevState: State, formData: z.infer<typeof
       name: parsedData.studentName,
       status: "Active", // New admissions are active by default
       dateOfJoining: parsedData.dateOfJoining,
-      dob: parsedData.dob,
       email: parsedData.email,
     } as any);
 

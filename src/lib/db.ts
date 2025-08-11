@@ -30,7 +30,7 @@ export const getStudents = async (): Promise<Student[]> => {
   return Promise.resolve(students);
 };
 
-export const addStudent = async (studentData: Omit<Student, 'id' | 'courses' | 'avatar' | 'initials' | 'joined'> & { desiredCourse: string, dob: Date, dateOfJoining: Date, email: string }) => {
+export const addStudent = async (studentData: { name: string, email: string, dateOfJoining: Date, status: "Active" | "Inactive" | "Suspended" }) => {
   const newId = `S${String(nextId++).padStart(3, '0')}`;
   const initials = studentData.name.split(' ').map(n => n[0]).join('').toUpperCase();
 
@@ -39,8 +39,8 @@ export const addStudent = async (studentData: Omit<Student, 'id' | 'courses' | '
     name: studentData.name,
     email: studentData.email,
     joined: studentData.dateOfJoining.toISOString().split('T')[0],
-    status: (studentData as any).status || 'Active', // Admissions form doesn't have status, default to Active
-    courses: 1, // Enrolled in one course initially
+    status: studentData.status,
+    courses: 1, // Default to 1 course
     avatar: `https://placehold.co/100x100.png`,
     initials: initials,
   };

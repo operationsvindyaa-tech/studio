@@ -6,33 +6,10 @@ import { addStudent } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 const studentFormSchema = z.object({
-  photo: z.string().optional(),
   studentName: z.string().min(2, "Name must be at least 2 characters."),
-  dateOfJoining: z.date({ required_error: "Date of joining is required." }),
-  dob: z.date({ required_error: "A date of birth is required." }),
-  age: z.string().min(1, "Age is required."),
-  gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
-  nationality: z.string().min(2, "Nationality is required."),
-  bloodGroup: z.string().optional(),
-  status: z.enum(["Active", "Inactive", "Suspended"], { required_error: "Please select a status." }),
-  
-  fatherName: z.string().min(2, "Father's name is required."),
-  fatherContact: z.string().min(10, "Father's contact number is required."),
-  motherName: z.string().min(2, "Mother's name is required."),
-  motherContact: z.string().min(10, "Mother's contact number is required."),
-  whatsappNumber: z.string().min(10, "WhatsApp number is required."),
   email: z.string().email("A valid email is required."),
-  address: z.string().min(10, "Address is required."),
-  
-  previousSchool: z.string().optional(),
-  desiredCourse: z.string({ required_error: "Please select a course." }),
-  activitiesInterested: z.string().optional(),
-  howDidYouKnow: z.string({ required_error: "This field is required."}),
-  
-  healthIssues: z.string().optional(),
-  emergencyContact: z.string().min(10, "Emergency contact is required."),
-  
-  signature: z.string().min(1, "Signature is required."),
+  dateOfJoining: z.date({ required_error: "Date of joining is required." }),
+  status: z.enum(["Active", "Inactive", "Suspended"], { required_error: "Please select a status." }),
 });
 
 
@@ -49,11 +26,8 @@ export async function createStudent(prevState: State, formData: z.infer<typeof s
       name: parsedData.studentName,
       status: parsedData.status,
       dateOfJoining: parsedData.dateOfJoining,
-      dob: parsedData.dob,
       email: parsedData.email,
-      // Pass other necessary fields from formData to addStudent if needed
-      // For now, addStudent will generate the rest.
-    } as any); // Using 'as any' for simplicity, should be properly typed.
+    } as any);
 
     revalidatePath("/students");
 
