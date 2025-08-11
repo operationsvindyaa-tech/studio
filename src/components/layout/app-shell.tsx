@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -56,6 +57,8 @@ import { Badge } from "../ui/badge";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/students", icon: Users, label: "Students" },
+  { href: "/teachers", icon: UserSquare, label: "Teachers" },
+  { href: "/staff", icon: Building2, label: "Staff" },
   { href: "/courses", icon: BookOpen, label: "Courses" },
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/communication", icon: MessageSquare, label: "Communication" },
@@ -66,8 +69,6 @@ const otherNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/billing", icon: Wallet, label: "Billing" },
-    { href: "/staff", icon: Building2, label: "Staff" },
-    { href: "/teachers", icon: UserSquare, label: "Teachers" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
     { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
     { href: "/certificates", icon: Award, label: "Certificates" },
@@ -174,7 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href))?.label || "CampusConnect"
+                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "CampusConnect"
                 }
                 </h1>
             </div>
