@@ -206,6 +206,35 @@ const syllabusData: SyllabusData = {
       ],
     },
   },
+  "Art & Craft": {
+    beginner: {
+        title: "Beginner Level - Exploring Creativity",
+        modules: [
+            "Introduction to Colors: Primary, Secondary, and Color Wheel.",
+            "Basic Drawing & Sketching: Lines, shapes, and simple objects.",
+            "Paper Crafts: Folding (Origami), cutting, and collage making.",
+            "Introduction to Painting: Watercolors and finger painting techniques.",
+        ],
+    },
+    intermediate: {
+        title: "Intermediate Level - Developing Skills",
+        modules: [
+            "Advanced Drawing: Shading, texture, and basic perspective.",
+            "Painting with Acrylics: Color mixing, blending, and brush techniques.",
+            "3D Crafts: Introduction to clay modeling and simple sculpture.",
+            "Mixed Media Art: Combining different materials like fabric, paper, and paint.",
+        ],
+    },
+    advanced: {
+        title: "Advanced Level - Mastering Techniques",
+        modules: [
+            "Advanced Painting: Canvas painting and exploring styles (e.g., abstract, realism).",
+            "Fabric Art: Tie-dye, block printing, and basic fabric painting.",
+            "Recycled Art: Creating art from waste materials.",
+            "Portfolio Development: Compiling a collection of personal artwork.",
+        ],
+    },
+  },
 };
 
 const courseNames = Object.keys(syllabusData);
