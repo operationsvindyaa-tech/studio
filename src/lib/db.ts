@@ -17,18 +17,19 @@ export type Student = {
   nationality?: string;
   fatherName?: string;
   motherName?: string;
+  whatsappNumber?: string;
   address?: string;
   desiredCourse?: string;
 };
 
 // Initial data to populate the store
 const initialStudents: Student[] = [
-    { id: "S001", name: "Amelia Rodriguez", email: "amelia.r@example.com", joined: new Date("2023-01-15").toISOString(), status: "Active", courses: 5, avatar: "https://placehold.co/100x100/E6C37B/4A4A4A.png", initials: "AR", desiredCourse: 'bharatanatyam' },
-    { id: "S002", name: "Benjamin Carter", email: "ben.c@example.com", joined: new Date("2023-02-20").toISOString(), status: "Active", courses: 3, avatar: "https://placehold.co/100x100/7BB4E6/FFFFFF.png", initials: "BC", desiredCourse: 'vocal-carnatic' },
-    { id: "S003", name: "Chloe Nguyen", email: "chloe.n@example.com", joined: new Date("2023-03-10").toISOString(), status: "Inactive", courses: 1, avatar: "https://placehold.co/100x100/F0F4F7/4A4A4A.png", initials: "CN", desiredCourse: 'guitar' },
-    { id: "S004", name: "David Kim", email: "david.k@example.com", joined: new Date("2023-04-05").toISOString(), status: "Active", courses: 8, avatar: "https://placehold.co/100x100/999999/FFFFFF.png", initials: "DK", desiredCourse: 'keyboard-piano' },
-    { id: "S005", name: "Emily Wang", email: "emily.w@example.com", joined: new Date("2023-05-21").toISOString(), status: "Suspended", courses: 2, avatar: "https://placehold.co/100x100/E6C37B/4A4A4A.png", initials: "EW", desiredCourse: 'yoga' },
-    { id: "S006", name: "Franklin Garcia", email: "franklin.g@example.com", joined: new Date("2023-06-18").toISOString(), status: "Active", courses: 6, avatar: "https://placehold.co/100x100/7BB4E6/FFFFFF.png", initials: "FG", desiredCourse: 'western-dance' },
+    { id: "S001", name: "Amelia Rodriguez", email: "amelia.r@example.com", joined: new Date("2023-01-15").toISOString(), status: "Active", courses: 5, avatar: "https://placehold.co/100x100/E6C37B/4A4A4A.png", initials: "AR", desiredCourse: 'bharatanatyam', whatsappNumber: '9876543210' },
+    { id: "S002", name: "Benjamin Carter", email: "ben.c@example.com", joined: new Date("2023-02-20").toISOString(), status: "Active", courses: 3, avatar: "https://placehold.co/100x100/7BB4E6/FFFFFF.png", initials: "BC", desiredCourse: 'vocal-carnatic', whatsappNumber: '9876543211' },
+    { id: "S003", name: "Chloe Nguyen", email: "chloe.n@example.com", joined: new Date("2023-03-10").toISOString(), status: "Inactive", courses: 1, avatar: "https://placehold.co/100x100/F0F4F7/4A4A4A.png", initials: "CN", desiredCourse: 'guitar', whatsappNumber: '9876543212' },
+    { id: "S004", name: "David Kim", email: "david.k@example.com", joined: new Date("2023-04-05").toISOString(), status: "Active", courses: 8, avatar: "https://placehold.co/100x100/999999/FFFFFF.png", initials: "DK", desiredCourse: 'keyboard-piano', whatsappNumber: '9876543213' },
+    { id: "S005", name: "Emily Wang", email: "emily.w@example.com", joined: new Date("2023-05-21").toISOString(), status: "Suspended", courses: 2, avatar: "https://placehold.co/100x100/E6C37B/4A4A4A.png", initials: "EW", desiredCourse: 'yoga', whatsappNumber: '9876543214' },
+    { id: "S006", name: "Franklin Garcia", email: "franklin.g@example.com", joined: new Date("2023-06-18").toISOString(), status: "Active", courses: 6, avatar: "https://placehold.co/100x100/7BB4E6/FFFFFF.png", initials: "FG", desiredCourse: 'western-dance', whatsappNumber: '9876543215' },
 ];
 
 let students: Student[] = [...initialStudents];
@@ -57,6 +58,7 @@ export const addStudent = async (studentData: any) => {
     nationality: studentData.nationality,
     fatherName: studentData.fatherName,
     motherName: studentData.motherName,
+    whatsappNumber: studentData.whatsappNumber,
     address: studentData.address,
     desiredCourse: studentData.desiredCourse,
   };

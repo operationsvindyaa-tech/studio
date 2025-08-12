@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle } from "lucide-react";
+import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import {
@@ -39,6 +39,7 @@ type StudentBillingInfo = {
   id: string;
   studentId: string;
   name: string;
+  whatsappNumber?: string;
   activities: Activity[];
   admissionFee?: number;
   discount?: number;
@@ -133,6 +134,7 @@ export default function BillingPage() {
                     id: `B${student.id.padStart(4, '0')}`,
                     studentId: student.id,
                     name: student.name,
+                    whatsappNumber: student.whatsappNumber,
                     activities,
                     admissionFee: index < 2 ? 1000 : undefined,
                     discount: index === 3 ? 200 : undefined,
@@ -253,6 +255,7 @@ export default function BillingPage() {
           id: `B${String(billingData.length + 1).padStart(4, '0')}`,
           studentId,
           name: student.name,
+          whatsappNumber: student.whatsappNumber,
           activities,
           status: "Due",
           dueDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Due in 15 days
@@ -450,6 +453,9 @@ export default function BillingPage() {
                     <p className="text-muted-foreground font-semibold">Bill To:</p>
                     <p>{selectedInvoice.name}</p>
                     <p>Student ID: {selectedInvoice.studentId}</p>
+                    {selectedInvoice.whatsappNumber && (
+                        <p className="flex items-center gap-1"><Phone className="h-3 w-3" /> {selectedInvoice.whatsappNumber}</p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p><span className="text-muted-foreground font-semibold">Invoice Date:</span> {new Date().toLocaleDateString()}</p>
@@ -565,19 +571,6 @@ export default function BillingPage() {
                     ))}
                     <Button variant="outline" size="sm" onClick={handleAddActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
                 </div>
-
-                <Separator />
-
-                <div className="grid grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                        <Label htmlFor="admissionFee">Admission Fee</Label>
-                        <Input id="admissionFee" type="number" placeholder="1000" value={editingInvoice.admissionFee || ''} onChange={(e) => setEditingInvoice({...editingInvoice, admissionFee: Number(e.target.value) || undefined })} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="discount">Discount</Label>
-                        <Input id="discount" type="number" placeholder="200" value={editingInvoice.discount || ''} onChange={(e) => setEditingInvoice({...editingInvoice, discount: Number(e.target.value) || undefined })} />
-                    </div>
-                </div>
             </div>
           )}
           <DialogFooter>
@@ -620,7 +613,7 @@ export default function BillingPage() {
                         <SelectContent>
                             {Object.entries(courseFees).map(([key, fee]) => (
                                 <SelectItem key={key} value={key}>
-                                    {key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} (&#8377;{fee})
+                                    {key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} ({fee})
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -683,7 +676,5 @@ export default function BillingPage() {
     </>
   );
 }
-
-    
 
     
