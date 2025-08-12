@@ -1,4 +1,3 @@
-
 // This is a simple in-memory "database" for demonstration purposes.
 // In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
 
@@ -106,5 +105,3 @@ export const resetTeachers = () => {
     teachers = [...initialTeachers];
     nextId = teachers.length + 1;
 }
-
-    

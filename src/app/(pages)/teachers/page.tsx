@@ -31,7 +31,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -49,7 +48,7 @@ import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher, ty
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
-import { FormDescription, FormMessage } from "@/components/ui/form";
+import { FormDescription } from "@/components/ui/form";
 
 
 export default function TeachersPage() {
@@ -223,7 +222,7 @@ export default function TeachersPage() {
                     <DialogTitle>{editingTeacher ? 'Edit Teacher' : 'Add New Teacher'}</DialogTitle>
                     <DialogDescription>
                         {editingTeacher ? 'Update the details for this teacher.' : 'Fill in the details to add a new teacher to the system.'}
-                    </Description>
+                    </DialogDescription>
                     </DialogHeader>
                     <form id="teacher-form" onSubmit={handleFormSubmit} className="space-y-6">
                         <div className="flex flex-col items-center text-center">
