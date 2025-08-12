@@ -120,11 +120,11 @@ export default function BillingPage() {
             setAllStudents(students);
             const billingRecords = students.map((student, index) => {
                 const activities: Activity[] = [];
-                if (student.desiredCourse) {
+                if (student.desiredCourse && courseFees[student.desiredCourse]) {
                     activities.push({
                         name: student.desiredCourse.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
-                        description: 'Course Fee for August'
+                        description: `Course Fee for August`
                     });
                 }
                 
@@ -738,5 +738,7 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
