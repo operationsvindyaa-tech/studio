@@ -68,11 +68,11 @@ const navItems = [
 const hrNavItems = [
     { href: "/teachers", icon: UserSquare, label: "Teachers" },
     { href: "/staff", icon: Building2, label: "Staff" },
-    { href: "/payroll", icon: Wallet, label: "Payroll" },
 ];
 
 const financeNavItems = [
     { href: "/billing", icon: Banknote, label: "Billing" },
+    { href: "/payroll", icon: Wallet, label: "Payroll" },
 ]
 
 const otherNavItems = [
