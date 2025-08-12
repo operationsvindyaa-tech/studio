@@ -69,11 +69,11 @@ const operationsNavItems = [
     { href: "/schedule", icon: Calendar, label: "Schedule" },
     { href: "/timetable", icon: CalendarClock, label: "Time Table" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
+    { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
 ]
 
 const academicsNavItems = [
     { href: "/courses", icon: BookOpen, label: "Courses" },
-    { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
 ];
