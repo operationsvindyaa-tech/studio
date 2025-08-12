@@ -25,16 +25,28 @@ type SyllabusData = {
 const syllabusData: SyllabusData = {
   "Bharatanatyam": {
     beginner: {
-      title: "Beginner Level - Adavus",
-      modules: ["Thattadavu", "Nattadavu", "Kudithu Mettadavu", "Sarikkal Adavu", "Mei Adavu"],
+      title: "Beginner Level (Levels 1-3)",
+      modules: [
+        "Level 1: Introduction to Bharatanatyam, Namaskaram, Basic Postures (Araimandi), Thattadavu series.",
+        "Level 2: Nattadavu series, Introduction to Asamyuta Hastas (Single Hand Gestures), Basic theory.",
+        "Level 3: Kudithu Mettadavu, Sarikkal Adavu, Introduction to Samyuta Hastas (Double Hand Gestures), Pushpanjali.",
+      ],
     },
     intermediate: {
-      title: "Intermediate Level - Alarippu & Jathiswaram",
-      modules: ["Alarippu in Tisra Eka talam", "Jathiswaram in Ragamalika", "Introduction to Abhinaya", "Small Keertanams"],
+      title: "Intermediate Level (Levels 4-6)",
+      modules: [
+        "Level 4: Mei Adavu, Alarippu (Tisra Eka Talam), Introduction to Pada Bhedas (Feet movements).",
+        "Level 5: Jathiswaram (Ragamalika, Adi Talam), Shiro Bhedas (Head movements), Drishti Bhedas (Eye movements).",
+        "Level 6: Shabdam (exploring storytelling), Introduction to Abhinaya (facial expressions), small Keertanams.",
+      ],
     },
     advanced: {
-      title: "Advanced Level - Varnam & Padam",
-      modules: ["Complex Varnam compositions", "Padams and Javalis", "Thillana", "Stage performance techniques"],
+      title: "Advanced Level (Levels 7-9)",
+      modules: [
+        "Level 7: Introduction to Varnam (the centerpiece of the repertoire), complex rhythmic patterns.",
+        "Level 8: Padams and Javalis (focus on expressive and emotive dance), Devaranama.",
+        "Level 9: Thillana (pure, abstract dance), Ashtapadi, preparation for Arangetram (debut performance).",
+      ],
     },
   },
   "Vocal Carnatic": {
