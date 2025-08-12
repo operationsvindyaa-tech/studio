@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,8 @@ import { useReactToPrint } from "react-to-print";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { getStudents } from "@/lib/db";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Activity = {
   name: string;
@@ -42,13 +44,19 @@ type StudentBillingInfo = {
   months: string[];
 };
 
-const initialBillingData: StudentBillingInfo[] = [
-  { id: "B001", name: "Amelia Rodriguez", activities: [{ name: "Bharatanatyam", fee: 2500 }], admissionFee: 1000, discount: 200, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-03", months: ["August"] },
-  { id: "B002", name: "Benjamin Carter", activities: [{ name: "Vocal Carnatic", fee: 3000 }, { name: "Yoga", fee: 1800 }], status: "Due", dueDate: "2024-08-05", months: ["August"] },
-  { id: "B003", name: "Chloe Nguyen", activities: [{ name: "Keyboard/Piano", fee: 2800 }], status: "Overdue", dueDate: "2024-07-05", months: ["July"] },
-  { id: "B004", name: "David Kim", activities: [{ name: "Guitar", fee: 2200 }], discount: 100, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-01", months: ["August"] },
-  { id: "B005", name: "Emily Wang", activities: [{ name: "Yoga", fee: 1800 }, { name: "Art & Craft", fee: 1500 }], admissionFee: 1000, status: "Due", dueDate: "2024-08-10", months: ["August", "September"] },
-];
+const courseFees: { [key: string]: number } = {
+  "bharatanatyam": 2500,
+  "vocal-carnatic": 3000,
+  "keyboard-piano": 2800,
+  "guitar": 2200,
+  "yoga": 1800,
+  "western-dance": 2000,
+  "art-craft": 1500,
+  "karate": 1700,
+  "kalaripayattu": 2300,
+  "zumba": 1600,
+  "gymnastics": 2100,
+};
 
 const formatAmount = (amount: number) => {
     return amount.toFixed(2);
@@ -62,7 +70,8 @@ const calculateTotal = (student: StudentBillingInfo) => {
 }
 
 export default function BillingPage() {
-  const [billingData, setBillingData] = useState<StudentBillingInfo[]>(initialBillingData);
+  const [billingData, setBillingData] = useState<StudentBillingInfo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<StudentBillingInfo | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -71,6 +80,57 @@ export default function BillingPage() {
   const [invoiceToDelete, setInvoiceToDelete] = useState<StudentBillingInfo | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+        setLoading(true);
+        try {
+            const students = await getStudents();
+            const billingRecords = students.map((student, index) => {
+                const activities: Activity[] = [];
+                if (student.desiredCourse) {
+                    activities.push({
+                        name: student.desiredCourse.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                        fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
+                    });
+                }
+                
+                // Mocking some variation for demonstration
+                const statuses: Array<"Paid" | "Due" | "Overdue"> = ["Paid", "Due", "Overdue"];
+                const status = statuses[index % 3];
+                const dueDate = new Date();
+                if (status === 'Overdue') {
+                    dueDate.setMonth(dueDate.getMonth() - 1);
+                } else {
+                    dueDate.setDate(dueDate.getDate() + 5);
+                }
+
+                return {
+                    id: student.id.replace('S', 'B'),
+                    name: student.name,
+                    activities,
+                    admissionFee: index < 2 ? 1000 : undefined,
+                    discount: index === 3 ? 200 : undefined,
+                    status: status,
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    months: ["August"],
+                    paymentDate: status === 'Paid' ? new Date().toISOString().split('T')[0] : undefined,
+                };
+            });
+            setBillingData(billingRecords);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to load student data for billing.",
+                variant: "destructive"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchStudentData();
+  }, [toast]);
 
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
@@ -169,54 +229,66 @@ export default function BillingPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {billingData.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell>
-                      <div className="font-medium">{invoice.name}</div>
-                      <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
-                    </TableCell>
-                    <TableCell>{invoice.activities.map(a => a.name).join(', ')}</TableCell>
-                    <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          invoice.status === "Paid" ? "secondary" : invoice.status === "Due" ? "outline" : "destructive"
-                        }
-                        className={
-                           invoice.status === "Paid" ? "bg-green-100 text-green-800" : invoice.status === "Due" ? "bg-orange-100 text-orange-800" : ""
-                        }
-                      >
-                        {invoice.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewInvoice(invoice)}>
-                            <FileText className="mr-2 h-4 w-4" /> View Invoice
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit Invoice
-                          </DropdownMenuItem>
-                          <DropdownMenuItem disabled={invoice.status === "Paid"}>
-                            Mark as Paid
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteInvoice(invoice)} className="text-destructive">
-                             <Trash2 className="mr-2 h-4 w-4" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))
+                ) : (
+                    billingData.map((invoice) => (
+                      <TableRow key={invoice.id}>
+                        <TableCell>
+                          <div className="font-medium">{invoice.name}</div>
+                          <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
+                        </TableCell>
+                        <TableCell>{invoice.activities.map(a => a.name).join(', ')}</TableCell>
+                        <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              invoice.status === "Paid" ? "secondary" : invoice.status === "Due" ? "outline" : "destructive"
+                            }
+                            className={
+                              invoice.status === "Paid" ? "bg-green-100 text-green-800" : invoice.status === "Due" ? "bg-orange-100 text-orange-800" : ""
+                            }
+                          >
+                            {invoice.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewInvoice(invoice)}>
+                                <FileText className="mr-2 h-4 w-4" /> View Invoice
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit Invoice
+                              </DropdownMenuItem>
+                              <DropdownMenuItem disabled={invoice.status === "Paid"}>
+                                Mark as Paid
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteInvoice(invoice)} className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                )}
+                </TableBody>
             </Table>
           </div>
         </CardContent>
@@ -238,7 +310,7 @@ export default function BillingPage() {
                             <GraduationCap className="h-8 w-8 text-primary" />
                             <h1 className="text-2xl font-bold font-headline">VINDYAA - The Altitude of Art</h1>
                         </div>
-                        <p className="text-xs text-muted-foreground text-left">#19, 1st Cross, 1st Main, Sri Manjunatha Layout, <br/> Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049</p>
+                        <p className="text-xs text-muted-foreground text-left">#19, 1st Cross, 1st Main, Sri Manjunatha Layout, <br/> Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049<br/>Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com</p>
                     </div>
                     <div className="text-right">
                         <DialogTitle className="text-2xl font-bold">INVOICE</DialogTitle>
