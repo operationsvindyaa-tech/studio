@@ -2,7 +2,7 @@
 "use client"
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Wallet, IndianRupee, UserCheck, ArrowDown, ArrowUp, Circle } from "lucide-react"
+import { Users, Wallet, UserCheck, ArrowDown, ArrowUp, Circle } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { getStudents, Student } from "@/lib/db"
@@ -32,8 +32,6 @@ const recentTransactions = [
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 0,
     }).format(amount);
 };
@@ -91,7 +89,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fees Pending</CardTitle>
-            <IndianRupee className="h-4 w-4 text-muted-foreground" />
+            <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(feesPending)}</div>

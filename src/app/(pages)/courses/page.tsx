@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Users, Clock, PlusCircle, IndianRupee, CalendarDays } from "lucide-react"
+import { Users, Clock, PlusCircle, Wallet, CalendarDays } from "lucide-react"
 
 const courses = [
   { id: 1, title: "Bharatanatyam", instructor: "Smt. Vani Ramesh", students: 45, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "bharatanatyam dance", fees: 2500, paymentOptions: "Monthly" },
@@ -51,7 +51,7 @@ export default function CoursesPage() {
                     <span>{course.duration}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <IndianRupee className="h-4 w-4" />
+                    <Wallet className="h-4 w-4" />
                     <span>{course.fees}</span>
                 </div>
                  <div className="flex items-center gap-2">
