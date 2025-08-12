@@ -119,6 +119,35 @@ const syllabusData: SyllabusData = {
       modules: ["Brown Belt (3rd-1st Kyu): Heian Godan, Tekki Shodan, Bassai Dai Katas, Introduction to Kumite (Sparring)", "Black Belt (1st Dan+): Advanced Katas (Kanku Dai, Enpi), Bunkai (Kata Application), Advanced Sparring Techniques"],
     },
   },
+   "Kalaripayattu": {
+    beginner: {
+      title: "Beginner Level - Meithari (Body Conditioning)",
+      modules: [
+        "Kalugal (Leg Exercises): Basic kicks and leg swings.",
+        "Kaikuththippayattu (Hand Exercises): Punches and blocks.",
+        "Meippayattu (Body Exercises): Full-body sequences to improve flexibility and stamina.",
+        "Chuvadukal (Basic Stances and Steps).",
+      ],
+    },
+    intermediate: {
+      title: "Intermediate Level - Kolthari (Wooden Weapons)",
+      modules: [
+        "Kettukari (Long Staff): Basic staff rotations and strikes.",
+        "Cheruvadi (Short Staff): Close-range combat techniques.",
+        "Otta (Curved Staff): Advanced techniques with the S-shaped weapon.",
+        "Introduction to unarmed combat forms.",
+      ],
+    },
+    advanced: {
+      title: "Advanced Level - Ankathari & Verumkai (Metal Weapons & Bare-handed Combat)",
+      modules: [
+        "Valum Parichayum (Sword and Shield): The art of sword fighting.",
+        "Urumi (Flexible Sword): Techniques for wielding the dangerous flexible sword.",
+        "Verumkai Prayogam (Bare-handed Combat): Locks, throws, and pressure point attacks.",
+        "Marma Chikitsa (Knowledge of Vital Points).",
+      ],
+    },
+  },
 };
 
 const courseNames = Object.keys(syllabusData);
