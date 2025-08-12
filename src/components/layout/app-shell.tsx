@@ -60,17 +60,21 @@ import { Badge } from "../ui/badge";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/students", icon: Users, label: "Students" },
-  { href: "/communication", icon: MessageSquare, label: "Communication" },
   { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
 ];
 
+const operationsNavItems = [
+    { href: "/admissions", icon: BookUser, label: "Admissions" },
+    { href: "/schedule", icon: Calendar, label: "Schedule" },
+    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
+    { href: "/communication", icon: MessageSquare, label: "Communication" },
+]
+
 const academicsNavItems = [
     { href: "/courses", icon: BookOpen, label: "Courses" },
-    { href: "/schedule", icon: Calendar, label: "Schedule" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
-    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
 ];
 
 const hrNavItems = [
@@ -89,7 +93,6 @@ const mediaNavItems = [
 ];
 
 const otherNavItems = [
-    { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ];
@@ -138,6 +141,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>Operations</SidebarGroupLabel>
+                <SidebarMenu>
+                    {operationsNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>Academics</SidebarGroupLabel>
@@ -284,7 +308,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
