@@ -9,7 +9,6 @@ import { getStudents, Student } from "@/lib/db"
 import { getStaff, Staff } from "@/lib/staff-db"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type StudentStatusData = {
   name: string;
@@ -209,55 +208,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-            <CardTitle>Upcoming Salary Payouts</CardTitle>
-            <CardDescription>Staff and teacher salaries scheduled for the current pay period.</CardDescription>
-        </CardHeader>
-        <CardContent>
-             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Staff Member</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Salary</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                 {loading ? (
-                    Array.from({length: 4}).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell>
-                                 <div className="flex items-center gap-3">
-                                    <Skeleton className="h-9 w-9 rounded-full" />
-                                    <Skeleton className="h-4 w-32" />
-                                </div>
-                            </TableCell>
-                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                        </TableRow>
-                    ))
-                 ) : (
-                    staff.slice(0, 4).map((s) => (
-                        <TableRow key={s.id}>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <Avatar className="h-9 w-9">
-                                        <AvatarImage src={s.personalInfo.photo} alt={s.fullName} data-ai-hint="person" />
-                                        <AvatarFallback>{s.initials}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-medium">{s.fullName}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell>{s.jobDetails.role}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(s.payroll.salary)}</TableCell>
-                        </TableRow>
-                    ))
-                 )}
-              </TableBody>
-            </Table>
-        </CardContent>
-      </Card>
     </div>
   )
 }

@@ -87,6 +87,7 @@ const numberToWords = (num: number): string => {
 export default function PayrollPage() {
   const { toast } = useToast();
   const [staff, setStaff] = useState<PayrollStaffMember[]>([]);
+  const [dbStaff, setDbStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isPayslipOpen, setIsPayslipOpen] = useState(false);
@@ -101,12 +102,22 @@ export default function PayrollPage() {
     content: () => payslipRef.current,
   });
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
   useEffect(() => {
     async function fetchStaff() {
         setLoading(true);
         try {
-            const dbStaff = await fetchStaffFromDB();
-            const payrollData = dbStaff.map(s => ({
+            const fetchedDbStaff = await fetchStaffFromDB();
+            setDbStaff(fetchedDbStaff);
+            const payrollData = fetchedDbStaff.map(s => ({
                 id: s.id,
                 name: s.fullName,
                 role: s.jobDetails.role,
@@ -161,13 +172,6 @@ export default function PayrollPage() {
     const netSalary = grossSalary - totalDeductions;
     
     return { grossSalary, basic, hra, conveyanceAllowance, medicalAllowance, incentives, specialAllowance, professionalTax, providentFund, incomeTax, esi, loanRecovery, otherDeductions, totalDeductions, netSalary };
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(amount);
   };
 
   const handleProcessPayment = (staffId: string) => {
@@ -357,7 +361,7 @@ export default function PayrollPage() {
   const currentMonthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
-    <>
+    <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -491,6 +495,56 @@ export default function PayrollPage() {
             Showing <strong>{staff.length}</strong> staff members. All amounts are in INR.
           </div>
         </CardFooter>
+      </Card>
+      
+      <Card className="mt-6">
+        <CardHeader>
+            <CardTitle>Upcoming Salary Payouts</CardTitle>
+            <CardDescription>Staff and teacher salaries scheduled for the current pay period.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Staff Member</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right">Salary</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                 {loading ? (
+                    Array.from({length: 4}).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell>
+                                 <div className="flex items-center gap-3">
+                                    <Skeleton className="h-9 w-9 rounded-full" />
+                                    <Skeleton className="h-4 w-32" />
+                                </div>
+                            </TableCell>
+                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))
+                 ) : (
+                    dbStaff.slice(0, 4).map((s) => (
+                        <TableRow key={s.id}>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-9 w-9">
+                                        <AvatarImage src={s.personalInfo.photo} alt={s.fullName} data-ai-hint="person" />
+                                        <AvatarFallback>{s.initials}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium">{s.fullName}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>{s.jobDetails.role}</TableCell>
+                            <TableCell className="text-right">{formatCurrency(s.payroll.salary)}</TableCell>
+                        </TableRow>
+                    ))
+                 )}
+              </TableBody>
+            </Table>
+        </CardContent>
       </Card>
 
       {/* Add/Edit Staff Dialog */}
@@ -641,6 +695,6 @@ export default function PayrollPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
-    </>
+    </div>
   );
 }
