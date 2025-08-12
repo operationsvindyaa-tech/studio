@@ -65,6 +65,20 @@ const syllabusData: SyllabusData = {
       modules: ["Advanced Chord Voicings", "Modes and Arpeggios", "Soloing and Improvisation Techniques", "Composition Basics"],
     },
   },
+  "Keyboard": {
+    beginner: {
+      title: "Beginner Level - Foundations",
+      modules: ["Introduction to the Keyboard", "Proper Finger Placement (C Position)", "Reading Treble and Bass Clefs", "Simple Melodies with Right Hand", "Basic Major Chords"],
+    },
+    intermediate: {
+      title: "Intermediate Level - Coordination & Theory",
+      modules: ["Playing with Both Hands", "Major and Minor Scales", "Chord Inversions", "Introduction to Sight-Reading", "Playing Simple Pop Songs"],
+    },
+    advanced: {
+      title: "Advanced Level - Artistry & Performance",
+      modules: ["Advanced Music Theory", "Complex Rhythms and Syncopation", "Improvisation and Soloing", "Playing Different Genres (Jazz, Classical)", "Performance Techniques"],
+    },
+  },
   "Yoga": {
     beginner: {
       title: "Beginner Level - Foundations",
