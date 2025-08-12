@@ -139,9 +139,9 @@ export default function BillingPage() {
             title: "Invoice Deleted",
             description: `Invoice for ${invoiceToDelete.name} has been successfully deleted.`
         });
-        setIsDeleteDialogOpen(false);
-        setInvoiceToDelete(null);
     }
+    setIsDeleteDialogOpen(false);
+    setInvoiceToDelete(null);
   };
 
 
