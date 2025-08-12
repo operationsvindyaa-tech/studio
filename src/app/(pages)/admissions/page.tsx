@@ -4,11 +4,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart, BookUser, PlusCircle } from "lucide-react";
+import { BarChart as BarChartIcon, BookUser, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { getStudents, type Student } from "@/lib/db";
 import { groupAdmissionsByTimeframe, Timeframe } from "@/lib/admissions-utils";
-import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -90,7 +90,7 @@ export default function AdmissionsPage() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Weekly Average</CardTitle>
-                    <BarChart className="h-4 w-4 text-muted-foreground" />
+                    <BarChartIcon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                      {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{(totalAdmissions / 52).toFixed(1)}</div>}
