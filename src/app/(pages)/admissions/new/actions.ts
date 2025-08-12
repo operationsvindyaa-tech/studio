@@ -46,10 +46,11 @@ export async function createAdmission(prevState: State, formData: z.infer<typeof
 
     await addStudent({
       name: parsedData.studentName,
-      status: "Active", // New admissions are active by default
-      dateOfJoining: parsedData.dateOfJoining,
       email: parsedData.email,
-    } as any);
+      dateOfJoining: parsedData.dateOfJoining,
+      status: "Active", // New admissions are active by default
+      photo: parsedData.photo,
+    });
 
     // This tells Next.js to re-fetch the data for the /students page on the next visit.
     revalidatePath("/students");
