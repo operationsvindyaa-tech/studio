@@ -1,3 +1,4 @@
+
 // This is a simple in-memory "database" for demonstration purposes.
 // In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
 
@@ -10,6 +11,14 @@ type Student = {
   courses: number; // For simplicity, we'll just track the count.
   avatar: string;
   initials: string;
+  // Adding more fields from admission form
+  dob?: string;
+  gender?: string;
+  nationality?: string;
+  fatherName?: string;
+  motherName?: string;
+  address?: string;
+  desiredCourse?: string;
 };
 
 // Initial data to populate the store
@@ -30,9 +39,9 @@ export const getStudents = async (): Promise<Student[]> => {
   return Promise.resolve(students);
 };
 
-export const addStudent = async (studentData: { name: string, email: string, dateOfJoining: Date, status: "Active" | "Inactive" | "Suspended", photo?: string }) => {
+export const addStudent = async (studentData: any) => {
   const newId = `S${String(nextId++).padStart(3, '0')}`;
-  const initials = studentData.name.split(' ').map(n => n[0]).join('').toUpperCase();
+  const initials = studentData.name.split(' ').map((n:string) => n[0]).join('').toUpperCase();
 
   const newStudent: Student = {
     id: newId,
@@ -43,6 +52,13 @@ export const addStudent = async (studentData: { name: string, email: string, dat
     courses: 1, // Default to 1 course
     avatar: studentData.photo || `https://placehold.co/100x100.png`,
     initials: initials,
+    dob: studentData.dob ? new Date(studentData.dob).toISOString().split('T')[0] : undefined,
+    gender: studentData.gender,
+    nationality: studentData.nationality,
+    fatherName: studentData.fatherName,
+    motherName: studentData.motherName,
+    address: studentData.address,
+    desiredCourse: studentData.desiredCourse,
   };
   students.push(newStudent);
   return Promise.resolve(newStudent);
