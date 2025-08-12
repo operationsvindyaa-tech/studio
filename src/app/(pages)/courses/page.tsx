@@ -1,17 +1,26 @@
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Users, Clock, BarChart, PlusCircle } from "lucide-react"
+import { Users, Clock, PlusCircle } from "lucide-react"
 
 const courses = [
-  { id: 1, title: "Introduction to Web Development", instructor: "Dr. Evelyn Reed", students: 128, duration: "12 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "technology code" },
-  { id: 2, title: "Advanced Data Science with Python", instructor: "Prof. Samuel Jones", students: 76, duration: "16 weeks", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "data chart" },
-  { id: 3, title: "Digital Marketing Fundamentals", instructor: "Maria Garcia", students: 210, duration: "8 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "marketing social" },
-  { id: 4, title: "Graphic Design Masterclass", instructor: "Leo Chen", students: 95, duration: "10 weeks", level: "Intermediate", image: "https://placehold.co/600x400.png", dataAiHint: "design art" },
-  { id: 5, title: "Project Management Professionals (PMP)", instructor: "Dr. Alan Grant", students: 150, duration: "6 weeks", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "business team" },
-  { id: 6, title: "The Science of Well-being", instructor: "Dr. Ellie Sattler", students: 300, duration: "4 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "nature meditation" },
+  { id: 1, title: "Bharatanatyam", instructor: "Smt. Vani Ramesh", students: 45, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "indian dance" },
+  { id: 2, title: "Vocal Carnatic", instructor: "Vid. Shankar Mahadevan", students: 60, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "indian music" },
+  { id: 3, title: "Guitar", instructor: "Mr. Alex Johnson", students: 75, duration: "12 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "guitar acoustic" },
+  { id: 4, title: "Keyboard", instructor: "Mr. Richard Clayderman", students: 55, duration: "16 weeks", level: "Intermediate", image: "https://placehold.co/600x400.png", dataAiHint: "keyboard music" },
+  { id: 5, title: "Piano", instructor: "Mr. Beethoven Jr.", students: 30, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "piano classic" },
+  { id: 6, title: "Drums", instructor: "Mr. Ringo Starr", students: 40, duration: "10 weeks", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "drums set" },
+  { id: 7, title: "Violin", instructor: "Ms. Vanessa Mae", students: 25, duration: "Ongoing", level: "Intermediate", image: "https://placehold.co/600x400.png", dataAiHint: "violin music" },
+  { id: 8, title: "Western Dance", instructor: "Mr. Prabhu Deva", students: 110, duration: "8 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "hiphop dance" },
+  { id: 9, title: "Zumba", instructor: "Ms. Gina Grant", students: 150, duration: "4 weeks", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "zumba fitness" },
+  { id: 10, title: "Gymnastics", instructor: "Ms. Nadia Comaneci", students: 35, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "gymnastics sport" },
+  { id: 11, title: "Yoga", instructor: "Yogi Adityanath", students: 200, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "yoga meditation" },
+  { id: 12, title: "Karate", instructor: "Sensei Morio Higaonna", students: 90, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "karate martialarts" },
+  { id: 13, title: "Kalaripayattu", instructor: "Gurukkal Meenakshi Amma", students: 50, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "kalaripayattu martialarts" },
+  { id: 14, title: "Art & Craft", instructor: "Ms. Frida Kahlo", students: 120, duration: "12 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "art craft" },
 ]
 
 export default function CoursesPage() {
@@ -26,14 +35,14 @@ export default function CoursesPage() {
             Add Course
         </Button>
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {courses.map((course) => (
           <Card key={course.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <CardHeader className="p-0">
                 <Image src={course.image} alt={course.title} width={600} height={400} className="w-full h-48 object-cover" data-ai-hint={course.dataAiHint} />
             </CardHeader>
             <CardContent className="p-4 flex-grow">
-              <Badge variant="secondary" className="mb-2 bg-accent/50 text-accent-foreground">{course.level}</Badge>
+              <Badge variant="secondary" className="mb-2 bg-accent/20 text-accent-foreground">{course.level}</Badge>
               <CardTitle className="font-headline text-lg mb-1">{course.title}</CardTitle>
               <CardDescription className="text-muted-foreground">by {course.instructor}</CardDescription>
             </CardContent>
