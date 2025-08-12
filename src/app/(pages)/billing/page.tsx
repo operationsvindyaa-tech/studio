@@ -49,6 +49,7 @@ type StudentBillingInfo = {
 };
 
 const activityHeads = [
+    { name: "Admission Fee", fee: 1000 },
     { name: "Tuition Fee", fee: 2500 },
     { name: "Exam Fee", fee: 500 },
     { name: "Annual Day Fee", fee: 1000 },
