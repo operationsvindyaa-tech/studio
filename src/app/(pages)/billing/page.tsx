@@ -295,6 +295,30 @@ export default function BillingPage() {
           activities: prev.activities.filter((_, i) => i !== index),
       }));
   };
+  
+  const handleCourseSelect = (courseKey: string) => {
+    if (!courseKey) return;
+    const fee = courseFees[courseKey];
+    const name = courseKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    
+    setNewInvoice(prev => {
+        // Prevent adding duplicate courses
+        if (prev.activities.some(act => act.name === name)) {
+            toast({ title: "Course already added", description: `${name} is already in the activities list.`, variant: "default" });
+            return prev;
+        }
+        
+        // Remove the initial default activity if it's still there
+        const initialActivities = prev.activities.length === 1 && prev.activities[0].name === 'Tuition Fee' && prev.activities[0].description === ''
+            ? []
+            : prev.activities;
+
+        return {
+            ...prev,
+            activities: [...initialActivities, { name, fee: fee || 0, description: `Course Fee` }],
+        };
+    });
+  };
 
 
   return (
@@ -588,6 +612,21 @@ export default function BillingPage() {
                       <Label htmlFor="invoice-months">Month(s)</Label>
                       <Input id="invoice-months" placeholder="e.g., September, October" value={newInvoice.months} onChange={(e) => setNewInvoice(prev => ({ ...prev, months: e.target.value }))} />
                   </div>
+
+                  <div className="space-y-2">
+                      <Label htmlFor="course-select">Select Course to Add</Label>
+                      <Select onValueChange={handleCourseSelect}>
+                        <SelectTrigger id="course-select"><SelectValue placeholder="Select a course" /></SelectTrigger>
+                        <SelectContent>
+                            {Object.entries(courseFees).map(([key, fee]) => (
+                                <SelectItem key={key} value={key}>
+                                    {key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} (&#8377;{fee})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                  </div>
+
                   <Separator />
                   <div className="space-y-2">
                       <Label>Activities</Label>
@@ -613,7 +652,7 @@ export default function BillingPage() {
                               <Button variant="outline" size="icon" onClick={() => handleRemoveNewInvoiceActivity(index)} className="col-span-1"><Trash2 className="h-4 w-4" /></Button>
                           </div>
                       ))}
-                      <Button variant="outline" size="sm" onClick={handleAddNewInvoiceActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
+                      <Button variant="outline" size="sm" onClick={handleAddNewInvoiceActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Custom Activity</Button>
                   </div>
               </div>
               <DialogFooter>
@@ -644,5 +683,7 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
