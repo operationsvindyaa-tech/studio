@@ -43,6 +43,7 @@ type StudentBillingInfo = {
   activities: Activity[];
   admissionFee?: number;
   discount?: number;
+  tax?: number;
   status: "Paid" | "Due" | "Overdue";
   dueDate: string;
   paymentDate?: string;
@@ -81,14 +82,19 @@ const formatAmount = (amount: number) => {
 const calculateTotal = (student: StudentBillingInfo) => {
     const activitiesTotal = student.activities.reduce((sum, activity) => sum + activity.fee, 0);
     const admissionFee = student.admissionFee || 0;
+    const subtotal = activitiesTotal + admissionFee;
     const discount = student.discount || 0;
-    return activitiesTotal + admissionFee - discount;
+    const subtotalAfterDiscount = subtotal - discount;
+    const tax = student.tax ? (subtotalAfterDiscount * student.tax) / 100 : 0;
+    return subtotalAfterDiscount + tax;
 }
 
 type NewInvoice = {
     studentId: string;
     activities: Activity[];
     months: string;
+    discount: number;
+    tax: number;
 }
 
 export default function BillingPage() {
@@ -102,7 +108,7 @@ export default function BillingPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<StudentBillingInfo | null>(null);
   const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
-  const [newInvoice, setNewInvoice] = useState<NewInvoice>({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '' });
+  const [newInvoice, setNewInvoice] = useState<NewInvoice>({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '', discount: 0, tax: 0 });
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -138,6 +144,7 @@ export default function BillingPage() {
                     activities,
                     admissionFee: index < 2 ? 1000 : undefined,
                     discount: index === 3 ? 200 : undefined,
+                    tax: index === 1 ? 18 : 0,
                     status: status,
                     dueDate: dueDate.toISOString().split('T')[0],
                     months: ["August"],
@@ -239,7 +246,7 @@ export default function BillingPage() {
 
   // Manual Invoice Creation handlers
   const handleCreateNewInvoice = () => {
-      const { studentId, activities, months } = newInvoice;
+      const { studentId, activities, months, discount, tax } = newInvoice;
       if (!studentId || activities.length === 0 || !months) {
           toast({ title: "Error", description: "Please fill all fields for the new invoice.", variant: "destructive" });
           return;
@@ -257,6 +264,8 @@ export default function BillingPage() {
           name: student.name,
           whatsappNumber: student.whatsappNumber,
           activities,
+          discount,
+          tax,
           status: "Due",
           dueDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Due in 15 days
           months: months.split(',').map(m => m.trim()),
@@ -265,7 +274,7 @@ export default function BillingPage() {
       setBillingData(prev => [newBillingRecord, ...prev]);
       toast({ title: "Success", description: `Invoice created for ${student.name}.` });
       setIsCreateInvoiceOpen(false);
-      setNewInvoice({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '' });
+      setNewInvoice({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '', discount: 0, tax: 0 });
   };
   
   const handleNewInvoiceActivityChange = (index: number, field: keyof Activity, value: string | number) => {
@@ -305,13 +314,11 @@ export default function BillingPage() {
     const name = courseKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
     setNewInvoice(prev => {
-        // Prevent adding duplicate courses
         if (prev.activities.some(act => act.name === name)) {
             toast({ title: "Course already added", description: `${name} is already in the activities list.`, variant: "default" });
             return prev;
         }
         
-        // Remove the initial default activity if it's still there
         const initialActivities = prev.activities.length === 1 && prev.activities[0].name === 'Tuition Fee' && prev.activities[0].description === ''
             ? []
             : prev.activities;
@@ -503,10 +510,21 @@ export default function BillingPage() {
                             <span>- {formatAmount(selectedInvoice.discount)}</span>
                         </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tax (0%)</span>
-                      <span>{formatAmount(0)}</span>
-                    </div>
+                    {selectedInvoice.tax && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Tax ({selectedInvoice.tax}%)</span>
+                        <span>
+                            {
+                                (() => {
+                                    const subtotal = selectedInvoice.activities.reduce((s, a) => s + a.fee, 0) + (selectedInvoice.admissionFee || 0);
+                                    const subtotalAfterDiscount = subtotal - (selectedInvoice.discount || 0);
+                                    const taxAmount = subtotalAfterDiscount * (selectedInvoice.tax! / 100);
+                                    return `+ ${formatAmount(taxAmount)}`;
+                                })()
+                            }
+                        </span>
+                      </div>
+                    )}
                     <Separator/>
                     <div className="flex justify-between font-bold text-base">
                       <span>Total</span>
@@ -570,6 +588,16 @@ export default function BillingPage() {
                         </div>
                     ))}
                     <Button variant="outline" size="sm" onClick={handleAddActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
+                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="discount">Discount (INR)</Label>
+                        <Input id="discount" type="number" value={editingInvoice.discount || 0} onChange={(e) => setEditingInvoice({ ...editingInvoice, discount: Number(e.target.value) })} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="tax">Tax (%)</Label>
+                        <Input id="tax" type="number" value={editingInvoice.tax || 0} onChange={(e) => setEditingInvoice({ ...editingInvoice, tax: Number(e.target.value) })} />
+                    </div>
                 </div>
             </div>
           )}
@@ -646,6 +674,19 @@ export default function BillingPage() {
                           </div>
                       ))}
                       <Button variant="outline" size="sm" onClick={handleAddNewInvoiceActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Custom Activity</Button>
+                  </div>
+
+                   <Separator />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="new-invoice-discount">Discount (INR)</Label>
+                        <Input id="new-invoice-discount" type="number" placeholder="e.g., 100" value={newInvoice.discount} onChange={(e) => setNewInvoice(prev => ({ ...prev, discount: Number(e.target.value) }))} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="new-invoice-tax">Tax (%)</Label>
+                        <Input id="new-invoice-tax" type="number" placeholder="e.g., 18" value={newInvoice.tax} onChange={(e) => setNewInvoice(prev => ({ ...prev, tax: Number(e.target.value) }))} />
+                    </div>
                   </div>
               </div>
               <DialogFooter>
