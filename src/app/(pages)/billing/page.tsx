@@ -124,6 +124,7 @@ export default function BillingPage() {
                     activities.push({
                         name: student.desiredCourse.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
+                        description: 'Course Fee'
                     });
                 }
                 
@@ -243,6 +244,21 @@ export default function BillingPage() {
     setIsDeleteDialogOpen(false);
     setInvoiceToDelete(null);
   };
+
+    const handleMarkAsPaid = (invoiceId: string) => {
+        setBillingData(prevData =>
+            prevData.map(invoice =>
+                invoice.id === invoiceId
+                    ? { ...invoice, status: 'Paid', paymentDate: new Date().toISOString().split('T')[0] }
+                    : invoice
+            )
+        );
+        const studentName = billingData.find(inv => inv.id === invoiceId)?.name;
+        toast({
+            title: "Success",
+            description: `Invoice for ${studentName} has been marked as paid.`
+        });
+    };
 
   // Manual Invoice Creation handlers
   const handleCreateNewInvoice = () => {
@@ -410,7 +426,7 @@ export default function BillingPage() {
                               <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Invoice
                               </DropdownMenuItem>
-                              <DropdownMenuItem disabled={invoice.status === "Paid"}>
+                              <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} disabled={invoice.status === "Paid"}>
                                 Mark as Paid
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
@@ -717,7 +733,3 @@ export default function BillingPage() {
     </>
   );
 }
-
-    
-
-    
