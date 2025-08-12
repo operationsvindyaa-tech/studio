@@ -244,6 +244,8 @@ const Sidebar = React.forwardRef<
         </div>
     );
     
+    // Always render the desktop sidebar on the server and on initial client render.
+    // The mobile sidebar will only render after the component has mounted on the client.
     if (!isMounted) {
         return desktopSidebar;
     }
