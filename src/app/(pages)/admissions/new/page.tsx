@@ -61,6 +61,7 @@ const admissionFormSchema = z.object({
   
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
+  admissionCenter: z.string({ required_error: "Please select an admission center."}),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
@@ -86,6 +87,14 @@ function SubmitButton() {
         </Button>
     );
 }
+
+const admissionCenters = [
+  "Main Campus (Basavanapura)",
+  "Branch 2 (Marathahalli)",
+  "Branch 3 (Koramangala)",
+  "Branch 4 (Indiranagar)",
+  "Branch 5 (Jayanagar)",
+];
 
 export default function NewAdmissionPage() {
   const [state, formAction] = useActionState(createAdmission, initialState);
@@ -312,6 +321,11 @@ export default function NewAdmissionPage() {
                             <SelectItem value="kalaripayattu">Kalaripayattu</SelectItem>
                             <SelectItem value="zumba">Zumba</SelectItem>
                             <SelectItem value="gymnastics">Gymnastics</SelectItem>
+                        </SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                     <FormField control={form.control} name="admissionCenter" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Center</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a center" /></SelectTrigger></FormControl><SelectContent>
+                            {admissionCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
                         </SelectContent></Select><FormMessage /></FormItem>
                     )} />
                 </div>

@@ -8,20 +8,31 @@ import { BarChart as BarChartIcon, BookUser, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { getStudents, type Student } from "@/lib/db";
 import { groupAdmissionsByTimeframe, Timeframe } from "@/lib/admissions-utils";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type AdmissionData = {
-  name: string;
-  total: number;
-};
+const admissionCenters = [
+  "Main Campus (Basavanapura)",
+  "Branch 2 (Marathahalli)",
+  "Branch 3 (Koramangala)",
+  "Branch 4 (Indiranagar)",
+  "Branch 5 (Jayanagar)",
+];
+
+const centerColors = [
+    "hsl(var(--chart-1))",
+    "hsl(var(--chart-2))",
+    "hsl(var(--chart-3))",
+    "hsl(var(--chart-4))",
+    "hsl(var(--chart-5))",
+];
 
 export default function AdmissionsPage() {
     const [admissions, setAdmissions] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeframe, setTimeframe] = useState<Timeframe>("monthly");
-    const [chartData, setChartData] = useState<AdmissionData[]>([]);
+    const [chartData, setChartData] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchAdmissions = async () => {
@@ -41,10 +52,18 @@ export default function AdmissionsPage() {
     useEffect(() => {
         if (admissions.length > 0) {
             const groupedData = groupAdmissionsByTimeframe(admissions, timeframe);
-            const formattedData = Object.entries(groupedData).map(([name, count]) => ({
-                name,
-                total: count
-            })).sort((a,b) => new Date(a.name).getTime() - new Date(b.name).getTime());
+            
+            const formattedData = Object.entries(groupedData).map(([name, centers]) => {
+                const entry: { [key: string]: string | number } = { name };
+                let total = 0;
+                for (const centerName in centers) {
+                    entry[centerName] = centers[centerName];
+                    total += centers[centerName];
+                }
+                entry.total = total;
+                return entry;
+            }).sort((a,b) => new Date(a.name as string).getTime() - new Date(b.name as string).getTime());
+
             setChartData(formattedData);
         }
     }, [admissions, timeframe]);
@@ -103,9 +122,9 @@ export default function AdmissionsPage() {
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <div>
-                        <CardTitle>Admission Trends</CardTitle>
+                        <CardTitle>Admission Trends by Center</CardTitle>
                         <CardDescription>
-                            Admissions count over different time periods.
+                            Admissions count over different time periods, broken down by center.
                         </CardDescription>
                     </div>
                     <Select value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
@@ -135,7 +154,10 @@ export default function AdmissionsPage() {
                                     borderColor: "hsl(var(--border))",
                                 }}
                             />
-                            <Bar dataKey="total" fill="hsl(var(--primary))" name="Admissions" />
+                            <Legend />
+                             {admissionCenters.map((center, index) => (
+                                <Bar key={center} dataKey={center} stackId="a" fill={centerColors[index % centerColors.length]} name={center.split(' ')[0]} />
+                            ))}
                         </BarChart>
                     )}
                 </ResponsiveContainer>

@@ -25,6 +25,7 @@ const admissionFormSchema = z.object({
   
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
+  admissionCenter: z.string({ required_error: "Please select an admission center."}),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
@@ -50,6 +51,7 @@ export async function createAdmission(prevState: State, formData: z.infer<typeof
       dateOfJoining: parsedData.dateOfJoining,
       status: "Active", // New admissions are active by default
       photo: parsedData.photo,
+      admissionCenter: parsedData.admissionCenter,
     });
 
     // This tells Next.js to re-fetch the data for the /students page on the next visit.

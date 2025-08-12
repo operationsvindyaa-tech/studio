@@ -1,14 +1,16 @@
 
 import { type Student } from "./db";
-import { format, getISOWeek, getMonth, getQuarter, getYear } from 'date-fns';
+import { format, getISOWeek, getYear } from 'date-fns';
 
 export type Timeframe = "daily" | "weekly" | "monthly" | "quarterly" | "annually";
+
+type GroupedAdmissions = Record<string, Record<string, number>>;
 
 export const groupAdmissionsByTimeframe = (
   admissions: Student[],
   timeframe: Timeframe
-): Record<string, number> => {
-  const grouped: Record<string, number> = {};
+): GroupedAdmissions => {
+  const grouped: GroupedAdmissions = {};
 
   admissions.forEach(admission => {
     const date = new Date(admission.joined);
@@ -27,7 +29,7 @@ export const groupAdmissionsByTimeframe = (
         key = format(date, "yyyy-MM");
         break;
       case "quarterly":
-        const quarter = getQuarter(date);
+        const quarter = Math.floor(date.getMonth() / 3) + 1;
         key = `${getYear(date)}-Q${quarter}`;
         break;
       case "annually":
@@ -38,9 +40,14 @@ export const groupAdmissionsByTimeframe = (
     }
 
     if (!grouped[key]) {
-      grouped[key] = 0;
+      grouped[key] = {};
     }
-    grouped[key]++;
+    
+    const center = admission.admissionCenter || "Unknown Center";
+    if (!grouped[key][center]) {
+        grouped[key][center] = 0;
+    }
+    grouped[key][center]++;
   });
 
   return grouped;
