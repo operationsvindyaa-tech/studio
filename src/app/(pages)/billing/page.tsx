@@ -482,7 +482,7 @@ export default function BillingPage() {
                          <TableRow key={`activity-${index}`}>
                             <TableCell>
                                 <p className="font-medium">{activity.name}</p>
-                                <p className="text-muted-foreground">For month(s): {selectedInvoice.months.join(', ')}</p>
+                                <p className="text-muted-foreground">{activity.description ? activity.description : `For month(s): ${selectedInvoice.months.join(', ')}`}</p>
                             </TableCell>
                             <TableCell className="text-right">{formatAmount(activity.fee)}</TableCell>
                         </TableRow>
@@ -717,5 +717,7 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
