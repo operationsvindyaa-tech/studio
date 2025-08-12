@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -33,6 +34,7 @@ type SidebarContext = {
   openMobile: boolean
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
+  isMounted: boolean
   toggleSidebar: () => void
 }
 
@@ -126,12 +128,13 @@ const SidebarProvider = React.forwardRef<
         state,
         open,
         setOpen,
-        isMobile: isMounted ? isMobile : false,
+        isMobile,
+        isMounted,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMounted, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, isMounted, openMobile, setOpenMobile, toggleSidebar]
     )
 
     return (
@@ -180,7 +183,7 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const { isMobile, isMounted, state, openMobile, setOpenMobile } = useSidebar()
 
     if (collapsible === "none") {
       return (
@@ -197,6 +200,10 @@ const Sidebar = React.forwardRef<
       )
     }
 
+    if (!isMounted) {
+      return null;
+    }
+    
     if (isMobile) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
