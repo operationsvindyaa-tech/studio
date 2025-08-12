@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, FileText, Printer, GraduationCap, Download } from "lucide-react";
+import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useReactToPrint } from "react-to-print";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 type Activity = {
   name: string;
@@ -30,7 +32,7 @@ type StudentBillingInfo = {
   months: string[];
 };
 
-const billingData: StudentBillingInfo[] = [
+const initialBillingData: StudentBillingInfo[] = [
   { id: "B001", name: "Amelia Rodriguez", activities: [{ name: "Bharatanatyam", fee: 2500 }], admissionFee: 1000, discount: 200, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-03", months: ["August"] },
   { id: "B002", name: "Benjamin Carter", activities: [{ name: "Vocal Carnatic", fee: 3000 }, { name: "Yoga", fee: 1800 }], status: "Due", dueDate: "2024-08-05", months: ["August"] },
   { id: "B003", name: "Chloe Nguyen", activities: [{ name: "Keyboard/Piano", fee: 2800 }], status: "Overdue", dueDate: "2024-07-05", months: ["July"] },
@@ -50,9 +52,13 @@ const calculateTotal = (student: StudentBillingInfo) => {
 }
 
 export default function BillingPage() {
+  const [billingData, setBillingData] = useState<StudentBillingInfo[]>(initialBillingData);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<StudentBillingInfo | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<StudentBillingInfo | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
@@ -62,6 +68,53 @@ export default function BillingPage() {
     setSelectedInvoice(invoice);
     setIsInvoiceOpen(true);
   };
+  
+  const handleEditInvoice = (invoice: StudentBillingInfo) => {
+    setEditingInvoice({ ...invoice, activities: [...invoice.activities] });
+    setIsEditOpen(true);
+  };
+  
+  const handleSaveEdit = () => {
+    if (editingInvoice) {
+        setBillingData(prevData =>
+            prevData.map(item => (item.id === editingInvoice.id ? editingInvoice : item))
+        );
+        setIsEditOpen(false);
+        setEditingInvoice(null);
+        toast({
+            title: "Success",
+            description: "Invoice details have been updated successfully."
+        });
+    }
+  };
+
+  const handleActivityChange = (index: number, field: 'name' | 'fee', value: string) => {
+    if (editingInvoice) {
+        const updatedActivities = [...editingInvoice.activities];
+        updatedActivities[index] = {
+            ...updatedActivities[index],
+            [field]: field === 'fee' ? Number(value) : value,
+        };
+        setEditingInvoice({ ...editingInvoice, activities: updatedActivities });
+    }
+  };
+
+  const handleAddActivity = () => {
+    if (editingInvoice) {
+        setEditingInvoice({
+            ...editingInvoice,
+            activities: [...editingInvoice.activities, { name: '', fee: 0 }],
+        });
+    }
+  };
+
+  const handleRemoveActivity = (index: number) => {
+    if (editingInvoice) {
+        const updatedActivities = editingInvoice.activities.filter((_, i) => i !== index);
+        setEditingInvoice({ ...editingInvoice, activities: updatedActivities });
+    }
+  };
+
 
   return (
     <>
@@ -118,6 +171,9 @@ export default function BillingPage() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => handleViewInvoice(invoice)}>
                             <FileText className="mr-2 h-4 w-4" /> View Invoice
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
+                            <Edit className="mr-2 h-4 w-4" /> Edit Invoice
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled={invoice.status === "Paid"}>
                             Mark as Paid
@@ -241,8 +297,59 @@ export default function BillingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+       {/* Edit Invoice Dialog */}
+       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Invoice</DialogTitle>
+            <DialogDescription>
+              Correct the details for invoice #{editingInvoice?.id}.
+            </DialogDescription>
+          </DialogHeader>
+          {editingInvoice && (
+            <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                    <Label htmlFor="studentName">Student Name</Label>
+                    <Input id="studentName" value={editingInvoice.name} onChange={(e) => setEditingInvoice({...editingInvoice, name: e.target.value })}/>
+                </div>
+
+                <Separator />
+                
+                <div className="space-y-2">
+                    <Label>Activities</Label>
+                    {editingInvoice.activities.map((activity, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <Input placeholder="Activity Name" value={activity.name} onChange={(e) => handleActivityChange(index, 'name', e.target.value)} />
+                            <Input type="number" placeholder="Fee" value={activity.fee} onChange={(e) => handleActivityChange(index, 'fee', e.target.value)} className="w-28" />
+                            <Button variant="outline" size="icon" onClick={() => handleRemoveActivity(index)}><Trash2 className="h-4 w-4" /></Button>
+                        </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={handleAddActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                        <Label htmlFor="admissionFee">Admission Fee</Label>
+                        <Input id="admissionFee" type="number" placeholder="1000" value={editingInvoice.admissionFee || ''} onChange={(e) => setEditingInvoice({...editingInvoice, admissionFee: Number(e.target.value) || undefined })} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="discount">Discount</Label>
+                        <Input id="discount" type="number" placeholder="200" value={editingInvoice.discount || ''} onChange={(e) => setEditingInvoice({...editingInvoice, discount: Number(e.target.value) || undefined })} />
+                    </div>
+                </div>
+            </div>
+          )}
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button onClick={handleSaveEdit}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-
-    
