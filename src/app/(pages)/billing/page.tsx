@@ -344,7 +344,9 @@ export default function BillingPage() {
                           <div className="font-medium">{invoice.name}</div>
                           <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
                         </TableCell>
-                        <TableCell>{invoice.activities.map(a => a.name).join(', ')}</TableCell>
+                        <TableCell>
+                            {[...invoice.activities.map(a => a.name), invoice.admissionFee ? 'Admission Fee' : null].filter(Boolean).join(', ')}
+                        </TableCell>
                         <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
                         <TableCell>
                           <Badge
