@@ -114,6 +114,21 @@ export default function NewAdmissionPage() {
       signature: "",
     },
   });
+
+  const dob = form.watch("dob");
+
+  useEffect(() => {
+    if (dob) {
+      const today = new Date();
+      const birthDate = new Date(dob);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      form.setValue("age", age.toString());
+    }
+  }, [dob, form]);
   
   useEffect(() => {
     if (state.message) {
@@ -190,7 +205,7 @@ export default function NewAdmissionPage() {
                                 </FormItem>
                             )} />
                             <FormField control={form.control} name="age" render={({ field }) => (
-                                <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="18" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Age</FormLabel><FormControl><Input type="number" placeholder="Age (auto-calculated)" {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="gender" render={({ field }) => (
                                 <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
