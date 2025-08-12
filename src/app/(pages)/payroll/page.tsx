@@ -147,18 +147,20 @@ export default function PayrollPage() {
     const professionalTax = 200;
     const providentFund = basic * 0.12;
     const incomeTax = grossSalary > 60000 ? grossSalary * 0.10 : 0; // Simple TDS calculation
+    const esi = 0; // Placeholder for Employee State Insurance
+    const loanRecovery = 0; // Placeholder for Loan Recovery
+    const otherDeductions = 0; // Placeholder for Other Deductions
     
-    const totalDeductions = professionalTax + providentFund + incomeTax;
+    const totalDeductions = professionalTax + providentFund + incomeTax + esi + loanRecovery + otherDeductions;
     const netSalary = grossSalary - totalDeductions;
     
-    return { grossSalary, basic, hra, conveyanceAllowance, medicalAllowance, incentives, specialAllowance, professionalTax, providentFund, incomeTax, totalDeductions, netSalary };
+    return { grossSalary, basic, hra, conveyanceAllowance, medicalAllowance, incentives, specialAllowance, professionalTax, providentFund, incomeTax, esi, loanRecovery, otherDeductions, totalDeductions, netSalary };
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -264,7 +266,7 @@ export default function PayrollPage() {
 
 
   const handleExport = () => {
-    const headers = ["ID", "Name", "Role", "Monthly Salary (INR)", "Gross Salary (INR)", "PF (INR)", "PT (INR)", "TDS (INR)", "Total Deductions (INR)", "Net Salary (INR)", "Status"];
+    const headers = ["ID", "Name", "Role", "Monthly Salary", "Gross Salary", "PF", "PT", "TDS", "Total Deductions", "Net Salary", "Status"];
     const csvContent = [
       headers.join(','),
       ...staff.map(s => {
@@ -416,7 +418,7 @@ export default function PayrollPage() {
                         </TableRow>
                     ))
                 ) : staff.map((s) => {
-                      const { netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
+                      const { netSalary, monthlySalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
                       return (
                           <TableRow key={s.id}>
                               <TableCell>
@@ -512,7 +514,7 @@ export default function PayrollPage() {
                         <Input id="department" name="department" defaultValue={editingStaff?.department} className="col-span-3" placeholder="e.g., Academics"/>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="salary" className="text-right">Monthly Salary (INR)</Label>
+                        <Label htmlFor="salary" className="text-right">Monthly Salary</Label>
                         <Input id="salary" name="salary" type="number" defaultValue={editingStaff?.monthlySalary} className="col-span-3" placeholder="e.g., 50000"/>
                     </div>
                 </div>
@@ -574,6 +576,9 @@ export default function PayrollPage() {
                             <div className="flex justify-between"><span>Provident Fund (PF)</span> <span>{formatCurrency(payslipDetails.providentFund)}</span></div>
                             <div className="flex justify-between"><span>Professional Tax (PT)</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
                             <div className="flex justify-between"><span>Income Tax (TDS)</span> <span>{formatCurrency(payslipDetails.incomeTax)}</span></div>
+                            <div className="flex justify-between"><span>Employee State Insurance (ESI)</span> <span>{formatCurrency(payslipDetails.esi)}</span></div>
+                            <div className="flex justify-between"><span>Loan Recovery / Advances</span> <span>{formatCurrency(payslipDetails.loanRecovery)}</span></div>
+                            <div className="flex justify-between"><span>Other Deductions</span> <span>{formatCurrency(payslipDetails.otherDeductions)}</span></div>
                         </div>
                          <Separator />
                         <div className="flex justify-between px-4 py-2 font-semibold">
@@ -627,3 +632,5 @@ export default function PayrollPage() {
     </>
   );
 }
+
+    
