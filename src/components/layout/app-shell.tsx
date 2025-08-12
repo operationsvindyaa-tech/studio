@@ -66,14 +66,15 @@ const navItems = [
 const operationsNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
-    { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
-    { href: "/communication", icon: MessageSquare, label: "Communication" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/communication", icon: MessageSquare, label: "Communication" },
 ]
 
 const academicsNavItems = [
     { href: "/courses", icon: BookOpen, label: "Courses" },
+    { href: "/syllabus", icon: FilePenLine, label: "Syllabus" },
+    { href: "/schedule", icon: Calendar, label: "Schedule" },
+    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
 ];
