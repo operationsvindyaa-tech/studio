@@ -7,8 +7,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Separator } from "@/components/ui/separator";
 import { useReactToPrint } from "react-to-print";
 import { Label } from "@/components/ui/label";
@@ -57,6 +67,8 @@ export default function BillingPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<StudentBillingInfo | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<StudentBillingInfo | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<StudentBillingInfo | null>(null);
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -112,6 +124,23 @@ export default function BillingPage() {
     if (editingInvoice) {
         const updatedActivities = editingInvoice.activities.filter((_, i) => i !== index);
         setEditingInvoice({ ...editingInvoice, activities: updatedActivities });
+    }
+  };
+
+  const handleDeleteInvoice = (invoice: StudentBillingInfo) => {
+    setInvoiceToDelete(invoice);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (invoiceToDelete) {
+        setBillingData(prevData => prevData.filter(item => item.id !== invoiceToDelete.id));
+        toast({
+            title: "Invoice Deleted",
+            description: `Invoice for ${invoiceToDelete.name} has been successfully deleted.`
+        });
+        setIsDeleteDialogOpen(false);
+        setInvoiceToDelete(null);
     }
   };
 
@@ -177,6 +206,10 @@ export default function BillingPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled={invoice.status === "Paid"}>
                             Mark as Paid
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleDeleteInvoice(invoice)} className="text-destructive">
+                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -350,6 +383,26 @@ export default function BillingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the invoice for {invoiceToDelete?.name}.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setInvoiceToDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+                    Delete
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
+
+    
