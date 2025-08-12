@@ -87,6 +87,7 @@ const hrNavItems = [
 const financeNavItems = [
     { href: "/billing", icon: Banknote, label: "Billing" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
+    { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
 const mediaNavItems = [
@@ -95,7 +96,6 @@ const mediaNavItems = [
 
 const otherNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
-    { href: "/reports", icon: AreaChart, label: "Reports" },
 ];
 
 
