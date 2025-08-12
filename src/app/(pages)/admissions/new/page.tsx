@@ -158,10 +158,6 @@ export default function NewAdmissionPage() {
     }
   };
 
-  const onFormSubmit = (data: AdmissionFormValues) => {
-    formAction(data);
-  };
-
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader className="text-center">
@@ -177,7 +173,7 @@ export default function NewAdmissionPage() {
         <Form {...form}>
           <form
             ref={formRef}
-            action={() => form.handleSubmit(onFormSubmit)()}
+            action={form.handleSubmit(formAction)}
             className="space-y-12"
           >
             <div className="grid md:grid-cols-3 gap-8">
