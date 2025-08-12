@@ -199,12 +199,8 @@ const Sidebar = React.forwardRef<
         </div>
       )
     }
-
-    if (!isMounted) {
-      return null;
-    }
     
-    if (isMobile) {
+    if (isMounted && isMobile) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
