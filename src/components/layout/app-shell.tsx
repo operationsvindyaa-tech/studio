@@ -41,6 +41,7 @@ import {
   BookUser,
   School,
   FilePenLine,
+  HeartHandshake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -57,19 +58,22 @@ import { Badge } from "../ui/badge";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/students", icon: Users, label: "Students" },
-  { href: "/teachers", icon: UserSquare, label: "Teachers" },
-  { href: "/staff", icon: Building2, label: "Staff" },
   { href: "/courses", icon: BookOpen, label: "Courses" },
   { href: "/schedule", icon: Calendar, label: "Schedule" },
   { href: "/communication", icon: MessageSquare, label: "Communication" },
   { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
 ];
 
+const hrNavItems = [
+    { href: "/teachers", icon: UserSquare, label: "Teachers" },
+    { href: "/staff", icon: Building2, label: "Staff" },
+    { href: "/payroll", icon: Wallet, label: "Payroll" },
+];
+
 const otherNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/billing", icon: Wallet, label: "Billing" },
-    { href: "/payroll", icon: Wallet, label: "Payroll" },
     { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
@@ -122,6 +126,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>HR</SidebarGroupLabel>
+                <SidebarMenu>
+                    {hrNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>More</SidebarGroupLabel>
@@ -184,7 +209,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...hrNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
