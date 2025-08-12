@@ -188,7 +188,7 @@ export default function NewAdmissionPage() {
                         <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
                         <div className="grid md:grid-cols-2 gap-6">
                             <FormField control={form.control} name="studentName" render={({ field }) => (
-                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="dateOfJoining" render={({ field }) => (
                                 <FormItem className="flex flex-col"><FormLabel>Date of Joining</FormLabel>
@@ -220,7 +220,7 @@ export default function NewAdmissionPage() {
                                 <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name="nationality" render={({ field }) => (
-                                <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="bloodGroup" render={({ field }) => (
                                 <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -273,13 +273,13 @@ export default function NewAdmissionPage() {
                 <h3 className="text-xl font-semibold border-b pb-2">Parent/Guardian Information</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="fatherName" render={({ field }) => (
-                        <FormItem><FormLabel>Father's Name</FormLabel><FormControl><Input placeholder="Robert Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Father's Name</FormLabel><FormControl><Input placeholder="Robert Doe" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormField control={form.control} name="fatherContact" render={({ field }) => (
                         <FormItem><FormLabel>Father's Contact No.</FormLabel><FormControl><Input placeholder="(555) 111-2222" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="motherName" render={({ field }) => (
-                        <FormItem><FormLabel>Mother's Name</FormLabel><FormControl><Input placeholder="Susan Doe" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Mother's Name</FormLabel><FormControl><Input placeholder="Susan Doe" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormField control={form.control} name="motherContact" render={({ field }) => (
                         <FormItem><FormLabel>Mother's Contact No.</FormLabel><FormControl><Input placeholder="(555) 333-4444" {...field} /></FormControl><FormMessage /></FormItem>
@@ -292,7 +292,7 @@ export default function NewAdmissionPage() {
                     )} />
                 </div>
                  <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Main Street, Anytown, USA 12345" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Main Street, Anytown, USA 12345" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
             
@@ -301,7 +301,7 @@ export default function NewAdmissionPage() {
                 <h3 className="text-xl font-semibold border-b pb-2">Academic & Other Details</h3>
                 <div className="grid md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="previousSchool" render={({ field }) => (
-                        <FormItem><FormLabel>Previous School/College (Optional)</FormLabel><FormControl><Input placeholder="Anytown High School" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Previous School/College (Optional)</FormLabel><FormControl><Input placeholder="Anytown High School" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="desiredCourse" render={({ field }) => (
                         <FormItem><FormLabel>Desired Course</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a course" /></SelectTrigger></FormControl><SelectContent>
@@ -320,7 +320,7 @@ export default function NewAdmissionPage() {
                     )} />
                 </div>
                 <FormField control={form.control} name="activitiesInterested" render={({ field }) => (
-                    <FormItem><FormLabel>Activities Interested In (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Sports, Music, Coding Club" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Activities Interested In (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Sports, Music, Coding Club" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="howDidYouKnow" render={({ field }) => (
                     <FormItem><FormLabel>How did you know about the academy?</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select an option" /></SelectTrigger></FormControl><SelectContent><SelectItem value="social-media">Social Media</SelectItem><SelectItem value="friend-referral">Friend/Referral</SelectItem><SelectItem value="advertisement">Advertisement</SelectItem><SelectItem value="search-engine">Search Engine</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -331,7 +331,7 @@ export default function NewAdmissionPage() {
             <div className="space-y-6">
                 <h3 className="text-xl font-semibold border-b pb-2">Health & Emergency Information</h3>
                 <FormField control={form.control} name="healthIssues" render={({ field }) => (
-                    <FormItem><FormLabel>Any known health issues? (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Allergies, asthma" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Any known health issues? (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Allergies, asthma" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="emergencyContact" render={({ field }) => (
                     <FormItem><FormLabel>Emergency Contact Number</FormLabel><FormControl><Input placeholder="(555) 999-0000" {...field} /></FormControl><FormMessage /></FormItem>
@@ -344,7 +344,7 @@ export default function NewAdmissionPage() {
                 <FormField control={form.control} name="signature" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Signature of Authorization</FormLabel>
-                        <FormControl><Input placeholder="Type your full name to sign" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Type your full name to sign" {...field} className="uppercase" /></FormControl>
                         <FormDescription>By typing your name, you certify that all information is correct and authorize the school to verify it.</FormDescription>
                         <FormMessage />
                     </FormItem>
