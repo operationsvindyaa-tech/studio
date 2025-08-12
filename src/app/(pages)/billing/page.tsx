@@ -11,32 +11,43 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useReactToPrint } from "react-to-print";
+import { Checkbox } from "@/components/ui/checkbox";
+
+type Activity = {
+  name: string;
+  fee: number;
+};
 
 type StudentBillingInfo = {
   id: string;
   name: string;
-  course: string;
-  monthlyFee: number;
+  activities: Activity[];
+  admissionFee?: number;
+  discount?: number;
   status: "Paid" | "Due" | "Overdue";
   dueDate: string;
   paymentDate?: string;
+  months: string[];
 };
 
 const billingData: StudentBillingInfo[] = [
-  { id: "B001", name: "Amelia Rodriguez", course: "Bharatanatyam", monthlyFee: 2500, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-03" },
-  { id: "B002", name: "Benjamin Carter", course: "Vocal Carnatic", monthlyFee: 3000, status: "Due", dueDate: "2024-08-05" },
-  { id: "B003", name: "Chloe Nguyen", course: "Keyboard/Piano", monthlyFee: 2800, status: "Overdue", dueDate: "2024-07-05" },
-  { id: "B004", name: "David Kim", course: "Guitar", monthlyFee: 2200, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-01" },
-  { id: "B005", name: "Emily Wang", course: "Yoga", monthlyFee: 1800, status: "Due", dueDate: "2024-08-10" },
+  { id: "B001", name: "Amelia Rodriguez", activities: [{ name: "Bharatanatyam", fee: 2500 }], admissionFee: 1000, discount: 200, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-03", months: ["August"] },
+  { id: "B002", name: "Benjamin Carter", activities: [{ name: "Vocal Carnatic", fee: 3000 }, { name: "Yoga", fee: 1800 }], status: "Due", dueDate: "2024-08-05", months: ["August"] },
+  { id: "B003", name: "Chloe Nguyen", activities: [{ name: "Keyboard/Piano", fee: 2800 }], status: "Overdue", dueDate: "2024-07-05", months: ["July"] },
+  { id: "B004", name: "David Kim", activities: [{ name: "Guitar", fee: 2200 }], discount: 100, status: "Paid", dueDate: "2024-08-05", paymentDate: "2024-08-01", months: ["August"] },
+  { id: "B005", name: "Emily Wang", activities: [{ name: "Yoga", fee: 1800 }, { name: "Art & Craft", fee: 1500 }], admissionFee: 1000, status: "Due", dueDate: "2024-08-10", months: ["August", "September"] },
 ];
 
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 2,
-    }).format(amount);
+const formatAmount = (amount: number) => {
+    return amount.toFixed(2);
 };
+
+const calculateTotal = (student: StudentBillingInfo) => {
+    const activitiesTotal = student.activities.reduce((sum, activity) => sum + activity.fee, 0);
+    const admissionFee = student.admissionFee || 0;
+    const discount = student.discount || 0;
+    return activitiesTotal + admissionFee - discount;
+}
 
 export default function BillingPage() {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
@@ -51,8 +62,6 @@ export default function BillingPage() {
     setSelectedInvoice(invoice);
     setIsInvoiceOpen(true);
   };
-
-  const currentMonthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
     <>
@@ -69,7 +78,7 @@ export default function BillingPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Student</TableHead>
-                  <TableHead>Course</TableHead>
+                  <TableHead>Activities</TableHead>
                   <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>
@@ -84,8 +93,8 @@ export default function BillingPage() {
                       <div className="font-medium">{invoice.name}</div>
                       <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
                     </TableCell>
-                    <TableCell>{invoice.course}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(invoice.monthlyFee)}</TableCell>
+                    <TableCell>{invoice.activities.map(a => a.name).join(', ')}</TableCell>
+                    <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
@@ -170,13 +179,23 @@ export default function BillingPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>
-                        <p className="font-medium">Monthly Fee for {selectedInvoice.course}</p>
-                        <p className="text-muted-foreground">For the month of {currentMonthYear}</p>
-                      </TableCell>
-                      <TableCell className="text-right">{formatCurrency(selectedInvoice.monthlyFee)}</TableCell>
-                    </TableRow>
+                    {selectedInvoice.activities.map((activity, index) => (
+                         <TableRow key={`activity-${index}`}>
+                            <TableCell>
+                                <p className="font-medium">Monthly Fee for {activity.name}</p>
+                                <p className="text-muted-foreground">For month(s): {selectedInvoice.months.join(', ')}</p>
+                            </TableCell>
+                            <TableCell className="text-right">{formatAmount(activity.fee)}</TableCell>
+                        </TableRow>
+                    ))}
+                    {selectedInvoice.admissionFee && (
+                         <TableRow>
+                            <TableCell>
+                                <p className="font-medium">One-time Admission Fee</p>
+                            </TableCell>
+                            <TableCell className="text-right">{formatAmount(selectedInvoice.admissionFee)}</TableCell>
+                        </TableRow>
+                    )}
                   </TableBody>
                 </Table>
                 <Separator />
@@ -184,16 +203,22 @@ export default function BillingPage() {
                   <div className="w-64 space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>{formatCurrency(selectedInvoice.monthlyFee)}</span>
+                      <span>{formatAmount(selectedInvoice.activities.reduce((s, a) => s + a.fee, 0) + (selectedInvoice.admissionFee || 0))}</span>
                     </div>
+                    {selectedInvoice.discount && (
+                         <div className="flex justify-between">
+                            <span className="text-muted-foreground">Discount</span>
+                            <span>- {formatAmount(selectedInvoice.discount)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tax (0%)</span>
-                      <span>{formatCurrency(0)}</span>
+                      <span>{formatAmount(0)}</span>
                     </div>
                     <Separator/>
                     <div className="flex justify-between font-bold text-base">
                       <span>Total</span>
-                      <span>{formatCurrency(selectedInvoice.monthlyFee)}</span>
+                      <span>{formatAmount(calculateTotal(selectedInvoice))}</span>
                     </div>
                   </div>
                 </div>
@@ -219,3 +244,5 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
