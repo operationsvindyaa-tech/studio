@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useReactToPrint } from "react-to-print";
-import { Award, GraduationCap, Printer } from "lucide-react";
+import { Award, GraduationCap, Printer, Upload } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
@@ -19,6 +19,7 @@ export default function CertificatesPage() {
   const [date, setDate] = useState(new Date().toLocaleDateString('en-CA')); // YYYY-MM-DD format
   const [signature, setSignature] = useState("Smt. Vani Ramesh");
   const [signatureTitle, setSignatureTitle] = useState("Artistic Director");
+  const [logo, setLogo] = useState<string | null>(null);
 
   const certificateRef = useRef<HTMLDivElement>(null);
 
@@ -26,6 +27,17 @@ export default function CertificatesPage() {
     content: () => certificateRef.current,
     documentTitle: `Certificate-${studentName.replace(' ', '_')}-${activityName.replace(' ', '_')}`,
   });
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="grid md:grid-cols-3 gap-8">
@@ -38,6 +50,16 @@ export default function CertificatesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+             <div className="space-y-2">
+              <Label>Institution Logo</Label>
+              <Input
+                id="logo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleLogoChange}
+                className="text-sm file:mr-2 file:text-foreground"
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="student-name">Student Name</Label>
               <Input
@@ -116,15 +138,25 @@ export default function CertificatesPage() {
               
                 <div className="z-10">
                     <header className="text-center mb-8">
-                        <div className="flex items-center justify-center gap-3 mb-2">
-                            <GraduationCap className="h-10 w-10 text-primary" />
-                            <h1 className="text-3xl font-bold font-headline text-primary">VINDYAA - The Altitude of Art</h1>
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                            {logo ? (
+                                <Image src={logo} alt="Institution Logo" width={80} height={80} className="object-contain" />
+                            ) : (
+                                <div className="w-20 h-20"></div> // Placeholder for spacing
+                            )}
+                            <div className="flex-grow">
+                                <div className="flex items-center justify-center gap-3">
+                                    <GraduationCap className="h-10 w-10 text-primary" />
+                                    <h1 className="text-3xl font-bold font-headline text-primary">VINDYAA - The Altitude of Art</h1>
+                                </div>
+                                <p className="text-xs text-slate-600 mt-2">
+                                    #19, 1st Cross, 1st Main, Sri Manjunatha Layout, Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049
+                                    <br />
+                                    Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com
+                                </p>
+                            </div>
+                            <div className="w-20 h-20"></div>  // Placeholder for spacing
                         </div>
-                        <p className="text-xs text-slate-600">
-                            #19, 1st Cross, 1st Main, Sri Manjunatha Layout, Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049
-                            <br />
-                            Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com
-                        </p>
                     </header>
                     <Separator />
                     <div className="text-center my-10">
