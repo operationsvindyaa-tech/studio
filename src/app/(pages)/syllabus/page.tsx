@@ -79,6 +79,20 @@ const syllabusData: SyllabusData = {
       modules: ["Full Ashtanga Primary Series", "Advanced Pranayama", "Yoga Sutras of Patanjali", "Teaching Methodology"],
     },
   },
+  "Karate": {
+    beginner: {
+      title: "Beginner Belts (White & Yellow)",
+      modules: ["White Belt (10th Kyu): Basic Stances (Zenkutsu-dachi), Straight Punch (Choku-zuki), Age-uke (Rising Block)", "Yellow Belt (9th Kyu): Heian Shodan Kata, Gedan Barai (Downward Block), Mae Geri (Front Kick)"],
+    },
+    intermediate: {
+      title: "Intermediate Belts (Orange, Green, Blue)",
+      modules: ["Orange Belt (8th Kyu): Heian Nidan Kata, Shuto-uke (Knife-hand Block)", "Green Belt (7th Kyu): Heian Sandan Kata, Yoko Geri (Side Kick)", "Blue Belt (6th Kyu): Heian Yondan Kata, Empi Uchi (Elbow Strike)"],
+    },
+    advanced: {
+      title: "Advanced Belts (Brown & Black)",
+      modules: ["Brown Belt (3rd-1st Kyu): Heian Godan, Tekki Shodan, Bassai Dai Katas, Introduction to Kumite (Sparring)", "Black Belt (1st Dan+): Advanced Katas (Kanku Dai, Enpi), Bunkai (Kata Application), Advanced Sparring Techniques"],
+    },
+  },
 };
 
 const courseNames = Object.keys(syllabusData);
