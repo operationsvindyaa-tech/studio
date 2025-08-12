@@ -91,6 +91,35 @@ const syllabusData: SyllabusData = {
       modules: ["Advanced Music Theory", "Complex Rhythms and Syncopation", "Improvisation and Soloing", "Playing Different Genres (Jazz, Classical)", "Performance Techniques"],
     },
   },
+   "Western Dance": {
+    beginner: {
+      title: "Beginner Level - Foundational Rhythms",
+      modules: [
+        "Introduction to Hip Hop: Basic grooves, bounce, and rock.",
+        "Introduction to Jazz: Basic positions, simple turns, and short combinations.",
+        "Rhythm and Timing: Learning to count music and stay on beat.",
+        "Simple Choreography: Learning and performing a short, basic routine.",
+      ],
+    },
+    intermediate: {
+      title: "Intermediate Level - Technique & Style",
+      modules: [
+        "Body Isolations and Control: Developing control over different body parts.",
+        "Introduction to Contemporary and Lyrical styles.",
+        "Complex Choreography: Learning longer and more intricate dance sequences.",
+        "Introduction to Freestyle: Basic concepts of improvisation.",
+      ],
+    },
+    advanced: {
+      title: "Advanced Level - Performance & Artistry",
+      modules: [
+        "Advanced Choreography: Mastering complex, professional-level routines.",
+        "Performance Skills: Stage presence, expression, and connecting with an audience.",
+        "Freestyle and Improvisation: Developing a personal style and creating on the spot.",
+        "Musicality: Interpreting music through movement and dynamics.",
+      ],
+    },
+  },
   "Yoga": {
     beginner: {
       title: "Beginner Level - Foundations",
