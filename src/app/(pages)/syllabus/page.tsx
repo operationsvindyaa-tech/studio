@@ -181,6 +181,35 @@ const syllabusData: SyllabusData = {
       ],
     },
   },
+  "Zumba": {
+    beginner: {
+      title: "Beginner Level - Foundational Rhythms",
+      modules: [
+        "Introduction to the four core Zumba rhythms: Merengue, Salsa, Cumbia, and Reggaeton.",
+        "Learning the basic steps for each core rhythm in a fun, party-like atmosphere.",
+        "Focus on coordination, building confidence, and enjoying the music.",
+        "Simple, easy-to-follow choreography for a full-body workout.",
+      ],
+    },
+    intermediate: {
+      title: "Intermediate Level - Spice It Up",
+      modules: [
+        "Introduction to new rhythms like Belly Dance, Flamenco, Samba, and Tango.",
+        "More complex choreography with variations in intensity and tempo.",
+        "Improving cardiovascular stamina and toning muscles.",
+        "Introduction to Zumba Toning concepts using light weights or body weight.",
+      ],
+    },
+    advanced: {
+      title: "Advanced Level - High-Intensity Party",
+      modules: [
+        "High-Intensity Interval Training (HIIT) concepts integrated into Zumba routines.",
+        "Advanced, high-energy choreography with syncopated rhythms and complex footwork.",
+        "Mastering transitions between different musical styles and intensities.",
+        "Focus on performance quality, expression, and leading the energy of the class.",
+      ],
+    },
+  },
   "Gymnastics": {
     beginner: {
       title: "Beginner Foundations (Levels 1-3)",
