@@ -43,6 +43,7 @@ import {
   FilePenLine,
   HeartHandshake,
   Banknote,
+  UserCheck as UserCheckIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -68,6 +69,7 @@ const navItems = [
 const hrNavItems = [
     { href: "/teachers", icon: UserSquare, label: "Teachers" },
     { href: "/staff", icon: Building2, label: "Staff" },
+    { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
 ];
 
 const financeNavItems = [
