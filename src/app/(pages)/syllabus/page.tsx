@@ -181,6 +181,33 @@ const syllabusData: SyllabusData = {
       ],
     },
   },
+  "Gymnastics": {
+    beginner: {
+      title: "Beginner Foundations (Levels 1-3)",
+      modules: [
+        "Level 1: Introduction to Gymnastics - Basic body positions (tuck, pike, straddle), forward and backward rolls, introduction to beam (walking), bar (hanging).",
+        "Level 2: Building Strength - Cartwheels, handstands against a wall, pullovers on the bar, basic jumps on the beam.",
+        "Level 3: Developing Coordination - Handstand forward roll, bridge kick-over, casting on bars, leaps and turns on beam.",
+      ],
+    },
+    intermediate: {
+      title: "Intermediate Skills (Levels 4-7)",
+      modules: [
+        "Level 4: Introduction to Apparatus Skills - Round-off, back handspring drills, front hip circle on bars, handstand on low beam.",
+        "Level 5: Flipping Foundations - Standing back handspring (with spot), front tuck drills, tap swings on bars, cartwheel on high beam.",
+        "Level 6: Combining Skills - Round-off back handspring, front handspring on vault, kips on bars, leap series on beam.",
+        "Level 7: Advanced Intermediate - Series tumbling (e.g., round-off back handspring back tuck), flyaway dismount from bars, leap and turn combinations on beam.",
+      ],
+    },
+    advanced: {
+      title: "Advanced & Competitive (Levels 8-10)",
+      modules: [
+        "Level 8: Twisting Elements - Layouts with full twists, giant swings on bars, acrobatic series on beam (e.g., back handspring layout step-out).",
+        "Level 9: High-Level Skills - Advanced tumbling passes, release moves on bars (e.g., Jaeger, Tkatchev), advanced dismounts.",
+        "Level 10: Elite & Mastery - Complex combinations, development of personal style, preparation for high-level competitions, double-twisting layouts.",
+      ],
+    },
+  },
   "Yoga": {
     beginner: {
       title: "Beginner Level - Foundations",
@@ -229,7 +256,7 @@ const syllabusData: SyllabusData = {
       ],
     },
     advanced: {
-      title: "Advanced Level - Ankathari & Verumkai (Metal Weapons & Bare-handed Combat)",
+      title: "Advanced Level - Ankathari & Verumkai (Bare-handed Combat)",
       modules: [
         "Valum Parichayum (Sword and Shield): The art of sword fighting.",
         "Urumi (Flexible Sword): Techniques for wielding the dangerous flexible sword.",
