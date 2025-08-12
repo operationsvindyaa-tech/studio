@@ -42,6 +42,7 @@ import {
   School,
   FilePenLine,
   HeartHandshake,
+  Banknote,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,10 +71,13 @@ const hrNavItems = [
     { href: "/payroll", icon: Wallet, label: "Payroll" },
 ];
 
+const financeNavItems = [
+    { href: "/billing", icon: Banknote, label: "Billing" },
+]
+
 const otherNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
-    { href: "/billing", icon: Wallet, label: "Billing" },
     { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
@@ -131,6 +135,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarGroupLabel>HR</SidebarGroupLabel>
                 <SidebarMenu>
                     {hrNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>Finance</SidebarGroupLabel>
+                <SidebarMenu>
+                    {financeNavItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
                         <Link href={item.href} passHref>
                         <SidebarMenuButton
@@ -209,7 +234,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...hrNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...hrNavItems, ...financeNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
