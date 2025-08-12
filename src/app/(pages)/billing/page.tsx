@@ -24,16 +24,20 @@ import { useReactToPrint } from "react-to-print";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { getStudents } from "@/lib/db";
+import { getStudents, type Student } from "@/lib/db";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 type Activity = {
   name: string;
+  description?: string;
   fee: number;
 };
 
 type StudentBillingInfo = {
   id: string;
+  studentId: string;
   name: string;
   activities: Activity[];
   admissionFee?: number;
@@ -43,6 +47,16 @@ type StudentBillingInfo = {
   paymentDate?: string;
   months: string[];
 };
+
+const activityHeads = [
+    { name: "Tuition Fee", fee: 2500 },
+    { name: "Exam Fee", fee: 500 },
+    { name: "Annual Day Fee", fee: 1000 },
+    { name: "Uniform Fee", fee: 1500 },
+    { name: "Books & Supplies", fee: 800 },
+    { name: "Late Fee", fee: 200 },
+    { name: "Other", fee: 0 },
+];
 
 const courseFees: { [key: string]: number } = {
   "bharatanatyam": 2500,
@@ -69,8 +83,15 @@ const calculateTotal = (student: StudentBillingInfo) => {
     return activitiesTotal + admissionFee - discount;
 }
 
+type NewInvoice = {
+    studentId: string;
+    activities: Activity[];
+    months: string;
+}
+
 export default function BillingPage() {
   const [billingData, setBillingData] = useState<StudentBillingInfo[]>([]);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<StudentBillingInfo | null>(null);
@@ -78,6 +99,8 @@ export default function BillingPage() {
   const [editingInvoice, setEditingInvoice] = useState<StudentBillingInfo | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [invoiceToDelete, setInvoiceToDelete] = useState<StudentBillingInfo | null>(null);
+  const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = useState(false);
+  const [newInvoice, setNewInvoice] = useState<NewInvoice>({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '' });
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -86,6 +109,7 @@ export default function BillingPage() {
         setLoading(true);
         try {
             const students = await getStudents();
+            setAllStudents(students);
             const billingRecords = students.map((student, index) => {
                 const activities: Activity[] = [];
                 if (student.desiredCourse) {
@@ -95,7 +119,6 @@ export default function BillingPage() {
                     });
                 }
                 
-                // Mocking some variation for demonstration
                 const statuses: Array<"Paid" | "Due" | "Overdue"> = ["Paid", "Due", "Overdue"];
                 const status = statuses[index % 3];
                 const dueDate = new Date();
@@ -106,7 +129,8 @@ export default function BillingPage() {
                 }
 
                 return {
-                    id: student.id.replace('S', 'B'),
+                    id: `B${student.id.padStart(4, '0')}`,
+                    studentId: student.id,
                     name: student.name,
                     activities,
                     admissionFee: index < 2 ? 1000 : undefined,
@@ -160,14 +184,20 @@ export default function BillingPage() {
     }
   };
 
-  const handleActivityChange = (index: number, field: 'name' | 'fee', value: string) => {
+  const handleActivityChange = (index: number, field: keyof Activity, value: string | number) => {
     if (editingInvoice) {
-        const updatedActivities = [...editingInvoice.activities];
-        updatedActivities[index] = {
-            ...updatedActivities[index],
-            [field]: field === 'fee' ? Number(value) : value,
-        };
-        setEditingInvoice({ ...editingInvoice, activities: updatedActivities });
+      const updatedActivities = [...editingInvoice.activities];
+      const activity = updatedActivities[index];
+      
+      if(field === 'name') {
+          const selectedHead = activityHeads.find(h => h.name === value);
+          activity.name = value as string;
+          if(selectedHead) activity.fee = selectedHead.fee;
+      } else {
+          (activity[field as 'description' | 'fee'] as any) = value;
+      }
+
+      setEditingInvoice({ ...editingInvoice, activities: updatedActivities });
     }
   };
 
@@ -175,7 +205,7 @@ export default function BillingPage() {
     if (editingInvoice) {
         setEditingInvoice({
             ...editingInvoice,
-            activities: [...editingInvoice.activities, { name: '', fee: 0 }],
+            activities: [...editingInvoice.activities, { name: '', description: '', fee: 0 }],
         });
     }
   };
@@ -204,15 +234,83 @@ export default function BillingPage() {
     setInvoiceToDelete(null);
   };
 
+  // Manual Invoice Creation handlers
+  const handleCreateNewInvoice = () => {
+      const { studentId, activities, months } = newInvoice;
+      if (!studentId || activities.length === 0 || !months) {
+          toast({ title: "Error", description: "Please fill all fields for the new invoice.", variant: "destructive" });
+          return;
+      }
+
+      const student = allStudents.find(s => s.id === studentId);
+      if (!student) {
+          toast({ title: "Error", description: "Selected student not found.", variant: "destructive" });
+          return;
+      }
+      
+      const newBillingRecord: StudentBillingInfo = {
+          id: `B${String(billingData.length + 1).padStart(4, '0')}`,
+          studentId,
+          name: student.name,
+          activities,
+          status: "Due",
+          dueDate: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Due in 15 days
+          months: months.split(',').map(m => m.trim()),
+      };
+      
+      setBillingData(prev => [newBillingRecord, ...prev]);
+      toast({ title: "Success", description: `Invoice created for ${student.name}.` });
+      setIsCreateInvoiceOpen(false);
+      setNewInvoice({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '' });
+  };
+  
+  const handleNewInvoiceActivityChange = (index: number, field: keyof Activity, value: string | number) => {
+      const updatedActivities = [...newInvoice.activities];
+      const activity = updatedActivities[index];
+      
+      if (field === 'name') {
+          const selectedHead = activityHeads.find(h => h.name === value);
+          activity.name = value as string;
+          if (selectedHead) {
+              activity.fee = selectedHead.fee;
+          }
+      } else {
+          (activity[field as 'description' | 'fee'] as any) = value;
+      }
+      
+      setNewInvoice(prev => ({ ...prev, activities: updatedActivities }));
+  };
+
+  const handleAddNewInvoiceActivity = () => {
+      setNewInvoice(prev => ({
+          ...prev,
+          activities: [...prev.activities, { name: 'Tuition Fee', fee: 2500, description: '' }],
+      }));
+  };
+  
+  const handleRemoveNewInvoiceActivity = (index: number) => {
+      setNewInvoice(prev => ({
+          ...prev,
+          activities: prev.activities.filter((_, i) => i !== index),
+      }));
+  };
+
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Student Billing</CardTitle>
-          <CardDescription>
-            Manage student fee payments and generate invoices for activities.
-          </CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Student Billing</CardTitle>
+              <CardDescription>
+                Manage student fee payments and generate invoices for activities.
+              </CardDescription>
+            </div>
+            <Button onClick={() => setIsCreateInvoiceOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Create Invoice
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="border rounded-lg">
@@ -324,7 +422,7 @@ export default function BillingPage() {
                   <div>
                     <p className="text-muted-foreground font-semibold">Bill To:</p>
                     <p>{selectedInvoice.name}</p>
-                    <p>Student ID: {selectedInvoice.id.replace('B','S')}</p>
+                    <p>Student ID: {selectedInvoice.studentId}</p>
                   </div>
                   <div className="text-right">
                     <p><span className="text-muted-foreground font-semibold">Invoice Date:</span> {new Date().toLocaleDateString()}</p>
@@ -343,7 +441,7 @@ export default function BillingPage() {
                     {selectedInvoice.activities.map((activity, index) => (
                          <TableRow key={`activity-${index}`}>
                             <TableCell>
-                                <p className="font-medium">Monthly Fee for {activity.name}</p>
+                                <p className="font-medium">{activity.name}</p>
                                 <p className="text-muted-foreground">For month(s): {selectedInvoice.months.join(', ')}</p>
                             </TableCell>
                             <TableCell className="text-right">{formatAmount(activity.fee)}</TableCell>
@@ -413,7 +511,7 @@ export default function BillingPage() {
             </DialogDescription>
           </DialogHeader>
           {editingInvoice && (
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div className="space-y-2">
                     <Label htmlFor="studentName">Student Name</Label>
                     <Input id="studentName" value={editingInvoice.name} onChange={(e) => setEditingInvoice({...editingInvoice, name: e.target.value })}/>
@@ -424,10 +522,18 @@ export default function BillingPage() {
                 <div className="space-y-2">
                     <Label>Activities</Label>
                     {editingInvoice.activities.map((activity, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                            <Input placeholder="Activity Name" value={activity.name} onChange={(e) => handleActivityChange(index, 'name', e.target.value)} />
-                            <Input type="number" placeholder="Fee" value={activity.fee} onChange={(e) => handleActivityChange(index, 'fee', e.target.value)} className="w-28" />
-                            <Button variant="outline" size="icon" onClick={() => handleRemoveActivity(index)}><Trash2 className="h-4 w-4" /></Button>
+                        <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                            <div className="col-span-5">
+                                <Select value={activity.name} onValueChange={(value) => handleActivityChange(index, 'name', value)}>
+                                    <SelectTrigger><SelectValue placeholder="Select Head" /></SelectTrigger>
+                                    <SelectContent>
+                                        {activityHeads.map(head => <SelectItem key={head.name} value={head.name}>{head.name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Input placeholder="Description (optional)" value={activity.description || ''} onChange={(e) => handleActivityChange(index, 'description', e.target.value)} className="col-span-4" />
+                            <Input type="number" placeholder="Fee" value={activity.fee} onChange={(e) => handleActivityChange(index, 'fee', Number(e.target.value))} className="col-span-2" />
+                            <Button variant="outline" size="icon" onClick={() => handleRemoveActivity(index)} className="col-span-1"><Trash2 className="h-4 w-4" /></Button>
                         </div>
                     ))}
                     <Button variant="outline" size="sm" onClick={handleAddActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
@@ -455,6 +561,65 @@ export default function BillingPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Manual Invoice Creation Dialog */}
+      <Dialog open={isCreateInvoiceOpen} onOpenChange={setIsCreateInvoiceOpen}>
+          <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                  <DialogTitle>Create Manual Invoice</DialogTitle>
+                  <DialogDescription>
+                      Generate a new invoice for a student with specific activities.
+                  </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
+                  <div className="space-y-2">
+                      <Label htmlFor="student-select">Student</Label>
+                      <Select value={newInvoice.studentId} onValueChange={(value) => setNewInvoice(prev => ({ ...prev, studentId: value }))}>
+                          <SelectTrigger id="student-select"><SelectValue placeholder="Select a student" /></SelectTrigger>
+                          <SelectContent>
+                              {allStudents.map(student => <SelectItem key={student.id} value={student.id}>{student.name} ({student.id})</SelectItem>)}
+                          </SelectContent>
+                      </Select>
+                  </div>
+                  <div className="space-y-2">
+                      <Label htmlFor="invoice-months">Month(s)</Label>
+                      <Input id="invoice-months" placeholder="e.g., September, October" value={newInvoice.months} onChange={(e) => setNewInvoice(prev => ({ ...prev, months: e.target.value }))} />
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                      <Label>Activities</Label>
+                      {newInvoice.activities.map((activity, index) => (
+                          <div key={index} className="grid grid-cols-12 gap-2 items-center">
+                              <div className="col-span-5">
+                                  <Label className="sr-only">Activity Head</Label>
+                                  <Select value={activity.name} onValueChange={(value) => handleNewInvoiceActivityChange(index, 'name', value)}>
+                                      <SelectTrigger><SelectValue placeholder="Select Head" /></SelectTrigger>
+                                      <SelectContent>
+                                          {activityHeads.map(head => <SelectItem key={head.name} value={head.name}>{head.name}</SelectItem>)}
+                                      </SelectContent>
+                                  </Select>
+                              </div>
+                              <div className="col-span-4">
+                                  <Label className="sr-only">Description</Label>
+                                  <Input placeholder="Description (optional)" value={activity.description || ''} onChange={(e) => handleNewInvoiceActivityChange(index, 'description', e.target.value)} />
+                              </div>
+                              <div className="col-span-2">
+                                  <Label className="sr-only">Fee</Label>
+                                  <Input type="number" placeholder="Fee" value={activity.fee} onChange={(e) => handleNewInvoiceActivityChange(index, 'fee', Number(e.target.value))} />
+                              </div>
+                              <Button variant="outline" size="icon" onClick={() => handleRemoveNewInvoiceActivity(index)} className="col-span-1"><Trash2 className="h-4 w-4" /></Button>
+                          </div>
+                      ))}
+                      <Button variant="outline" size="sm" onClick={handleAddNewInvoiceActivity}><PlusCircle className="mr-2 h-4 w-4" />Add Activity</Button>
+                  </div>
+              </div>
+              <DialogFooter>
+                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                  <Button onClick={handleCreateNewInvoice}>Create Invoice</Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
