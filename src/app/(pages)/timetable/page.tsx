@@ -172,7 +172,7 @@ export default function TimetablePage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <CardTitle>School Time Table</CardTitle>
+              <CardTitle>Academy Classes Time Table</CardTitle>
               <CardDescription>
                 Manage class schedules for different branches. Click a slot to add or edit.
               </CardDescription>
