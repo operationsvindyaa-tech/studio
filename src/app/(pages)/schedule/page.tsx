@@ -20,7 +20,7 @@ type Event = {
   title: string;
   date: Date;
   time: string;
-  type: "meeting" | "exam" | "event" | "lecture" | "other";
+  type: "meeting" | "exam" | "event" | "lecture" | "holiday" | "competition" | "workshop" | "celebration" | "reminder" | "other";
 };
 
 const initialEvents: Event[] = [
@@ -29,6 +29,14 @@ const initialEvents: Event[] = [
   { id: "3", title: "Science Fair", date: new Date("2024-08-22"), time: "10:00 AM - 2:00 PM", type: "event" },
   { id: "4", title: "Guest Lecture: AI in Education", date: new Date("2024-08-25"), time: "3:00 PM", type: "lecture" },
 ];
+
+const timeSlots = Array.from({ length: 48 }, (_, i) => {
+    const hours = Math.floor(i / 2);
+    const minutes = i % 2 === 0 ? '00' : '30';
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHour = hours % 12 === 0 ? 12 : hours % 12;
+    return `${String(formattedHour).padStart(2, '0')}:${minutes} ${ampm}`;
+});
 
 
 export default function SchedulePage() {
@@ -185,7 +193,17 @@ export default function SchedulePage() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="event-time">Time</Label>
-                    <Input id="event-time" value={formData.time || ''} onChange={(e) => handleFormChange('time', e.target.value)} placeholder="e.g., 10:00 AM" />
+                    <Select value={formData.time} onValueChange={(value) => handleFormChange('time', value)}>
+                        <SelectTrigger id="event-time">
+                            <SelectValue placeholder="Select a time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All Day">All Day</SelectItem>
+                            {timeSlots.map(time => (
+                                <SelectItem key={time} value={time}>{time}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
             <div className="space-y-2">
@@ -199,6 +217,11 @@ export default function SchedulePage() {
                   <SelectItem value="exam">Exam</SelectItem>
                   <SelectItem value="event">Event</SelectItem>
                   <SelectItem value="lecture">Lecture</SelectItem>
+                  <SelectItem value="holiday">Holiday</SelectItem>
+                  <SelectItem value="competition">Competition</SelectItem>
+                  <SelectItem value="workshop">Workshop</SelectItem>
+                  <SelectItem value="celebration">Celebration</SelectItem>
+                  <SelectItem value="reminder">Reminder</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
