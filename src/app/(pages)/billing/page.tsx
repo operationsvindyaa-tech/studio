@@ -124,7 +124,7 @@ export default function BillingPage() {
                     activities.push({
                         name: student.desiredCourse.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
-                        description: 'Course Fee'
+                        description: 'Course Fee for August'
                     });
                 }
                 
@@ -274,12 +274,17 @@ export default function BillingPage() {
           return;
       }
       
+      const processedActivities = activities.map(act => ({
+          ...act,
+          description: act.description || `Fee for month(s): ${months}`,
+      }));
+
       const newBillingRecord: StudentBillingInfo = {
           id: `B${String(billingData.length + 1).padStart(4, '0')}`,
           studentId,
           name: student.name,
           whatsappNumber: student.whatsappNumber,
-          activities,
+          activities: processedActivities,
           discount,
           tax,
           status: "Due",
@@ -498,7 +503,7 @@ export default function BillingPage() {
                          <TableRow key={`activity-${index}`}>
                             <TableCell>
                                 <p className="font-medium">{activity.name}</p>
-                                <p className="text-muted-foreground">{activity.description ? activity.description : `For month(s): ${selectedInvoice.months.join(', ')}`}</p>
+                                <p className="text-muted-foreground">{activity.description}</p>
                             </TableCell>
                             <TableCell className="text-right">{formatAmount(activity.fee)}</TableCell>
                         </TableRow>
@@ -657,7 +662,7 @@ export default function BillingPage() {
                         <SelectContent>
                             {Object.entries(courseFees).map(([key, fee]) => (
                                 <SelectItem key={key} value={key}>
-                                    {key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} ({fee})
+                                    {key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
                                 </SelectItem>
                             ))}
                         </SelectContent>
@@ -733,3 +738,5 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
