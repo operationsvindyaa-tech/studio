@@ -91,6 +91,35 @@ const syllabusData: SyllabusData = {
       modules: ["Advanced Music Theory", "Complex Rhythms and Syncopation", "Improvisation and Soloing", "Playing Different Genres (Jazz, Classical)", "Performance Techniques"],
     },
   },
+   "Piano": {
+    beginner: {
+      title: "Beginner Level - Foundations",
+      modules: [
+        "Introduction to the Piano: Posture and Hand Position",
+        "Learning the Keys: Identifying Notes on the Keyboard",
+        "Basic Music Theory: Staff, Clefs, and Note Values",
+        "Playing Simple Melodies and C Major Scale",
+      ],
+    },
+    intermediate: {
+      title: "Intermediate Level - Building Technique",
+      modules: [
+        "All Major and Minor Scales (One Octave)",
+        "Introduction to Chords and Inversions",
+        "Sight-Reading Simple Pieces",
+        "Playing with Both Hands: Coordination Exercises",
+      ],
+    },
+    advanced: {
+      title: "Advanced Level - Musical Artistry",
+      modules: [
+        "Advanced Repertoire: Sonatas and Preludes",
+        "Understanding Musical Expression: Dynamics and Articulation",
+        "Introduction to Different Styles: Classical, Jazz, and Pop",
+        "Advanced Music Theory and Improvisation",
+      ],
+    },
+  },
    "Western Dance": {
     beginner: {
       title: "Beginner Level - Foundational Rhythms",
