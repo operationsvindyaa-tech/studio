@@ -41,15 +41,24 @@ export const getTeachers = async (): Promise<Teacher[]> => {
   return Promise.resolve(teachers);
 };
 
-type AddTeacherData = Omit<Teacher, 'id' | 'avatar' | 'initials'>;
+export type AddTeacherData = Omit<Teacher, 'id' | 'avatar' | 'initials'> & { photo?: string | null };
 
 export const addTeacher = async (teacherData: AddTeacherData): Promise<Teacher> => {
   await delay(500);
   const newId = `T${String(nextId++).padStart(3, '0')}`;
   const newTeacher: Teacher = {
     id: newId,
-    ...teacherData,
-    avatar: `https://placehold.co/100x100.png`,
+    name: teacherData.name,
+    designation: teacherData.designation,
+    department: teacherData.department,
+    phone: teacherData.phone,
+    classCenter: teacherData.classCenter,
+    noOfBatches: teacherData.noOfBatches,
+    totalStudents: teacherData.totalStudents,
+    noOfWorkingDays: teacherData.noOfWorkingDays,
+    weekOff: teacherData.weekOff,
+    email: teacherData.email,
+    avatar: teacherData.photo || `https://placehold.co/100x100.png`,
     initials: getInitials(teacherData.name),
   };
   teachers.push(newTeacher);
@@ -66,7 +75,18 @@ export const updateTeacher = async (id: string, updates: Partial<AddTeacherData>
     const updatedTeacher = {
         ...originalTeacher,
         ...updates,
+        name: updates.name || originalTeacher.name,
+        designation: updates.designation || originalTeacher.designation,
+        department: updates.department || originalTeacher.department,
+        phone: updates.phone || originalTeacher.phone,
+        classCenter: updates.classCenter || originalTeacher.classCenter,
+        noOfBatches: updates.noOfBatches ?? originalTeacher.noOfBatches,
+        totalStudents: updates.totalStudents ?? originalTeacher.totalStudents,
+        noOfWorkingDays: updates.noOfWorkingDays ?? originalTeacher.noOfWorkingDays,
+        weekOff: updates.weekOff || originalTeacher.weekOff,
+        email: updates.email || originalTeacher.email,
         initials: updates.name ? getInitials(updates.name) : originalTeacher.initials,
+        avatar: updates.photo || originalTeacher.avatar,
     };
     teachers[teacherIndex] = updatedTeacher;
     return Promise.resolve(updatedTeacher);
@@ -86,3 +106,5 @@ export const resetTeachers = () => {
     teachers = [...initialTeachers];
     nextId = teachers.length + 1;
 }
+
+    

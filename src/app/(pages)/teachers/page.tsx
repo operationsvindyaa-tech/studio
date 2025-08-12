@@ -42,13 +42,15 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher } from "@/lib/teachers-db";
+import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher, type AddTeacherData } from "@/lib/teachers-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Image from "next/image";
+import { FormDescription, FormMessage } from "@/components/ui/form";
+
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -57,6 +59,8 @@ export default function TeachersPage() {
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
   const [teacherToDelete, setTeacherToDelete] = useState<Teacher | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchTeachers = async () => {
@@ -70,11 +74,24 @@ export default function TeachersPage() {
     fetchTeachers();
   }, []);
 
-  const handleEdit = (teacher: Teacher) => {
+  const handleOpenDialog = (teacher: Teacher | null) => {
     setEditingTeacher(teacher);
+    if (teacher) {
+        setPhotoPreview(teacher.avatar);
+    } else {
+        setPhotoPreview(null);
+    }
+    setPhotoDataUrl(null);
     setIsDialogOpen(true);
   };
-  
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingTeacher(null);
+    setPhotoPreview(null);
+    setPhotoDataUrl(null);
+  };
+
   const handleDelete = (teacher: Teacher) => {
     setTeacherToDelete(teacher);
     setIsDeleteDialogOpen(true);
@@ -93,6 +110,19 @@ export default function TeachersPage() {
     }
   };
 
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setPhotoPreview(dataUrl);
+        setPhotoDataUrl(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -106,7 +136,7 @@ export default function TeachersPage() {
     const noOfWorkingDays = parseInt(formData.get("noOfWorkingDays") as string, 10);
     const weekOff = formData.get("weekOff") as string;
 
-    const teacherData = {
+    const teacherData: AddTeacherData = {
         name,
         designation,
         department,
@@ -116,8 +146,8 @@ export default function TeachersPage() {
         totalStudents,
         noOfWorkingDays,
         weekOff,
-        // email is required but not in the new form spec, so let's generate one
-        email: `${name.split(' ').join('.').toLowerCase()}@vindyaa.com`,
+        email: editingTeacher?.email || `${name.split(' ').join('.').toLowerCase()}@vindyaa.com`,
+        photo: photoDataUrl || (editingTeacher ? editingTeacher.avatar : null),
     };
 
     try {
@@ -137,8 +167,7 @@ export default function TeachersPage() {
         });
       }
       fetchTeachers();
-      setIsDialogOpen(false);
-      setEditingTeacher(null);
+      handleCloseDialog();
     } catch (error) {
        toast({
         title: "Error",
@@ -182,74 +211,92 @@ export default function TeachersPage() {
                 <FileDown className="h-4 w-4 mr-2" />
                 Export
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={(open) => {
-                setIsDialogOpen(open);
-                if (!open) setEditingTeacher(null);
-            }}>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                    <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Teacher
+                    <Button onClick={() => handleOpenDialog(null)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Teacher
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                     <DialogTitle>{editingTeacher ? 'Edit Teacher' : 'Add New Teacher'}</DialogTitle>
                     <DialogDescription>
                         {editingTeacher ? 'Update the details for this teacher.' : 'Fill in the details to add a new teacher to the system.'}
-                    </DialogDescription>
+                    </Description>
                     </DialogHeader>
-                    <form id="teacher-form" onSubmit={handleFormSubmit} className="grid grid-cols-2 gap-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
+                    <form id="teacher-form" onSubmit={handleFormSubmit} className="space-y-6">
+                        <div className="flex flex-col items-center text-center">
+                            <Input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                id="photo-upload"
+                                onChange={handlePhotoChange}
+                            />
+                            <label htmlFor="photo-upload" className="cursor-pointer">
+                                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-2 border-dashed mx-auto">
+                                    {photoPreview ? (
+                                        <Image src={photoPreview} alt="Teacher photo" width={96} height={96} className="rounded-full object-cover w-full h-full" />
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground text-center">Upload Photo</span>
+                                    )}
+                                </div>
+                            </label>
+                            <FormDescription className="mt-2">Click above to upload a photo.</FormDescription>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="designation">Designation</Label>
-                            <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="department">Department</Label>
-                            <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="phone">Contact Number</Label>
-                            <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="classCenter">Class Center</Label>
-                            <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="noOfBatches">No of Batches</Label>
-                            <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="totalStudents">Total Students</Label>
-                            <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
-                            <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
-                        </div>
-                        <div className="space-y-2 col-span-2">
-                            <Label htmlFor="weekOff">Week Off</Label>
-                             <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
-                                <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Sunday">Sunday</SelectItem>
-                                    <SelectItem value="Monday">Monday</SelectItem>
-                                    <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                    <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                    <SelectItem value="Thursday">Thursday</SelectItem>
-                                    <SelectItem value="Friday">Friday</SelectItem>
-                                    <SelectItem value="Saturday">Saturday</SelectItem>
-                                </SelectContent>
-                            </Select>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="name">Name</Label>
+                                <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="designation">Designation</Label>
+                                <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="department">Department</Label>
+                                <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
+                            </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="phone">Contact Number</Label>
+                                <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="classCenter">Class Center</Label>
+                                <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="noOfBatches">No of Batches</Label>
+                                <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="totalStudents">Total Students</Label>
+                                <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
+                                <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
+                            </div>
+                            <div className="space-y-2 col-span-2">
+                                <Label htmlFor="weekOff">Week Off</Label>
+                                 <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
+                                    <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Sunday">Sunday</SelectItem>
+                                        <SelectItem value="Monday">Monday</SelectItem>
+                                        <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                        <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                        <SelectItem value="Thursday">Thursday</SelectItem>
+                                        <SelectItem value="Friday">Friday</SelectItem>
+                                        <SelectItem value="Saturday">Saturday</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </form>
                     <DialogFooter>
-                        <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                        <Button variant="outline" onClick={handleCloseDialog}>Cancel</Button>
                         <Button type="submit" form="teacher-form">
                             {editingTeacher ? 'Save Changes' : 'Add Teacher'}
                         </Button>
@@ -329,7 +376,7 @@ export default function TeachersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(teacher)}>Edit</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenDialog(teacher)}>Edit</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
                             Delete
