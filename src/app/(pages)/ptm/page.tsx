@@ -26,6 +26,7 @@ import { getStudents, type Student } from "@/lib/db";
 import { getTeachers, type Teacher } from "@/lib/teachers-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type PTM = {
   id: string;
