@@ -136,9 +136,12 @@ export default function PayrollPage() {
     const grossSalary = perDaySalary * presentDays;
 
     // Earnings breakdown
-    const basic = grossSalary * 0.50;
+    const basic = grossSalary * 0.45;
     const hra = basic * 0.40;
-    const specialAllowance = grossSalary - basic - hra;
+    const conveyanceAllowance = 1600;
+    const medicalAllowance = 1250;
+    const incentives = 0; // Placeholder for bonus/overtime
+    const specialAllowance = grossSalary - basic - hra - conveyanceAllowance - medicalAllowance - incentives;
 
     // Deductions
     const professionalTax = 200;
@@ -148,7 +151,7 @@ export default function PayrollPage() {
     const totalDeductions = professionalTax + providentFund + incomeTax;
     const netSalary = grossSalary - totalDeductions;
     
-    return { grossSalary, basic, hra, specialAllowance, professionalTax, providentFund, incomeTax, totalDeductions, netSalary };
+    return { grossSalary, basic, hra, conveyanceAllowance, medicalAllowance, incentives, specialAllowance, professionalTax, providentFund, incomeTax, totalDeductions, netSalary };
   };
 
   const formatCurrency = (amount: number) => {
@@ -554,6 +557,9 @@ export default function PayrollPage() {
                         <div className="space-y-2 p-4">
                             <div className="flex justify-between"><span>Basic Salary</span> <span>{formatCurrency(payslipDetails.basic)}</span></div>
                             <div className="flex justify-between"><span>House Rent Allowance (HRA)</span> <span>{formatCurrency(payslipDetails.hra)}</span></div>
+                            <div className="flex justify-between"><span>Conveyance Allowance</span> <span>{formatCurrency(payslipDetails.conveyanceAllowance)}</span></div>
+                            <div className="flex justify-between"><span>Medical Allowance</span> <span>{formatCurrency(payslipDetails.medicalAllowance)}</span></div>
+                            <div className="flex justify-between"><span>Incentives / Bonus</span> <span>{formatCurrency(payslipDetails.incentives)}</span></div>
                             <div className="flex justify-between"><span>Special Allowance</span> <span>{formatCurrency(payslipDetails.specialAllowance)}</span></div>
                         </div>
                         <Separator />
