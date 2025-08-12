@@ -84,9 +84,12 @@ const financeNavItems = [
     { href: "/payroll", icon: Wallet, label: "Payroll" },
 ]
 
+const mediaNavItems = [
+    { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
+];
+
 const otherNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
-    { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ];
@@ -200,6 +203,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
+                <SidebarGroupLabel>Media</SidebarGroupLabel>
+                <SidebarMenu>
+                    {mediaNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
+          <SidebarSeparator />
+            <SidebarGroup>
                 <SidebarGroupLabel>More</SidebarGroupLabel>
                 <SidebarMenu>
                     {otherNavItems.map((item) => (
@@ -260,7 +284,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
