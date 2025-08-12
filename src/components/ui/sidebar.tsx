@@ -185,6 +185,10 @@ const Sidebar = React.forwardRef<
   ) => {
     const { isMobile, isMounted, state, openMobile, setOpenMobile } = useSidebar()
 
+    if (!isMounted) {
+        return null; // or a skeleton loader
+    }
+
     if (collapsible === "none") {
       return (
         <div
@@ -200,7 +204,7 @@ const Sidebar = React.forwardRef<
       )
     }
     
-    if (isMounted && isMobile) {
+    if (isMobile) {
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
