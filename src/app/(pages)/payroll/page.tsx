@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap, Upload, Trash2 } from "lucide-react";
+import { MoreHorizontal, FileDown, CheckCircle, UserPlus, Eye, GraduationCap, Upload, Trash2, Printer } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,6 +43,7 @@ import { Separator } from '@/components/ui/separator';
 import * as XLSX from 'xlsx';
 import { getStaff as fetchStaffFromDB, type Staff } from "@/lib/staff-db";
 import { Skeleton } from '@/components/ui/skeleton';
+import { useReactToPrint } from 'react-to-print';
 
 type StaffStatus = "Paid" | "Pending";
 
@@ -94,6 +95,11 @@ export default function PayrollPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [staffToDelete, setStaffToDelete] = useState<PayrollStaffMember | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const payslipRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    content: () => payslipRef.current,
+  });
 
   useEffect(() => {
     async function fetchStaff() {
@@ -418,7 +424,7 @@ export default function PayrollPage() {
                         </TableRow>
                     ))
                 ) : staff.map((s) => {
-                      const { netSalary, monthlySalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
+                      const { netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
                       return (
                           <TableRow key={s.id}>
                               <TableCell>
@@ -529,85 +535,91 @@ export default function PayrollPage() {
       {/* View Payslip Dialog */}
       <Dialog open={isPayslipOpen} onOpenChange={setIsPayslipOpen}>
         <DialogContent className="sm:max-w-3xl">
-          <DialogHeader>
-            <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-2">
-                    <GraduationCap className="h-8 w-8 text-primary" />
-                    <h1 className="text-2xl font-bold font-headline">CampusConnect Academy</h1>
+          <div ref={payslipRef} className="p-4">
+            <DialogHeader>
+                <div className="flex flex-col items-center text-center">
+                    <div className="flex items-center gap-2">
+                        <GraduationCap className="h-8 w-8 text-primary" />
+                        <h1 className="text-2xl font-bold font-headline">CampusConnect Academy</h1>
+                    </div>
+                    <p className="text-sm text-muted-foreground">123 Learning Lane, Knowledge City, 560100</p>
+                    <p className="text-sm text-muted-foreground">Phone: (080) 1234 5678 | Email: contact@campusconnect.edu</p>
+                    <DialogTitle className="text-xl mt-4">Payslip for {currentMonthYear}</DialogTitle>
                 </div>
-                <p className="text-sm text-muted-foreground">123 Learning Lane, Knowledge City, 560100</p>
-                <p className="text-sm text-muted-foreground">Phone: (080) 1234 5678 | Email: contact@campusconnect.edu</p>
-                <DialogTitle className="text-xl mt-4">Payslip for {currentMonthYear}</DialogTitle>
+            </DialogHeader>
+            {selectedStaff && payslipDetails && (
+                <div className="text-sm mt-4">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-2 rounded-lg border p-4">
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Department:</span> <span className="font-medium">{selectedStaff.department}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">PAN No:</span> <span className="font-medium">{selectedStaff.pan}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">UAN:</span> <span className="font-medium">{selectedStaff.uan}</span></div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                        <div className="rounded-lg border">
+                            <div className="bg-muted px-4 py-2 font-semibold">Earnings</div>
+                            <div className="space-y-2 p-4">
+                                <div className="flex justify-between"><span>Basic Salary</span> <span>{formatCurrency(payslipDetails.basic)}</span></div>
+                                <div className="flex justify-between"><span>House Rent Allowance (HRA)</span> <span>{formatCurrency(payslipDetails.hra)}</span></div>
+                                <div className="flex justify-between"><span>Conveyance Allowance</span> <span>{formatCurrency(payslipDetails.conveyanceAllowance)}</span></div>
+                                <div className="flex justify-between"><span>Medical Allowance</span> <span>{formatCurrency(payslipDetails.medicalAllowance)}</span></div>
+                                <div className="flex justify-between"><span>Incentives / Bonus</span> <span>{formatCurrency(payslipDetails.incentives)}</span></div>
+                                <div className="flex justify-between"><span>Special Allowance</span> <span>{formatCurrency(payslipDetails.specialAllowance)}</span></div>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between px-4 py-2 font-semibold">
+                                <span>Gross Earnings</span>
+                                <span>{formatCurrency(payslipDetails.grossSalary)}</span>
+                            </div>
+                        </div>
+                        <div className="rounded-lg border">
+                            <div className="bg-muted px-4 py-2 font-semibold">Deductions</div>
+                            <div className="space-y-2 p-4">
+                                <div className="flex justify-between"><span>Provident Fund (PF)</span> <span>{formatCurrency(payslipDetails.providentFund)}</span></div>
+                                <div className="flex justify-between"><span>Professional Tax (PT)</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
+                                <div className="flex justify-between"><span>Income Tax (TDS)</span> <span>{formatCurrency(payslipDetails.incomeTax)}</span></div>
+                                <div className="flex justify-between"><span>Employee State Insurance (ESI)</span> <span>{formatCurrency(payslipDetails.esi)}</span></div>
+                                <div className="flex justify-between"><span>Loan Recovery / Advances</span> <span>{formatCurrency(payslipDetails.loanRecovery)}</span></div>
+                                <div className="flex justify-between"><span>Other Deductions</span> <span>{formatCurrency(payslipDetails.otherDeductions)}</span></div>
+                            </div>
+                            <Separator />
+                            <div className="flex justify-between px-4 py-2 font-semibold">
+                            <span>Total Deductions</span>
+                            <span>{formatCurrency(payslipDetails.totalDeductions)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 rounded-lg border bg-primary/10 p-4">
+                        <div className="flex justify-between font-bold text-base">
+                            <span>Net Salary</span>
+                            <span>{formatCurrency(payslipDetails.netSalary)}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 font-medium text-right">
+                            (In words: {numberToWords(Math.round(payslipDetails.netSalary))} Rupees Only)
+                        </div>
+                    </div>
+
+                    <div className="mt-6 text-center text-xs text-muted-foreground">
+                        Payment Date: {new Date().toLocaleDateString()} | Payment Mode: Bank Transfer
+                        <br />
+                        This is a computer-generated payslip and does not require a signature.
+                    </div>
+                </div>
+            )}
             </div>
-          </DialogHeader>
-          {selectedStaff && payslipDetails && (
-            <div className="text-sm mt-4">
-                <div className="grid grid-cols-2 gap-x-8 gap-y-2 rounded-lg border p-4">
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Department:</span> <span className="font-medium">{selectedStaff.department}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">PAN No:</span> <span className="font-medium">{selectedStaff.pan}</span></div>
-                    <div className="grid grid-cols-2"><span className="text-muted-foreground">UAN:</span> <span className="font-medium">{selectedStaff.uan}</span></div>
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div className="rounded-lg border">
-                        <div className="bg-muted px-4 py-2 font-semibold">Earnings</div>
-                        <div className="space-y-2 p-4">
-                            <div className="flex justify-between"><span>Basic Salary</span> <span>{formatCurrency(payslipDetails.basic)}</span></div>
-                            <div className="flex justify-between"><span>House Rent Allowance (HRA)</span> <span>{formatCurrency(payslipDetails.hra)}</span></div>
-                            <div className="flex justify-between"><span>Conveyance Allowance</span> <span>{formatCurrency(payslipDetails.conveyanceAllowance)}</span></div>
-                            <div className="flex justify-between"><span>Medical Allowance</span> <span>{formatCurrency(payslipDetails.medicalAllowance)}</span></div>
-                            <div className="flex justify-between"><span>Incentives / Bonus</span> <span>{formatCurrency(payslipDetails.incentives)}</span></div>
-                            <div className="flex justify-between"><span>Special Allowance</span> <span>{formatCurrency(payslipDetails.specialAllowance)}</span></div>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between px-4 py-2 font-semibold">
-                            <span>Gross Earnings</span>
-                            <span>{formatCurrency(payslipDetails.grossSalary)}</span>
-                        </div>
-                    </div>
-                    <div className="rounded-lg border">
-                        <div className="bg-muted px-4 py-2 font-semibold">Deductions</div>
-                        <div className="space-y-2 p-4">
-                            <div className="flex justify-between"><span>Provident Fund (PF)</span> <span>{formatCurrency(payslipDetails.providentFund)}</span></div>
-                            <div className="flex justify-between"><span>Professional Tax (PT)</span> <span>{formatCurrency(payslipDetails.professionalTax)}</span></div>
-                            <div className="flex justify-between"><span>Income Tax (TDS)</span> <span>{formatCurrency(payslipDetails.incomeTax)}</span></div>
-                            <div className="flex justify-between"><span>Employee State Insurance (ESI)</span> <span>{formatCurrency(payslipDetails.esi)}</span></div>
-                            <div className="flex justify-between"><span>Loan Recovery / Advances</span> <span>{formatCurrency(payslipDetails.loanRecovery)}</span></div>
-                            <div className="flex justify-between"><span>Other Deductions</span> <span>{formatCurrency(payslipDetails.otherDeductions)}</span></div>
-                        </div>
-                         <Separator />
-                        <div className="flex justify-between px-4 py-2 font-semibold">
-                           <span>Total Deductions</span>
-                           <span>{formatCurrency(payslipDetails.totalDeductions)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-4 rounded-lg border bg-primary/10 p-4">
-                    <div className="flex justify-between font-bold text-base">
-                        <span>Net Salary</span>
-                        <span>{formatCurrency(payslipDetails.netSalary)}</span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1 font-medium text-right">
-                        (In words: {numberToWords(Math.round(payslipDetails.netSalary))} Rupees Only)
-                    </div>
-                </div>
-
-                <div className="mt-6 text-center text-xs text-muted-foreground">
-                     Payment Date: {new Date().toLocaleDateString()} | Payment Mode: Bank Transfer
-                     <br />
-                    This is a computer-generated payslip and does not require a signature.
-                </div>
-            </div>
-          )}
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsPayslipOpen(false)}>Close</Button>
-          </DialogFooter>
+            <DialogFooter className="mt-4 sm:justify-end">
+                <Button variant="outline" onClick={() => setIsPayslipOpen(false)}>Close</Button>
+                <Button onClick={handlePrint}>
+                    <Printer className="mr-2 h-4 w-4" />
+                    Print
+                </Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
       
@@ -632,5 +644,3 @@ export default function PayrollPage() {
     </>
   );
 }
-
-    
