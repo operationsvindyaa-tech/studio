@@ -120,6 +120,38 @@ const syllabusData: SyllabusData = {
       ],
     },
   },
+  "Violin": {
+    beginner: {
+        title: "Beginner Level - Foundations",
+        modules: [
+            "Anatomy of the Violin and Bow",
+            "Proper Posture and Instrument Hold",
+            "Open Strings and Basic Bowing Technique",
+            "First Finger Position on All Strings",
+            "Reading Basic Music Notation",
+        ],
+    },
+    intermediate: {
+        title: "Intermediate Level - Developing Technique",
+        modules: [
+            "All Finger Positions in First Position",
+            "Introduction to Vibrato",
+            "Major and Minor Scales (One Octave)",
+            "Simple Etudes and Pieces",
+            "Basic Slurs and String Crossings",
+        ],
+    },
+    advanced: {
+        title: "Advanced Level - Artistry",
+        modules: [
+            "Shifting to Third Position",
+            "Advanced Bowing Techniques (Spiccato, Martelé)",
+            "Two-Octave Scales and Arpeggios",
+            "Introduction to Double Stops",
+            "Playing Concertos and Sonatas",
+        ],
+    },
+  },
    "Western Dance": {
     beginner: {
       title: "Beginner Level - Foundational Rhythms",
