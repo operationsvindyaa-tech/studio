@@ -48,6 +48,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher } from "@/lib/teachers-db";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -96,30 +97,40 @@ export default function TeachersPage() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const name = formData.get("name") as string;
-    const subject = formData.get("subject") as string;
-    const email = formData.get("email") as string;
+    const designation = formData.get("designation") as string;
+    const department = formData.get("department") as string;
     const phone = formData.get("phone") as string;
+    const classCenter = formData.get("classCenter") as string;
+    const noOfBatches = parseInt(formData.get("noOfBatches") as string, 10);
+    const totalStudents = parseInt(formData.get("totalStudents") as string, 10);
+    const noOfWorkingDays = parseInt(formData.get("noOfWorkingDays") as string, 10);
+    const weekOff = formData.get("weekOff") as string;
 
-    if (!name || !subject || !email || !phone) {
-      toast({
-        title: "Error",
-        description: "Please fill out all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
+    const teacherData = {
+        name,
+        designation,
+        department,
+        phone,
+        classCenter,
+        noOfBatches,
+        totalStudents,
+        noOfWorkingDays,
+        weekOff,
+        // email is required but not in the new form spec, so let's generate one
+        email: `${name.split(' ').join('.').toLowerCase()}@vindyaa.com`,
+    };
 
     try {
       if (editingTeacher) {
         // Update existing teacher
-        const updatedTeacher = await updateTeacher(editingTeacher.id, { name, subject, email, phone });
+        const updatedTeacher = await updateTeacher(editingTeacher.id, teacherData);
         toast({
           title: "Teacher Updated",
           description: `${updatedTeacher.name}'s details have been updated.`,
         });
       } else {
         // Add new teacher
-        const newTeacher = await addTeacher({ name, subject, email, phone });
+        const newTeacher = await addTeacher(teacherData);
         toast({
           title: "Teacher Added",
           description: `${newTeacher.name} has been added successfully.`,
@@ -140,10 +151,10 @@ export default function TeachersPage() {
   const handleExport = () => {
     if (!teachers.length) return;
     
-    const headers = ["ID", "Name", "Subject", "Email", "Phone"];
+    const headers = ["ID", "Name", "Designation", "Department", "Phone", "Class Center", "Batches", "Students", "Working Days", "Week Off"];
     const csvContent = [
       headers.join(','),
-      ...teachers.map(t => [t.id, `"${t.name}"`, t.subject, t.email, t.phone].join(','))
+      ...teachers.map(t => [t.id, `"${t.name}"`, t.designation, t.department, t.phone, t.classCenter, t.noOfBatches, t.totalStudents, t.noOfWorkingDays, t.weekOff].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -181,31 +192,60 @@ export default function TeachersPage() {
                     Add Teacher
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                     <DialogTitle>{editingTeacher ? 'Edit Teacher' : 'Add New Teacher'}</DialogTitle>
                     <DialogDescription>
                         {editingTeacher ? 'Update the details for this teacher.' : 'Fill in the details to add a new teacher to the system.'}
                     </DialogDescription>
                     </DialogHeader>
-                    <form id="teacher-form" onSubmit={handleFormSubmit}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">Name</Label>
-                                <Input id="name" name="name" defaultValue={editingTeacher?.name} className="col-span-3" placeholder="e.g., Jane Smith" required/>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="subject" className="text-right">Subject/Role</Label>
-                                <Input id="subject" name="subject" defaultValue={editingTeacher?.subject} className="col-span-3" placeholder="e.g., Mathematics" required/>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="email" className="text-right">Email</Label>
-                                <Input id="email" name="email" type="email" defaultValue={editingTeacher?.email} className="col-span-3" placeholder="e.g., jane.s@example.com" required/>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="phone" className="text-right">Phone</Label>
-                                <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} className="col-span-3" placeholder="e.g., (555) 123-4567" required/>
-                            </div>
+                    <form id="teacher-form" onSubmit={handleFormSubmit} className="grid grid-cols-2 gap-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Name</Label>
+                            <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="designation">Designation</Label>
+                            <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="department">Department</Label>
+                            <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="phone">Contact Number</Label>
+                            <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="classCenter">Class Center</Label>
+                            <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="noOfBatches">No of Batches</Label>
+                            <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="totalStudents">Total Students</Label>
+                            <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
+                            <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
+                        </div>
+                        <div className="space-y-2 col-span-2">
+                            <Label htmlFor="weekOff">Week Off</Label>
+                             <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
+                                <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Sunday">Sunday</SelectItem>
+                                    <SelectItem value="Monday">Monday</SelectItem>
+                                    <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                    <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                    <SelectItem value="Thursday">Thursday</SelectItem>
+                                    <SelectItem value="Friday">Friday</SelectItem>
+                                    <SelectItem value="Saturday">Saturday</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </form>
                     <DialogFooter>
@@ -224,6 +264,7 @@ export default function TeachersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Teacher</TableHead>
+                <TableHead className="hidden md:table-cell">Department</TableHead>
                 <TableHead className="hidden md:table-cell">Contact</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -244,6 +285,9 @@ export default function TeachersPage() {
                             </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
+                            <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
                             <Skeleton className="h-4 w-32" />
                         </TableCell>
                         <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
@@ -261,11 +305,12 @@ export default function TeachersPage() {
                         <div>
                           <div className="font-medium">{teacher.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {teacher.subject}
+                            {teacher.designation}
                           </div>
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell className="hidden md:table-cell">{teacher.department}</TableCell>
                     <TableCell className="hidden md:table-cell">
                         <div>{teacher.email}</div>
                         <div className="text-sm text-muted-foreground">{teacher.phone}</div>
@@ -296,7 +341,7 @@ export default function TeachersPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center h-24">
+                  <TableCell colSpan={4} className="text-center h-24">
                     No teachers found.
                   </TableCell>
                 </TableRow>
@@ -330,5 +375,3 @@ export default function TeachersPage() {
     </Card>
   );
 }
-
-    

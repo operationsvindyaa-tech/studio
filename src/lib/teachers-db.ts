@@ -1,22 +1,29 @@
+
 // This is a simple in-memory "database" for demonstration purposes.
 // In a real application, you would use a proper database like Firestore, PostgreSQL, etc.
 
 export type Teacher = {
   id: string;
   name: string;
-  subject: string;
-  email: string;
+  designation: string;
+  department: string;
   phone: string;
+  classCenter: string;
+  noOfBatches: number;
+  totalStudents: number;
+  noOfWorkingDays: number;
+  weekOff: string;
+  email: string;
   avatar: string;
   initials: string;
 };
 
 const initialTeachers: Teacher[] = [
-    { id: "T001", name: "Dr. Evelyn Reed", subject: "Web Development", email: "e.reed@campus.com", phone: "(555) 111-2222", avatar: "https://placehold.co/100x100.png", initials: "ER" },
-    { id: "T002", name: "Prof. Samuel Jones", subject: "Data Science", email: "s.jones@campus.com", phone: "(555) 333-4444", avatar: "https://placehold.co/100x100.png", initials: "SJ" },
-    { id: "T003", name: "Maria Garcia", subject: "Digital Marketing", email: "m.garcia@campus.com", phone: "(555) 555-6666", avatar: "https://placehold.co/100x100.png", initials: "MG" },
-    { id: "T004", name: "Leo Chen", subject: "Graphic Design", email: "l.chen@campus.com", phone: "(555) 777-8888", avatar: "https://placehold.co/100x100.png", initials: "LC" },
-    { id: "T005", name: "Priya Sharma", subject: "Bharatanatyam", email: "p.sharma@campus.com", phone: "(555) 222-1111", avatar: "https://placehold.co/100x100.png", initials: "PS" },
+    { id: "T001", name: "Dr. Evelyn Reed", designation: "Senior Instructor", department: "Academics", phone: "(555) 111-2222", classCenter: "Main Campus", noOfBatches: 4, totalStudents: 80, noOfWorkingDays: 22, weekOff: "Sunday", email: "e.reed@campus.com", avatar: "https://placehold.co/100x100.png", initials: "ER" },
+    { id: "T002", name: "Prof. Samuel Jones", designation: "Professor", department: "Science", phone: "(555) 333-4444", classCenter: "Science Wing", noOfBatches: 3, totalStudents: 65, noOfWorkingDays: 22, weekOff: "Sunday", email: "s.jones@campus.com", avatar: "https://placehold.co/100x100.png", initials: "SJ" },
+    { id: "T003", name: "Maria Garcia", designation: "Marketing Head", department: "Marketing", phone: "(555) 555-6666", classCenter: "Admin Building", noOfBatches: 0, totalStudents: 0, noOfWorkingDays: 24, weekOff: "Saturday", email: "m.garcia@campus.com", avatar: "https://placehold.co/100x100.png", initials: "MG" },
+    { id: "T004", name: "Leo Chen", designation: "Art Director", department: "Arts", phone: "(555) 777-8888", classCenter: "Fine Arts Building", noOfBatches: 5, totalStudents: 50, noOfWorkingDays: 20, weekOff: "Monday", email: "l.chen@campus.com", avatar: "https://placehold.co/100x100.png", initials: "LC" },
+    { id: "T005", name: "Priya Sharma", designation: "Dance Guru", department: "Performing Arts", phone: "(555) 222-1111", classCenter: "Dance Studio", noOfBatches: 6, totalStudents: 70, noOfWorkingDays: 22, weekOff: "Tuesday", email: "p.sharma@campus.com", avatar: "https://placehold.co/100x100.png", initials: "PS" },
 ];
 
 let teachers: Teacher[] = [...initialTeachers];
@@ -34,7 +41,9 @@ export const getTeachers = async (): Promise<Teacher[]> => {
   return Promise.resolve(teachers);
 };
 
-export const addTeacher = async (teacherData: Omit<Teacher, 'id' | 'avatar' | 'initials'>): Promise<Teacher> => {
+type AddTeacherData = Omit<Teacher, 'id' | 'avatar' | 'initials'>;
+
+export const addTeacher = async (teacherData: AddTeacherData): Promise<Teacher> => {
   await delay(500);
   const newId = `T${String(nextId++).padStart(3, '0')}`;
   const newTeacher: Teacher = {
@@ -47,7 +56,7 @@ export const addTeacher = async (teacherData: Omit<Teacher, 'id' | 'avatar' | 'i
   return Promise.resolve(newTeacher);
 };
 
-export const updateTeacher = async (id: string, updates: Partial<Omit<Teacher, 'id' | 'avatar' | 'initials'>>): Promise<Teacher> => {
+export const updateTeacher = async (id: string, updates: Partial<AddTeacherData>): Promise<Teacher> => {
     await delay(500);
     const teacherIndex = teachers.findIndex(t => t.id === id);
     if (teacherIndex === -1) {
@@ -77,5 +86,3 @@ export const resetTeachers = () => {
     teachers = [...initialTeachers];
     nextId = teachers.length + 1;
 }
-
-    
