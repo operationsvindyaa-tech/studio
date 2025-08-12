@@ -91,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <GraduationCap className="h-6 w-6" />
                 </div>
                 <div className="flex flex-col">
-                    <h2 className="text-lg font-headline font-semibold">CampusConnect</h2>
+                    <h2 className="text-lg font-headline font-semibold">VINDYAA</h2>
                 </div>
             </div>
         </SidebarHeader>
@@ -146,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </Avatar>
                   <div className="text-left">
                     <p className="font-medium text-sm">Admin User</p>
-                    <p className="text-xs text-muted-foreground">admin@campus.com</p>
+                    <p className="text-xs text-muted-foreground">admin@vindyaa.com</p>
                   </div>
                 </div>
               </Button>
@@ -156,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">Admin User</p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    admin@campus.com
+                    admin@vindyaa.com
                   </p>
                 </div>
               </DropdownMenuLabel>
@@ -175,7 +175,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "CampusConnect"
+                    [...navItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>

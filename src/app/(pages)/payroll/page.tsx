@@ -540,10 +540,10 @@ export default function PayrollPage() {
                 <div className="flex flex-col items-center text-center">
                     <div className="flex items-center gap-2">
                         <GraduationCap className="h-8 w-8 text-primary" />
-                        <h1 className="text-2xl font-bold font-headline">CampusConnect Academy</h1>
+                        <h1 className="text-2xl font-bold font-headline">VINDYAA - The Altitude of Art</h1>
                     </div>
                     <p className="text-sm text-muted-foreground">123 Learning Lane, Knowledge City, 560100</p>
-                    <p className="text-sm text-muted-foreground">Phone: (080) 1234 5678 | Email: contact@campusconnect.edu</p>
+                    <p className="text-sm text-muted-foreground">Phone: (080) 1234 5678 | Email: contact@vindyaa.com</p>
                     <DialogTitle className="text-xl mt-4">Payslip for {currentMonthYear}</DialogTitle>
                 </div>
             </DialogHeader>
