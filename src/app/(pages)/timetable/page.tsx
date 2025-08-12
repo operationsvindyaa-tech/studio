@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Plus, X, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -55,6 +55,15 @@ const initializeTimetableData = (centers: string[]): TimetableData => {
             data[center][day] = {};
         });
     });
+    // Pre-populate some data for demonstration
+    if (centers.length > 0) {
+        data[centers[0]] = {
+            ...data[centers[0]],
+            "Monday": { "09:00 AM": { course: "Yoga", time: "09:00 AM" } },
+            "Wednesday": { "06:00 PM": { course: "Bharatanatyam", time: "06:00 PM" } },
+            "Friday": { "05:00 PM": { course: "Guitar", time: "05:00 PM" } },
+        };
+    }
     return data;
 };
 
@@ -232,9 +241,9 @@ export default function TimetablePage() {
           <DialogContent>
               <DialogHeader>
                   <DialogTitle>Edit Schedule</DialogTitle>
-                  <p className="text-sm text-muted-foreground">
+                  <DialogDescription>
                     {selectedSlot?.day}, {selectedSlot?.time} at {selectedCenter}
-                  </p>
+                  </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                   <div className="space-y-2">
