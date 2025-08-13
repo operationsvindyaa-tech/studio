@@ -77,50 +77,54 @@ export const getBillingData = async (forceRefresh: boolean = false): Promise<Stu
         const currentMonthIndex = getMonth(today);
 
         students.forEach((student, studentIndex) => {
-            // Generate invoices for the last 6 months including the current month
-            for (let i = 0; i <= 6; i++) {
-                const invoiceDate = subMonths(today, i);
-                const invoiceMonth = format(invoiceDate, 'MMMM');
-                const invoiceMonthIndex = getMonth(invoiceDate);
-                
-                const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "Course Fee";
-                const fee = courseFees[student.desiredCourse?.toLowerCase() || ''] || 2000;
+            const courses = student.enrolledCourses || (student.desiredCourse ? [student.desiredCourse] : []);
+            
+            courses.forEach((courseKey, courseIndex) => {
+                // Generate invoices for the last 6 months including the current month
+                for (let i = 0; i <= 6; i++) {
+                    const invoiceDate = subMonths(today, i);
+                    const invoiceMonth = format(invoiceDate, 'MMMM');
+                    const invoiceMonthIndex = getMonth(invoiceDate);
+                    
+                    const courseName = courseKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    const fee = courseFees[courseKey.toLowerCase()] || 2000;
 
-                const activities: Activity[] = [{
-                    name: "Tuition Fee",
-                    fee: fee,
-                    description: `Tuition Fee for ${courseName} for the month of ${invoiceMonth}`
-                }];
-                
-                let status: BillingStatus;
-                // Logic to create a mix of statuses
-                if (invoiceMonthIndex < currentMonthIndex - 2) { // More than 2 months ago
-                    status = "Paid";
-                } else if (invoiceMonthIndex < currentMonthIndex -1) { // 2 months ago
-                     status = studentIndex % 4 === 0 ? "Overdue" : "Paid";
-                } else if (invoiceMonthIndex < currentMonthIndex) { // Last month
-                    status = studentIndex % 3 === 0 ? "Overdue" : (studentIndex % 3 === 1 ? "Due" : "Paid");
-                } else { // Current month
-                    status = "Due";
+                    const activities: Activity[] = [{
+                        name: "Tuition Fee",
+                        fee: fee,
+                        description: `Tuition Fee for ${courseName} for the month of ${invoiceMonth}`
+                    }];
+                    
+                    let status: BillingStatus;
+                    // Logic to create a mix of statuses
+                    if (invoiceMonthIndex < currentMonthIndex - 2) { // More than 2 months ago
+                        status = "Paid";
+                    } else if (invoiceMonthIndex < currentMonthIndex -1) { // 2 months ago
+                        status = (studentIndex + courseIndex) % 4 === 0 ? "Overdue" : "Paid";
+                    } else if (invoiceMonthIndex < currentMonthIndex) { // Last month
+                        status = (studentIndex + courseIndex) % 3 === 0 ? "Overdue" : ((studentIndex + courseIndex) % 3 === 1 ? "Due" : "Paid");
+                    } else { // Current month
+                        status = "Due";
+                    }
+                    
+                    const dueDate = new Date(invoiceDate);
+                    dueDate.setDate(dueDate.getDate() + 15);
+
+                    const record: StudentBillingInfo = {
+                        id: `B${student.id.padStart(4, '0')}-${format(invoiceDate, 'yyyyMM')}-${courseKey}`,
+                        studentId: student.id,
+                        name: student.name,
+                        email: student.email,
+                        whatsappNumber: student.whatsappNumber,
+                        activities,
+                        status: status,
+                        dueDate: dueDate.toISOString().split('T')[0],
+                        months: [invoiceMonth],
+                        paymentDate: status === 'Paid' ? new Date(invoiceDate).toISOString().split('T')[0] : undefined,
+                    };
+                    billingRecords.push(record);
                 }
-                
-                const dueDate = new Date(invoiceDate);
-                dueDate.setDate(dueDate.getDate() + 15);
-
-                const record: StudentBillingInfo = {
-                    id: `B${student.id.padStart(4, '0')}-${format(invoiceDate, 'yyyyMM')}`,
-                    studentId: student.id,
-                    name: student.name,
-                    email: student.email,
-                    whatsappNumber: student.whatsappNumber,
-                    activities,
-                    status: status,
-                    dueDate: dueDate.toISOString().split('T')[0],
-                    months: [invoiceMonth],
-                    paymentDate: status === 'Paid' ? new Date(invoiceDate).toISOString().split('T')[0] : undefined,
-                };
-                billingRecords.push(record);
-            }
+            });
         });
 
         billingDataCache = billingRecords;

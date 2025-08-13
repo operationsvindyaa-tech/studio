@@ -10,7 +10,7 @@ import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getBillingData, updateBillingData, StudentBillingInfo } from "@/lib/billing-db";
+import { getBillingData, updateBillingData, StudentBillingInfo, courseFees } from "@/lib/billing-db";
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, Student } from "@/lib/db";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,7 @@ const monthMap = {
     "May": "May", "Jun": "June", "Jul": "July", "Aug": "August",
     "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
 };
+const allCourses = Object.keys(courseFees).map(key => key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
 
 
 const StatusAmount = ({ details }: { details?: MonthlyPaymentDetails }) => {
@@ -79,6 +80,7 @@ export default function PaymentStatusPage() {
   const [billingRecords, setBillingRecords] = useState<StudentBillingInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedCourse, setSelectedCourse] = useState<string>("All Courses");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -114,24 +116,33 @@ export default function PaymentStatusPage() {
         billingRecords.forEach(record => {
             const studentRecord = studentPaymentRecordsMap.get(record.studentId);
             if (studentRecord) {
-                const tuitionActivity = record.activities.find(a => a.name === "Tuition Fee");
-                if (tuitionActivity) {
+                const tuitionActivities = record.activities.filter(a => a.name === "Tuition Fee");
+                
+                tuitionActivities.forEach(tuitionActivity => {
+                    const courseNameFromDesc = tuitionActivity.description?.match(/for (.*?) for the month/)?.[1] || "";
+                    
+                    if (selectedCourse !== "All Courses" && courseNameFromDesc !== selectedCourse) {
+                        return; // Skip if a specific course is selected and it doesn't match
+                    }
+
                     record.months.forEach(monthName => {
                         const monthAbbr = Object.keys(monthMap).find(key => monthMap[key as keyof typeof monthMap].toLowerCase() === monthName.toLowerCase());
                         if (monthAbbr) {
-                             studentRecord.payments[monthAbbr] = {
-                                status: record.status,
-                                amount: tuitionActivity.fee
-                            };
+                             if (!studentRecord.payments[monthAbbr]) {
+                                studentRecord.payments[monthAbbr] = { status: record.status, amount: 0 };
+                             }
+                             studentRecord.payments[monthAbbr].amount += tuitionActivity.fee;
+                             // Status of the last relevant invoice for the month will be taken.
+                             studentRecord.payments[monthAbbr].status = record.status;
                         }
                     });
-                }
+                })
             }
         });
         
         setPaymentData(Array.from(studentPaymentRecordsMap.values()));
     }
-  }, [allStudents, billingRecords]);
+  }, [allStudents, billingRecords, selectedCourse]);
   
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
   
@@ -140,7 +151,10 @@ export default function PaymentStatusPage() {
     const updatedBillingRecords = billingRecords.map(record => {
         const monthFullName = monthMap[month as keyof typeof monthMap];
         if (record.studentId === studentId && record.months.includes(monthFullName)) {
-            return { ...record, status: newStatus };
+            const courseNameFromDesc = record.activities.find(a => a.name === "Tuition Fee")?.description?.match(/for (.*?) for the month/)?.[1] || "";
+            if(selectedCourse === "All Courses" || courseNameFromDesc === selectedCourse) {
+                 return { ...record, status: newStatus };
+            }
         }
         return record;
     });
@@ -166,6 +180,18 @@ export default function PaymentStatusPage() {
               12-month fee payment tracker for all students. Click a status icon to change it.
             </CardDescription>
           </div>
+          <div className="flex items-center gap-2">
+           <Select value={selectedCourse} onValueChange={setSelectedCourse}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select course" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Courses">All Courses</SelectItem>
+                {allCourses.map(course => (
+                    <SelectItem key={course} value={course}>{course}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
            <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select year" />
@@ -176,6 +202,7 @@ export default function PaymentStatusPage() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
