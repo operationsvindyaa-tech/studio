@@ -29,68 +29,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from 'date-fns';
+import { getBillingData, StudentBillingInfo, Activity, courseFees, calculateTotal, activityHeads } from "@/lib/billing-db";
 
-type Activity = {
-  name: string;
-  description?: string;
-  fee: number;
-};
-
-type BillingStatus = "Paid" | "Due" | "Overdue";
-
-type StudentBillingInfo = {
-  id: string;
-  studentId: string;
-  name: string;
-  whatsappNumber?: string;
-  activities: Activity[];
-  admissionFee?: number;
-  discount?: number;
-  tax?: number;
-  status: BillingStatus;
-  dueDate: string;
-  paymentDate?: string;
-  months: string[];
-};
-
-const activityHeads = [
-    { name: "Admission Fee", fee: 1000 },
-    { name: "Tuition Fee", fee: 2500 },
-    { name: "Exam Fee", fee: 500 },
-    { name: "Annual Day Fee", fee: 1000 },
-    { name: "Uniform Fee", fee: 1500 },
-    { name: "Books & Supplies", fee: 800 },
-    { name: "Late Fee", fee: 200 },
-    { name: "Other", fee: 0 },
-];
-
-const courseFees: { [key: string]: number } = {
-  "bharatanatyam": 2500,
-  "vocal-carnatic": 3000,
-  "keyboard-piano": 2800,
-  "guitar": 2200,
-  "yoga": 1800,
-  "western-dance": 2000,
-  "art-craft": 1500,
-  "karate": 1700,
-  "kalaripayattu": 2300,
-  "zumba": 1600,
-  "gymnastics": 2100,
-};
 
 const formatAmount = (amount: number) => {
     return amount.toFixed(2);
 };
 
-const calculateTotal = (student: StudentBillingInfo) => {
-    const activitiesTotal = student.activities.reduce((sum, activity) => sum + activity.fee, 0);
-    const admissionFee = student.admissionFee || 0;
-    const subtotal = activitiesTotal + admissionFee;
-    const discount = student.discount || 0;
-    const subtotalAfterDiscount = subtotal - discount;
-    const tax = student.tax ? (subtotalAfterDiscount * student.tax) / 100 : 0;
-    return subtotalAfterDiscount + tax;
-}
+type BillingStatus = "Paid" | "Due" | "Overdue";
 
 type NewInvoice = {
     studentId: string;
@@ -116,48 +62,12 @@ export default function BillingPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
             const students = await getStudents();
             setAllStudents(students);
-            const billingRecords = students.map((student, index) => {
-                const activities: Activity[] = [];
-                const currentMonth = format(new Date(), 'MMMM');
-                const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "Course Fee";
-                
-                if (student.desiredCourse && courseFees[student.desiredCourse]) {
-                    activities.push({
-                        name: "Tuition Fee",
-                        fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
-                        description: `Tuition Fee for ${courseName} for the month of ${currentMonth}`
-                    });
-                }
-                
-                const statuses: Array<"Paid" | "Due" | "Overdue"> = ["Paid", "Due", "Overdue"];
-                const status = statuses[index % 3];
-                const dueDate = new Date();
-                if (status === 'Overdue') {
-                    dueDate.setMonth(dueDate.getMonth() - 1);
-                } else {
-                    dueDate.setDate(dueDate.getDate() + 5);
-                }
-
-                return {
-                    id: `B${student.id.padStart(4, '0')}`,
-                    studentId: student.id,
-                    name: student.name,
-                    whatsappNumber: student.whatsappNumber,
-                    activities,
-                    admissionFee: index < 2 ? 1000 : undefined,
-                    discount: index === 3 ? 200 : undefined,
-                    tax: index === 1 ? 18 : 0,
-                    status: status,
-                    dueDate: dueDate.toISOString().split('T')[0],
-                    months: [currentMonth],
-                    paymentDate: status === 'Paid' ? new Date().toISOString().split('T')[0] : undefined,
-                };
-            });
+            const billingRecords = await getBillingData();
             setBillingData(billingRecords);
         } catch (error) {
             toast({
@@ -170,7 +80,7 @@ export default function BillingPage() {
         }
     };
 
-    fetchStudentData();
+    fetchData();
   }, [toast]);
 
   const handlePrint = useReactToPrint({
@@ -281,22 +191,18 @@ export default function BillingPage() {
       }
       
       const processedActivities = activities.map(act => {
-        let description = act.description || act.name; // Start with description if available, else name
+        let description = act.description || act.name;
         const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
-
-        // If the custom description doesn't already have the course name, and it's tuition, add it.
-        if (act.name === "Tuition Fee" && courseName && !description.includes(courseName)) {
-            description = `${act.name} for ${courseName}`;
-        }
         
-        // Add months if not already present
-        if (!description.toLowerCase().includes("month")) {
-             description += ` for month(s): ${months}`;
+        let finalDescription = act.name;
+        if (act.name === "Tuition Fee" && courseName) {
+            finalDescription += ` for ${courseName}`;
         }
+        finalDescription += ` for month(s): ${months}`;
 
         return {
             ...act,
-            description,
+            description: finalDescription,
         };
       });
 
@@ -725,7 +631,7 @@ export default function BillingPage() {
                               </div>
                               <div className="col-span-4">
                                   <Label className="sr-only">Description</Label>
-                                  <Input placeholder="Description (optional)" value={activity.description || ''} onChange={(e) => handleNewInvoiceActivityChange(index, 'description', e.target.value)} />
+                                  <Input placeholder="Description (auto-filled)" value={activity.description || ''} onChange={(e) => handleNewInvoiceActivityChange(index, 'description', e.target.value)} />
                               </div>
                               <div className="col-span-2">
                                   <Label className="sr-only">Fee</Label>

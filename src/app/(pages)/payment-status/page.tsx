@@ -5,11 +5,14 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getStudents, type Student } from "@/lib/db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { getBillingData, StudentBillingInfo } from "@/lib/billing-db";
+import { useToast } from "@/hooks/use-toast";
+import { Student } from "@/lib/db";
 
 type PaymentStatus = "Paid" | "Due" | "Overdue";
 
@@ -23,79 +26,99 @@ type StudentPaymentRecord = {
 };
 
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-// Generate mock payment data for demonstration
-const generateMockPayments = (studentId: string, joinDate: string): MonthlyPaymentStatus => {
-  const payments: MonthlyPaymentStatus = {};
-  const currentMonth = new Date().getMonth();
-  const joinMonth = new Date(joinDate).getMonth();
-  const joinYear = new Date(joinDate).getFullYear();
-  const currentYear = new Date().getFullYear();
-
-  months.forEach((month, index) => {
-    // No status for future months or before joining
-    if (index > currentMonth || joinYear > currentYear) {
-      return;
-    }
-    if (joinYear === currentYear && index < joinMonth) {
-        return;
-    }
-
-    const seed = (studentId.charCodeAt(1) + index) % 10;
-    if (index < currentMonth - 1) {
-      // Older months are more likely to be paid
-      payments[month] = seed < 8 ? "Paid" : "Overdue";
-    } else if (index === currentMonth -1) {
-      // Last month
-      payments[month] = seed < 6 ? "Paid" : "Overdue";
-    } else {
-      // Current month
-      payments[month] = seed < 4 ? "Paid" : "Due";
-    }
-  });
-  return payments;
+const monthMap = {
+    "Jan": "January", "Feb": "February", "Mar": "March", "Apr": "April",
+    "May": "May", "Jun": "June", "Jul": "July", "Aug": "August",
+    "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
 };
 
-const StatusIndicator = ({ status }: { status: PaymentStatus }) => {
-  switch (status) {
-    case "Paid":
-      return <Tooltip><TooltipTrigger asChild><CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Paid</p></TooltipContent></Tooltip>;
-    case "Due":
-      return <Tooltip><TooltipTrigger asChild><AlertCircle className="h-5 w-5 text-orange-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Due</p></TooltipContent></Tooltip>;
-    case "Overdue":
-      return <Tooltip><TooltipTrigger asChild><XCircle className="h-5 w-5 text-red-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Overdue</p></TooltipContent></Tooltip>;
-    default:
-      return null;
-  }
+const StatusIndicator = ({ status }: { status?: PaymentStatus }) => {
+    if (!status) return <div className="h-5 w-5 mx-auto" />; // Empty cell for no data
+    switch (status) {
+        case "Paid":
+        return <Tooltip><TooltipTrigger asChild><CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Paid</p></TooltipContent></Tooltip>;
+        case "Due":
+        return <Tooltip><TooltipTrigger asChild><AlertCircle className="h-5 w-5 text-orange-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Due</p></TooltipContent></Tooltip>;
+        case "Overdue":
+        return <Tooltip><TooltipTrigger asChild><XCircle className="h-5 w-5 text-red-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Overdue</p></TooltipContent></Tooltip>;
+        default:
+        return null;
+    }
 };
-
 
 export default function PaymentStatusPage() {
   const [paymentData, setPaymentData] = useState<StudentPaymentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchStudentData = async () => {
+    const fetchBillingAndStudentData = async () => {
       setLoading(true);
       try {
-        const students = await getStudents();
-        const records = students.map(student => ({
-          student,
-          payments: generateMockPayments(student.id, student.joined),
-        }));
-        setPaymentData(records);
+        const billingRecords = await getBillingData();
+
+        const studentPaymentRecordsMap: Map<string, StudentPaymentRecord> = new Map();
+
+        billingRecords.forEach(record => {
+            if (!studentPaymentRecordsMap.has(record.studentId)) {
+                studentPaymentRecordsMap.set(record.studentId, {
+                    student: {
+                        id: record.studentId,
+                        name: record.name,
+                        email: record.email || '',
+                        joined: new Date().toISOString(),
+                        status: "Active",
+                        courses: 1,
+                        avatar: `https://placehold.co/100x100.png`,
+                        initials: record.name.split(' ').map(n => n[0]).join('').toUpperCase(),
+                        whatsappNumber: record.whatsappNumber,
+                    },
+                    payments: {}
+                });
+            }
+
+            const studentRecord = studentPaymentRecordsMap.get(record.studentId)!;
+            
+            record.months.forEach(monthName => {
+                const monthAbbr = Object.keys(monthMap).find(key => monthMap[key as keyof typeof monthMap] === monthName);
+                if (monthAbbr) {
+                    studentRecord.payments[monthAbbr] = record.status;
+                }
+            });
+        });
+
+        setPaymentData(Array.from(studentPaymentRecordsMap.values()));
+
       } catch (error) {
-        console.error("Failed to load student data", error);
+        console.error("Failed to load billing data", error);
+        toast({ title: "Error", description: "Could not load payment status data.", variant: "destructive" });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchStudentData();
-  }, [selectedYear]);
+    fetchBillingAndStudentData();
+  }, [selectedYear, toast]);
   
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
+  
+  const handleStatusChange = (studentId: string, month: string, newStatus: PaymentStatus) => {
+    setPaymentData(prevData =>
+        prevData.map(record => {
+            if (record.student.id === studentId) {
+                const updatedPayments = { ...record.payments, [month]: newStatus };
+                return { ...record, payments: updatedPayments };
+            }
+            return record;
+        })
+    );
+    const studentName = paymentData.find(r => r.student.id === studentId)?.student.name;
+    toast({
+        title: "Status Updated",
+        description: `${studentName}'s payment for ${monthMap[month as keyof typeof monthMap]} is now ${newStatus}.`,
+    });
+  };
 
   return (
     <Card>
@@ -104,7 +127,7 @@ export default function PaymentStatusPage() {
           <div>
             <CardTitle>Student Payment Status</CardTitle>
             <CardDescription>
-              12-month fee payment tracker for all students.
+              12-month fee payment tracker for all students. Click a status icon to change it.
             </CardDescription>
           </div>
            <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -162,7 +185,24 @@ export default function PaymentStatusPage() {
                     </TableCell>
                     {months.map(month => (
                       <TableCell key={month} className="text-center">
-                        <StatusIndicator status={payments[month]} />
+                         <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="w-full h-full flex items-center justify-center p-2 rounded-md hover:bg-muted">
+                                    <StatusIndicator status={payments[month]} />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => handleStatusChange(student.id, month, 'Paid')}>
+                                    <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" /> Mark as Paid
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(student.id, month, 'Due')}>
+                                    <AlertCircle className="h-4 w-4 mr-2 text-orange-500" /> Mark as Due
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(student.id, month, 'Overdue')}>
+                                    <XCircle className="h-4 w-4 mr-2 text-red-500" /> Mark as Overdue
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
                     ))}
                   </TableRow>
