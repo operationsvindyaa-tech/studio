@@ -280,7 +280,7 @@ export default function BillingPage() {
       
       const processedActivities = activities.map(act => ({
           ...act,
-          description: act.description || `Fee for ${act.name} for month(s): ${months}`,
+          description: `Fee for ${act.name} for month(s): ${months}`,
       }));
 
       const newBillingRecord: StudentBillingInfo = {
@@ -350,7 +350,7 @@ export default function BillingPage() {
 
         return {
             ...prev,
-            activities: [...initialActivities, { name, fee: fee || 0, description: `Course Fee` }],
+            activities: [...initialActivities, { name, fee: fee || 0, description: `Fee for ${name} for month(s): ${prev.months}` }],
         };
     });
   };
@@ -742,6 +742,8 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
 
