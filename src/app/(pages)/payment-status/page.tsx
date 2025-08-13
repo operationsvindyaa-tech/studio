@@ -10,14 +10,19 @@ import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getBillingData, StudentBillingInfo } from "@/lib/billing-db";
+import { getBillingData, updateBillingData, StudentBillingInfo } from "@/lib/billing-db";
 import { useToast } from "@/hooks/use-toast";
-import { Student } from "@/lib/db";
+import { getStudents, Student } from "@/lib/db";
 
 type PaymentStatus = "Paid" | "Due" | "Overdue";
 
+type MonthlyPaymentDetails = {
+  status: PaymentStatus;
+  amount: number;
+};
+
 type MonthlyPaymentStatus = {
-  [month: string]: PaymentStatus;
+  [month: string]: MonthlyPaymentDetails;
 };
 
 type StudentPaymentRecord = {
@@ -32,22 +37,47 @@ const monthMap = {
     "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
 };
 
-const StatusIndicator = ({ status }: { status?: PaymentStatus }) => {
-    if (!status) return <div className="h-5 w-5 mx-auto" />; // Empty cell for no data
-    switch (status) {
-        case "Paid":
-        return <Tooltip><TooltipTrigger asChild><CheckCircle2 className="h-5 w-5 text-green-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Paid</p></TooltipContent></Tooltip>;
-        case "Due":
-        return <Tooltip><TooltipTrigger asChild><AlertCircle className="h-5 w-5 text-orange-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Due</p></TooltipContent></Tooltip>;
-        case "Overdue":
-        return <Tooltip><TooltipTrigger asChild><XCircle className="h-5 w-5 text-red-500 mx-auto" /></TooltipTrigger><TooltipContent><p>Overdue</p></TooltipContent></Tooltip>;
-        default:
-        return null;
-    }
+
+const StatusAmount = ({ details }: { details?: MonthlyPaymentDetails }) => {
+    if (!details) return <div className="h-5 w-5 mx-auto" />;
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(amount);
+    };
+
+    const getStatusClass = () => {
+        switch (details.status) {
+            case "Paid": return "text-green-600";
+            case "Due": return "text-orange-600";
+            case "Overdue": return "text-red-600 font-bold";
+            default: return "text-muted-foreground";
+        }
+    };
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <div className={cn("text-xs font-semibold text-center", getStatusClass())}>
+                    {formatCurrency(details.amount)}
+                </div>
+            </TooltipTrigger>
+            <TooltipContent>
+                <p>{details.status}</p>
+            </TooltipContent>
+        </Tooltip>
+    );
 };
+
 
 export default function PaymentStatusPage() {
   const [paymentData, setPaymentData] = useState<StudentPaymentRecord[]>([]);
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [billingRecords, setBillingRecords] = useState<StudentBillingInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const { toast } = useToast();
@@ -56,40 +86,9 @@ export default function PaymentStatusPage() {
     const fetchBillingAndStudentData = async () => {
       setLoading(true);
       try {
-        const billingRecords = await getBillingData();
-
-        const studentPaymentRecordsMap: Map<string, StudentPaymentRecord> = new Map();
-
-        billingRecords.forEach(record => {
-            if (!studentPaymentRecordsMap.has(record.studentId)) {
-                studentPaymentRecordsMap.set(record.studentId, {
-                    student: {
-                        id: record.studentId,
-                        name: record.name,
-                        email: record.email || '',
-                        joined: new Date().toISOString(),
-                        status: "Active",
-                        courses: 1,
-                        avatar: `https://placehold.co/100x100.png`,
-                        initials: record.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-                        whatsappNumber: record.whatsappNumber,
-                    },
-                    payments: {}
-                });
-            }
-
-            const studentRecord = studentPaymentRecordsMap.get(record.studentId)!;
-            
-            record.months.forEach(monthName => {
-                const monthAbbr = Object.keys(monthMap).find(key => monthMap[key as keyof typeof monthMap] === monthName);
-                if (monthAbbr) {
-                    studentRecord.payments[monthAbbr] = record.status;
-                }
-            });
-        });
-
-        setPaymentData(Array.from(studentPaymentRecordsMap.values()));
-
+        const [billingData, studentData] = await Promise.all([getBillingData(), getStudents()]);
+        setBillingRecords(billingData);
+        setAllStudents(studentData);
       } catch (error) {
         console.error("Failed to load billing data", error);
         toast({ title: "Error", description: "Could not load payment status data.", variant: "destructive" });
@@ -101,18 +100,56 @@ export default function PaymentStatusPage() {
     fetchBillingAndStudentData();
   }, [selectedYear, toast]);
   
+  useEffect(() => {
+    if (allStudents.length > 0 && billingRecords.length > 0) {
+        const studentPaymentRecordsMap: Map<string, StudentPaymentRecord> = new Map();
+
+        // Initialize all students
+        allStudents.forEach(student => {
+            studentPaymentRecordsMap.set(student.id, {
+                student: student,
+                payments: {}
+            });
+        });
+
+        billingRecords.forEach(record => {
+            const studentRecord = studentPaymentRecordsMap.get(record.studentId);
+            if (studentRecord) {
+                const tuitionActivity = record.activities.find(a => a.name === "Tuition Fee");
+                if (tuitionActivity) {
+                    record.months.forEach(monthName => {
+                        const monthAbbr = Object.keys(monthMap).find(key => monthMap[key as keyof typeof monthMap].toLowerCase() === monthName.toLowerCase());
+                        if (monthAbbr) {
+                             studentRecord.payments[monthAbbr] = {
+                                status: record.status,
+                                amount: tuitionActivity.fee
+                            };
+                        }
+                    });
+                }
+            }
+        });
+        
+        setPaymentData(Array.from(studentPaymentRecordsMap.values()));
+    }
+  }, [allStudents, billingRecords]);
+  
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
   
   const handleStatusChange = (studentId: string, month: string, newStatus: PaymentStatus) => {
-    setPaymentData(prevData =>
-        prevData.map(record => {
-            if (record.student.id === studentId) {
-                const updatedPayments = { ...record.payments, [month]: newStatus };
-                return { ...record, payments: updatedPayments };
-            }
-            return record;
-        })
-    );
+    // Find the corresponding billing record and update it
+    const updatedBillingRecords = billingRecords.map(record => {
+        const monthFullName = monthMap[month as keyof typeof monthMap];
+        if (record.studentId === studentId && record.months.includes(monthFullName)) {
+            return { ...record, status: newStatus };
+        }
+        return record;
+    });
+
+    // Update the central cache
+    updateBillingData(updatedBillingRecords);
+    setBillingRecords(updatedBillingRecords); // Update local state to trigger re-render
+
     const studentName = paymentData.find(r => r.student.id === studentId)?.student.name;
     toast({
         title: "Status Updated",
@@ -167,7 +204,7 @@ export default function PaymentStatusPage() {
                         </div>
                     </TableCell>
                     {months.map(month => (
-                        <TableCell key={month} className="text-center"><Skeleton className="h-5 w-5 mx-auto" /></TableCell>
+                        <TableCell key={month} className="text-center"><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
                     ))}
                   </TableRow>
                 ))
@@ -186,9 +223,9 @@ export default function PaymentStatusPage() {
                     {months.map(month => (
                       <TableCell key={month} className="text-center">
                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="w-full h-full flex items-center justify-center p-2 rounded-md hover:bg-muted">
-                                    <StatusIndicator status={payments[month]} />
+                            <DropdownMenuTrigger asChild disabled={!payments[month]}>
+                                <button className="w-full h-full flex items-center justify-center p-2 rounded-md hover:bg-muted disabled:cursor-not-allowed">
+                                    <StatusAmount details={payments[month]} />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
