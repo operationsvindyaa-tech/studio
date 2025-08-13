@@ -40,6 +40,7 @@ const monthMap = {
     "Sep": "September", "Oct": "October", "Nov": "November", "Dec": "December"
 };
 const allCourses = Object.keys(courseFees).map(key => key.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+const paymentStatuses: PaymentStatus[] = ["Paid", "Due", "Overdue"];
 
 
 const StatusAmount = ({ details }: { details?: MonthlyPaymentDetails }) => {
@@ -77,12 +78,14 @@ const StatusAmount = ({ details }: { details?: MonthlyPaymentDetails }) => {
 
 
 export default function PaymentStatusPage() {
-  const [paymentData, setPaymentData] = useState<StudentPaymentRecord[]>([]);
+  const [allPaymentData, setAllPaymentData] = useState<StudentPaymentRecord[]>([]);
+  const [filteredPaymentData, setFilteredPaymentData] = useState<StudentPaymentRecord[]>([]);
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [billingRecords, setBillingRecords] = useState<StudentBillingInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedCourse, setSelectedCourse] = useState<string>("All Courses");
+  const [selectedStatus, setSelectedStatus] = useState<string>("All Statuses");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -156,9 +159,20 @@ export default function PaymentStatusPage() {
             }
         });
         
-        setPaymentData(Array.from(studentPaymentRecordsMap.values()));
+        setAllPaymentData(Array.from(studentPaymentRecordsMap.values()));
     }
   }, [allStudents, billingRecords, selectedCourse]);
+
+  useEffect(() => {
+      if (selectedStatus === "All Statuses") {
+          setFilteredPaymentData(allPaymentData);
+      } else {
+          const filtered = allPaymentData.filter(record => 
+              Object.values(record.payments).some(payment => payment.status === selectedStatus)
+          );
+          setFilteredPaymentData(filtered);
+      }
+  }, [allPaymentData, selectedStatus]);
   
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
   
@@ -184,7 +198,7 @@ export default function PaymentStatusPage() {
     updateBillingData(updatedBillingRecords);
     setBillingRecords(updatedBillingRecords); // Update local state to trigger re-render
 
-    const studentName = paymentData.find(r => r.student.id === studentId)?.student.name;
+    const studentName = allPaymentData.find(r => r.student.id === studentId)?.student.name;
     toast({
         title: "Status Updated",
         description: `${studentName}'s payment for ${monthMap[month as keyof typeof monthMap]} is now ${newStatus}.`,
@@ -192,11 +206,11 @@ export default function PaymentStatusPage() {
   };
   
    const handleExport = () => {
-    if (paymentData.length === 0) {
+    if (filteredPaymentData.length === 0) {
       toast({ title: "No data to export", variant: "destructive" });
       return;
     }
-    const worksheetData = paymentData.map(record => {
+    const worksheetData = filteredPaymentData.map(record => {
       const row: { [key: string]: string | number } = {
         'Student Name': record.student.name,
       };
@@ -228,6 +242,17 @@ export default function PaymentStatusPage() {
               <Download className="h-4 w-4 mr-2" />
               Export to Excel
             </Button>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All Statuses">All Statuses</SelectItem>
+                    {paymentStatuses.map(status => (
+                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select course" />
@@ -282,7 +307,7 @@ export default function PaymentStatusPage() {
                   </TableRow>
                 ))
               ) : (
-                paymentData.map(({ student, payments }) => (
+                filteredPaymentData.map(({ student, payments }) => (
                   <TableRow key={student.id}>
                     <TableCell className="sticky left-0 bg-background z-10 font-medium">
                         <div className="flex items-center gap-3">
@@ -326,3 +351,5 @@ export default function PaymentStatusPage() {
     </Card>
   );
 }
+
+    
