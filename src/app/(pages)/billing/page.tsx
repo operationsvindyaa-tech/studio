@@ -128,7 +128,7 @@ export default function BillingPage() {
                 
                 if (student.desiredCourse && courseFees[student.desiredCourse]) {
                     activities.push({
-                        name: courseName,
+                        name: "Tuition Fee",
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
                         description: `Tuition Fee for ${courseName} for the month of ${currentMonth}`
                     });
@@ -281,16 +281,19 @@ export default function BillingPage() {
       }
       
       const processedActivities = activities.map(act => {
-        let description = `${act.name}`;
-        if (act.description) {
-            description = act.description; // Use user-provided description if it exists
-        } else {
-            const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
-            if (courseName && act.name === "Tuition Fee") {
-                description += ` for ${courseName}`;
-            }
+        let description = act.description || act.name; // Start with description if available, else name
+        const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
+
+        // If the custom description doesn't already have the course name, and it's tuition, add it.
+        if (act.name === "Tuition Fee" && courseName && !description.includes(courseName)) {
+            description = `${act.name} for ${courseName}`;
         }
-        description += ` for month(s): ${months}`;
+        
+        // Add months if not already present
+        if (!description.toLowerCase().includes("month")) {
+             description += ` for month(s): ${months}`;
+        }
+
         return {
             ...act,
             description,
@@ -775,3 +778,5 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
