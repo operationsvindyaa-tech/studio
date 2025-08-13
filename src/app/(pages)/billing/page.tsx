@@ -28,6 +28,7 @@ import { getStudents, type Student } from "@/lib/db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { format } from 'date-fns';
 
 type Activity = {
   name: string;
@@ -120,11 +121,14 @@ export default function BillingPage() {
             setAllStudents(students);
             const billingRecords = students.map((student, index) => {
                 const activities: Activity[] = [];
+                const currentMonth = format(new Date(), 'MMMM');
+                const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "Course Fee";
+                
                 if (student.desiredCourse && courseFees[student.desiredCourse]) {
                     activities.push({
-                        name: student.desiredCourse.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                        name: courseName,
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
-                        description: `Course Fee for August`
+                        description: `Fee for ${courseName} for the month of ${currentMonth}`
                     });
                 }
                 
@@ -148,7 +152,7 @@ export default function BillingPage() {
                     tax: index === 1 ? 18 : 0,
                     status: status,
                     dueDate: dueDate.toISOString().split('T')[0],
-                    months: ["August"],
+                    months: [currentMonth],
                     paymentDate: status === 'Paid' ? new Date().toISOString().split('T')[0] : undefined,
                 };
             });
@@ -276,7 +280,7 @@ export default function BillingPage() {
       
       const processedActivities = activities.map(act => ({
           ...act,
-          description: act.description || `Fee for month(s): ${months}`,
+          description: act.description || `Fee for ${act.name} for month(s): ${months}`,
       }));
 
       const newBillingRecord: StudentBillingInfo = {
@@ -738,6 +742,8 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
 
