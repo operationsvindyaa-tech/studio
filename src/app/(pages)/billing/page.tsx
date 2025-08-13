@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone, CheckCircle } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import {
     AlertDialog,
@@ -36,6 +36,8 @@ type Activity = {
   fee: number;
 };
 
+type BillingStatus = "Paid" | "Due" | "Overdue";
+
 type StudentBillingInfo = {
   id: string;
   studentId: string;
@@ -45,7 +47,7 @@ type StudentBillingInfo = {
   admissionFee?: number;
   discount?: number;
   tax?: number;
-  status: "Paid" | "Due" | "Overdue";
+  status: BillingStatus;
   dueDate: string;
   paymentDate?: string;
   months: string[];
@@ -249,18 +251,18 @@ export default function BillingPage() {
     setInvoiceToDelete(null);
   };
 
-    const handleMarkAsPaid = (invoiceId: string) => {
+    const handleStatusChange = (invoiceId: string, newStatus: BillingStatus) => {
         setBillingData(prevData =>
             prevData.map(invoice =>
                 invoice.id === invoiceId
-                    ? { ...invoice, status: 'Paid', paymentDate: new Date().toISOString().split('T')[0] }
+                    ? { ...invoice, status: newStatus, paymentDate: newStatus === 'Paid' ? new Date().toISOString().split('T')[0] : undefined }
                     : invoice
             )
         );
         const studentName = billingData.find(inv => inv.id === invoiceId)?.name;
         toast({
-            title: "Success",
-            description: `Invoice for ${studentName} has been marked as paid.`
+            title: "Status Updated",
+            description: `Invoice for ${studentName} has been marked as ${newStatus}.`
         });
     };
 
@@ -279,16 +281,20 @@ export default function BillingPage() {
       }
       
       const processedActivities = activities.map(act => {
-          const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
-          let description = `${act.name}`;
-          if (courseName && act.name === "Tuition Fee") {
-              description += ` for ${courseName}`;
-          }
-          description += ` for month(s): ${months}`;
-          return {
+        let description = `${act.name}`;
+        if (act.description) {
+            description = act.description; // Use user-provided description if it exists
+        } else {
+            const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
+            if (courseName && act.name === "Tuition Fee") {
+                description += ` for ${courseName}`;
+            }
+        }
+        description += ` for month(s): ${months}`;
+        return {
             ...act,
             description,
-          };
+        };
       });
 
       const newBillingRecord: StudentBillingInfo = {
@@ -350,9 +356,9 @@ export default function BillingPage() {
         const student = allStudents.find(s => s.id === prev.studentId);
         const courseName = student?.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || name;
         
-        const description = `Tuition Fee for ${courseName} for month(s): ${prev.months}`;
+        const description = `Tuition Fee for ${courseName}`;
 
-        if (prev.activities.some(act => act.description === description)) {
+        if (prev.activities.some(act => act.description === description && newInvoice.months)) {
             toast({ title: "Course already added", description: `${name} is already in the activities list for these months.`, variant: "default" });
             return prev;
         }
@@ -448,9 +454,23 @@ export default function BillingPage() {
                               <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
                                 <Edit className="mr-2 h-4 w-4" /> Edit Invoice
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} disabled={invoice.status === "Paid"}>
-                                Mark as Paid
-                              </DropdownMenuItem>
+                               <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                  <CheckCircle className="mr-2 h-4 w-4" />
+                                  <span>Change Status</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Paid')} disabled={invoice.status === 'Paid'}>
+                                    Paid
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Due')} disabled={invoice.status === 'Due'}>
+                                    Due
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Overdue')} disabled={invoice.status === 'Overdue'}>
+                                    Overdue
+                                  </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleDeleteInvoice(invoice)} className="text-destructive">
                                 <Trash2 className="mr-2 h-4 w-4" /> Delete
