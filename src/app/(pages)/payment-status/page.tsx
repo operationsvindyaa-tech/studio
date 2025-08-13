@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, Download } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,6 +14,8 @@ import { getBillingData, updateBillingData, StudentBillingInfo, courseFees } fro
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, Student } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import * as XLSX from "xlsx";
 
 type PaymentStatus = "Paid" | "Due" | "Overdue";
 
@@ -102,11 +104,20 @@ export default function PaymentStatusPage() {
   }, [selectedYear, toast]);
   
   useEffect(() => {
-    if (allStudents.length > 0 && billingRecords.length > 0) {
+    if (allStudents.length > 0) {
+        let studentsToProcess = allStudents;
+        const courseKey = selectedCourse.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+        
+        if (selectedCourse !== "All Courses") {
+            studentsToProcess = allStudents.filter(student => 
+                student.enrolledCourses?.includes(courseKey)
+            );
+        }
+
         const studentPaymentRecordsMap: Map<string, StudentPaymentRecord> = new Map();
 
-        // Initialize all students
-        allStudents.forEach(student => {
+        // Initialize all students to be processed
+        studentsToProcess.forEach(student => {
             studentPaymentRecordsMap.set(student.id, {
                 student: student,
                 payments: {}
@@ -119,9 +130,14 @@ export default function PaymentStatusPage() {
                 const tuitionActivities = record.activities.filter(a => a.name === "Tuition Fee");
                 
                 tuitionActivities.forEach(tuitionActivity => {
-                    const courseNameFromDesc = tuitionActivity.description?.match(/for (.*?) for the month/)?.[1] || "";
+                    const activityCourseKey = (tuitionActivity.description || "")
+                        .replace("Tuition Fee for ", "")
+                        .replace(/ for the month.*$/, "")
+                        .toLowerCase()
+                        .replace(/ & /g, '-')
+                        .replace(/ /g, '-');
                     
-                    if (selectedCourse !== "All Courses" && courseNameFromDesc !== selectedCourse) {
+                    if (selectedCourse !== "All Courses" && activityCourseKey !== courseKey) {
                         return; // Skip if a specific course is selected and it doesn't match
                     }
 
@@ -151,8 +167,13 @@ export default function PaymentStatusPage() {
     const updatedBillingRecords = billingRecords.map(record => {
         const monthFullName = monthMap[month as keyof typeof monthMap];
         if (record.studentId === studentId && record.months.includes(monthFullName)) {
-            const courseNameFromDesc = record.activities.find(a => a.name === "Tuition Fee")?.description?.match(/for (.*?) for the month/)?.[1] || "";
-            if(selectedCourse === "All Courses" || courseNameFromDesc === selectedCourse) {
+            const courseKeyFromDesc = (record.activities.find(a => a.name === "Tuition Fee")?.description || "")
+                .replace("Tuition Fee for ", "")
+                .replace(/ for month.*$/, "")
+                .toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+            const selectedCourseKey = selectedCourse.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+
+            if(selectedCourse === "All Courses" || courseKeyFromDesc === selectedCourseKey) {
                  return { ...record, status: newStatus };
             }
         }
@@ -169,6 +190,28 @@ export default function PaymentStatusPage() {
         description: `${studentName}'s payment for ${monthMap[month as keyof typeof monthMap]} is now ${newStatus}.`,
     });
   };
+  
+   const handleExport = () => {
+    if (paymentData.length === 0) {
+      toast({ title: "No data to export", variant: "destructive" });
+      return;
+    }
+    const worksheetData = paymentData.map(record => {
+      const row: { [key: string]: string | number } = {
+        'Student Name': record.student.name,
+      };
+      months.forEach(month => {
+        const payment = record.payments[month];
+        row[month] = payment ? `${payment.amount} (${payment.status})` : 'N/A';
+      });
+      return row;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Payment Tracker');
+    XLSX.writeFile(workbook, `Payment_Tracker_${selectedCourse}_${selectedYear}.xlsx`);
+  };
 
   return (
     <Card>
@@ -181,6 +224,10 @@ export default function PaymentStatusPage() {
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
+           <Button variant="outline" onClick={handleExport}>
+              <Download className="h-4 w-4 mr-2" />
+              Export to Excel
+            </Button>
            <Select value={selectedCourse} onValueChange={setSelectedCourse}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select course" />
