@@ -125,7 +125,7 @@ export default function PaymentStatusPage() {
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>Student Payment Status</CardTitle>
+            <CardTitle>Student Payment Tracker</CardTitle>
             <CardDescription>
               12-month fee payment tracker for all students. Click a status icon to change it.
             </CardDescription>
