@@ -88,6 +88,7 @@ const hrNavItems = [
 const financeNavItems = [
     { href: "/billing", icon: Banknote, label: "Billing" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
+    { href: "/payment-status", icon: CalendarCheck, label: "Payment Status" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
