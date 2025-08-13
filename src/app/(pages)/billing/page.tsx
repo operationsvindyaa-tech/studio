@@ -350,7 +350,7 @@ export default function BillingPage() {
 
         return {
             ...prev,
-            activities: [...initialActivities, { name, fee: fee || 0, description: `Fee for ${name} for month(s): ${prev.months}` }],
+            activities: [...initialActivities, { name, fee: fee || 0, description: `Course Fee for ${name} for month(s): ${prev.months}` }],
         };
     });
   };
@@ -742,6 +742,8 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
 
     
 
