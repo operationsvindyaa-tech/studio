@@ -86,6 +86,7 @@ export default function PaymentStatusPage() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [selectedCourse, setSelectedCourse] = useState<string>("All Courses");
   const [selectedStatus, setSelectedStatus] = useState<string>("All Statuses");
+  const [selectedMonth, setSelectedMonth] = useState<string>("All Months");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -164,15 +165,24 @@ export default function PaymentStatusPage() {
   }, [allStudents, billingRecords, selectedCourse]);
 
   useEffect(() => {
-      if (selectedStatus === "All Statuses") {
-          setFilteredPaymentData(allPaymentData);
-      } else {
-          const filtered = allPaymentData.filter(record => 
-              Object.values(record.payments).some(payment => payment.status === selectedStatus)
-          );
-          setFilteredPaymentData(filtered);
-      }
-  }, [allPaymentData, selectedStatus]);
+    let filtered = [...allPaymentData];
+
+    // Filter by status and month
+    if (selectedStatus !== "All Statuses") {
+        filtered = filtered.filter(record => {
+            if (selectedMonth !== "All Months") {
+                // If a specific month is selected, check that month's status
+                const payment = record.payments[selectedMonth];
+                return payment && payment.status === selectedStatus;
+            } else {
+                // If all months, check if any month has the selected status
+                return Object.values(record.payments).some(payment => payment.status === selectedStatus);
+            }
+        });
+    }
+
+    setFilteredPaymentData(filtered);
+  }, [allPaymentData, selectedStatus, selectedMonth]);
   
   const years = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - i).toString());
   
@@ -237,7 +247,7 @@ export default function PaymentStatusPage() {
               12-month fee payment tracker for all students. Click a status icon to change it.
             </CardDescription>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
            <Button variant="outline" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
               Export to Excel
@@ -250,6 +260,17 @@ export default function PaymentStatusPage() {
                     <SelectItem value="All Statuses">All Statuses</SelectItem>
                     {paymentStatuses.map(status => (
                         <SelectItem key={status} value={status}>{status}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by month" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All Months">All Months</SelectItem>
+                    {months.map(month => (
+                        <SelectItem key={month} value={month}>{monthMap[month as keyof typeof monthMap]}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
@@ -351,5 +372,3 @@ export default function PaymentStatusPage() {
     </Card>
   );
 }
-
-    
