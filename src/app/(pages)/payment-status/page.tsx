@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getBillingData, updateBillingData, StudentBillingInfo } from "@/lib/billing-db";
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, Student } from "@/lib/db";
+import { cn } from "@/lib/utils";
 
 type PaymentStatus = "Paid" | "Due" | "Overdue";
 
