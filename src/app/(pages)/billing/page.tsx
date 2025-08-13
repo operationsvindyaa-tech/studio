@@ -128,7 +128,7 @@ export default function BillingPage() {
                     activities.push({
                         name: courseName,
                         fee: courseFees[student.desiredCourse.toLowerCase()] || 2000,
-                        description: `Fee for ${courseName} for the month of ${currentMonth}`
+                        description: `Tuition Fee for ${courseName} for the month of ${currentMonth}`
                     });
                 }
                 
@@ -278,10 +278,18 @@ export default function BillingPage() {
           return;
       }
       
-      const processedActivities = activities.map(act => ({
-          ...act,
-          description: `Fee for ${act.name} for month(s): ${months}`,
-      }));
+      const processedActivities = activities.map(act => {
+          const courseName = student.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || "";
+          let description = `${act.name}`;
+          if (courseName && act.name === "Tuition Fee") {
+              description += ` for ${courseName}`;
+          }
+          description += ` for month(s): ${months}`;
+          return {
+            ...act,
+            description,
+          };
+      });
 
       const newBillingRecord: StudentBillingInfo = {
           id: `B${String(billingData.length + 1).padStart(4, '0')}`,
@@ -339,8 +347,13 @@ export default function BillingPage() {
     const name = courseKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     
     setNewInvoice(prev => {
-        if (prev.activities.some(act => act.name === name)) {
-            toast({ title: "Course already added", description: `${name} is already in the activities list.`, variant: "default" });
+        const student = allStudents.find(s => s.id === prev.studentId);
+        const courseName = student?.desiredCourse?.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || name;
+        
+        const description = `Tuition Fee for ${courseName} for month(s): ${prev.months}`;
+
+        if (prev.activities.some(act => act.description === description)) {
+            toast({ title: "Course already added", description: `${name} is already in the activities list for these months.`, variant: "default" });
             return prev;
         }
         
@@ -350,7 +363,7 @@ export default function BillingPage() {
 
         return {
             ...prev,
-            activities: [...initialActivities, { name, fee: fee || 0, description: `Course Fee for ${name} for month(s): ${prev.months}` }],
+            activities: [...initialActivities, { name: "Tuition Fee", fee: fee || 0, description: description }],
         };
     });
   };
@@ -742,13 +755,3 @@ export default function BillingPage() {
     </>
   );
 }
-
-    
-
-    
-
-    
-
-    
-
-    
