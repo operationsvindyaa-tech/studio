@@ -2,13 +2,17 @@
 "use client"
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Wallet, UserCheck, ArrowDown, ArrowUp, Circle } from "lucide-react"
+import { Users, Wallet, UserCheck, ArrowDown, ArrowUp, Circle, BookOpen, ClipboardList, Building2, CalendarDays, BadgeHelp } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { getStudents, Student } from "@/lib/db"
 import { getStaff, Staff } from "@/lib/staff-db"
+import { getCourses, Course } from "@/lib/courses-db"
+import { getEnquiries, Enquiry } from "@/lib/enquiries-db"
+import { getEvents, Event } from "@/lib/schedule-db"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { isThisWeek, format } from 'date-fns'
 
 type StudentStatusData = {
   name: string;
@@ -22,14 +26,6 @@ const COLORS = {
     Suspended: 'hsl(var(--chart-5))',
 };
 
-const recentTransactions = [
-    { studentName: "Amelia Rodriguez", amount: 2500, status: "Paid" },
-    { studentName: "Benjamin Carter", amount: 3000, status: "Paid" },
-    { studentName: "David Kim", amount: 4500, status: "Due" },
-    { studentName: "Franklin Garcia", amount: 2000, status: "Overdue" },
-    { studentName: "Chloe Nguyen", amount: 4000, status: "Paid" },
-];
-
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
         minimumFractionDigits: 0,
@@ -39,15 +35,27 @@ const formatCurrency = (amount: number) => {
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [staff, setStaff] = useState<Staff[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [studentData, staffData] = await Promise.all([getStudents(), getStaff()]);
+            const [studentData, staffData, courseData, enquiryData, eventData] = await Promise.all([
+                getStudents(), 
+                getStaff(),
+                getCourses(),
+                getEnquiries(),
+                getEvents(),
+            ]);
             setStudents(studentData);
             setStaff(staffData);
+            setCourses(courseData);
+            setEnquiries(enquiryData);
+            setEvents(eventData);
         } catch (error) {
             console.error("Failed to fetch dashboard data", error);
         } finally {
@@ -70,10 +78,57 @@ export default function DashboardPage() {
 
   const feesCollected = 150500;
   const feesPending = 45500;
+  const newEnquiriesThisWeek = enquiries.filter(e => isThisWeek(new Date(e.enquiryDate))).length;
+  const totalSalary = staff.reduce((acc, s) => acc + s.payroll.salary, 0);
+
+  const upcomingEvents = events
+    .filter(e => new Date(e.date) >= new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .slice(0, 4);
 
   return (
     <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{students.length}</div>}
+            <p className="text-xs text-muted-foreground">+5 new students this week</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{courses.length}</div>}
+            <p className="text-xs text-muted-foreground">across all levels</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">New Enquiries</CardTitle>
+            <ClipboardList className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{newEnquiriesThisWeek}</div>}
+            <p className="text-xs text-muted-foreground">this week</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{staff.length}</div>}
+            <p className="text-xs text-muted-foreground">including teachers</p>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Fees Collected</CardTitle>
@@ -100,12 +155,12 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Salary Disbursal</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{loading ? <Skeleton className="h-8 w-24" /> : students.length}</div>
-            <p className="text-xs text-muted-foreground">+5 new students this week</p>
+            {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-bold">{formatCurrency(totalSalary)}</div>}
+            <p className="text-xs text-muted-foreground">for this month</p>
           </CardContent>
         </Card>
         <Card>
@@ -163,46 +218,39 @@ export default function DashboardPage() {
         </Card>
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
-            <CardDescription>Latest fee payments from students.</CardDescription>
+            <CardTitle>Upcoming Events</CardTitle>
+            <CardDescription>What's next on the calendar for the academy.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                    Array.from({length: 5}).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                        </TableRow>
-                    ))
-                ) : (
-                    recentTransactions.map((activity, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-medium">{activity.studentName}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(activity.amount)}</TableCell>
-                            <TableCell>
-                                <Badge variant={
-                                    activity.status === 'Paid' ? 'secondary' : activity.status === 'Due' ? 'outline' : 'destructive'
-                                } className={
-                                    activity.status === 'Paid' ? "bg-green-100 text-green-800" : activity.status === 'Due' ? "bg-orange-100 text-orange-800" : ""
-                                }>
-                                    {activity.status}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                    ))
-                )}
-              </TableBody>
-            </Table>
+            {loading ? (
+                <div className="space-y-4">
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            ) : upcomingEvents.length > 0 ? (
+                <div className="space-y-4">
+                    {upcomingEvents.map(event => (
+                        <div key={event.id} className="flex items-center gap-4">
+                            <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-md flex flex-col items-center justify-center">
+                                <span className="text-lg font-bold">{format(event.date, 'dd')}</span>
+                                <span className="text-xs text-muted-foreground">{format(event.date, 'MMM')}</span>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold">{event.title}</h3>
+                                <p className="text-sm text-muted-foreground">{event.time}</p>
+                            </div>
+                            <Badge variant="outline" className="ml-auto capitalize">{event.type}</Badge>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="text-center py-10 text-muted-foreground">
+                    <CalendarDays className="h-12 w-12 mx-auto mb-2" />
+                    <p>No upcoming events scheduled.</p>
+                </div>
+            )}
           </CardContent>
         </Card>
       </div>

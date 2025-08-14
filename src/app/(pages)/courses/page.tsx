@@ -7,36 +7,30 @@ import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, Clock, PlusCircle, Wallet, CalendarDays, Edit } from "lucide-react"
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-
-const initialCourses = [
-  { id: 1, title: "Bharatanatyam", instructor: "Smt. Vani Ramesh", students: 45, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "bharatanatyam dance", fees: 2500, paymentOptions: "Monthly" },
-  { id: 2, title: "Vocal Carnatic", instructor: "Vid. Shankar Mahadevan", students: 60, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "carnatic music", fees: 3000, paymentOptions: "Monthly" },
-  { id: 3, title: "Guitar", instructor: "Mr. Alex Johnson", students: 75, duration: "12 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "acoustic guitar", fees: 4000, paymentOptions: "Quarterly" },
-  { id: 4, title: "Keyboard", instructor: "Mr. Richard Clayderman", students: 55, duration: "16 weeks", level: "Intermediate", image: "https://placehold.co/600x400.png", dataAiHint: "music keyboard", fees: 4500, paymentOptions: "Quarterly" },
-  { id: 5, title: "Piano", instructor: "Mr. Beethoven Jr.", students: 30, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "grand piano", fees: 15000, paymentOptions: "Half Yearly" },
-  { id: 6, title: "Drums", instructor: "Mr. Ringo Starr", students: 40, duration: "10 weeks", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "drum kit", fees: 3500, paymentOptions: "Monthly" },
-  { id: 7, title: "Violin", instructor: "Ms. Vanessa Mae", students: 25, duration: "Ongoing", level: "Intermediate", image: "https://placehold.co/600x400.png", dataAiHint: "violin instrument", fees: 6000, paymentOptions: "Quarterly" },
-  { id: 8, title: "Western Dance", instructor: "Mr. Prabhu Deva", students: 110, duration: "8 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "hiphop dance", fees: 3000, paymentOptions: "Monthly" },
-  { id: 9, title: "Zumba", instructor: "Ms. Gina Grant", students: 150, duration: "4 weeks", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "zumba fitness", fees: 2000, paymentOptions: "Monthly" },
-  { id: 10, title: "Gymnastics", instructor: "Ms. Nadia Comaneci", students: 35, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "gymnastics sport", fees: 12000, paymentOptions: "Annually" },
-  { id: 11, title: "Yoga", instructor: "Yogi Adityanath", students: 200, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "yoga meditation", fees: 1800, paymentOptions: "Monthly" },
-  { id: 12, title: "Karate", instructor: "Sensei Morio Higaonna", students: 90, duration: "Ongoing", level: "All Levels", image: "https://placehold.co/600x400.png", dataAiHint: "karate kick", fees: 1700, paymentOptions: "Monthly" },
-  { id: 13, title: "Kalaripayattu", instructor: "Gurukkal Meenakshi Amma", students: 50, duration: "Ongoing", level: "Advanced", image: "https://placehold.co/600x400.png", dataAiHint: "kalaripayattu martialart", fees: 8000, paymentOptions: "Half Yearly" },
-  { id: 14, title: "Art & Craft", instructor: "Ms. Frida Kahlo", students: 120, duration: "12 weeks", level: "Beginner", image: "https://placehold.co/600x400.png", dataAiHint: "art supplies", fees: 2200, paymentOptions: "Quarterly" },
-]
-
-export type Course = typeof initialCourses[0];
+import { getCourses, updateCourses, type Course } from "@/lib/courses-db";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState(initialCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchCourses = async () => {
+        setLoading(true);
+        const data = await getCourses();
+        setCourses(data);
+        setLoading(false);
+    }
+    fetchCourses();
+  }, []);
 
   const handleEditClick = (course: Course) => {
     setEditingCourse({ ...course });
@@ -45,7 +39,9 @@ export default function CoursesPage() {
 
   const handleSave = () => {
     if (editingCourse) {
-      setCourses(courses.map(c => c.id === editingCourse.id ? editingCourse : c));
+      const updatedCourses = courses.map(c => c.id === editingCourse.id ? editingCourse : c);
+      setCourses(updatedCourses);
+      updateCourses(updatedCourses); // Update in-memory db
       toast({
         title: "Course Updated",
         description: `Details for ${editingCourse.title} have been saved.`,
@@ -75,7 +71,12 @@ export default function CoursesPage() {
           </Button>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {courses.map((course) => (
+          {loading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+                <Card key={i}><Skeleton className="w-full h-80" /></Card>
+            ))
+          ) : (
+            courses.map((course) => (
             <Card key={course.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="p-0">
                   <Image src={course.image} alt={course.title} width={600} height={400} className="w-full h-48 object-cover" data-ai-hint={course.dataAiHint} />
@@ -110,7 +111,7 @@ export default function CoursesPage() {
                   </Button>
               </CardFooter>
             </Card>
-          ))}
+          )))}
         </div>
       </div>
       

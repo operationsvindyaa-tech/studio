@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,21 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PlusCircle, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format, isSameDay } from "date-fns";
-
-type Event = {
-  id: string;
-  title: string;
-  date: Date;
-  time: string;
-  type: "meeting" | "exam" | "event" | "lecture" | "holiday" | "competition" | "workshop" | "celebration" | "reminder" | "other";
-};
-
-const initialEvents: Event[] = [
-  { id: "1", title: "Parent-Teacher Meetings", date: new Date("2024-08-15"), time: "9:00 AM - 4:00 PM", type: "meeting" },
-  { id: "2", title: "Mid-term Exams Start", date: new Date("2024-08-19"), time: "All Day", type: "exam" },
-  { id: "3", title: "Science Fair", date: new Date("2024-08-22"), time: "10:00 AM - 2:00 PM", type: "event" },
-  { id: "4", title: "Guest Lecture: AI in Education", date: new Date("2024-08-25"), time: "3:00 PM", type: "lecture" },
-];
+import { getEvents, updateEvents, type Event } from "@/lib/schedule-db";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const timeSlots = Array.from({ length: 48 }, (_, i) => {
     const hours = Math.floor(i / 2);
@@ -40,13 +27,24 @@ const timeSlots = Array.from({ length: 48 }, (_, i) => {
 
 
 export default function SchedulePage() {
-  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   const [formData, setFormData] = useState<Partial<Omit<Event, 'id'>>>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+        setLoading(true);
+        const data = await getEvents();
+        setEvents(data);
+        setLoading(false);
+    }
+    fetchEvents();
+  }, [])
 
   const handleDayClick = (day: Date) => {
     setSelectedDate(day);
@@ -73,18 +71,21 @@ export default function SchedulePage() {
       toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
       return;
     }
-
+    
+    let updatedEvents;
     if (editingEvent) {
-      setEvents(events.map(e => e.id === editingEvent.id ? { ...e, ...formData } as Event : e));
+      updatedEvents = events.map(e => e.id === editingEvent.id ? { ...e, ...formData } as Event : e)
       toast({ title: "Success", description: "Event updated successfully." });
     } else {
       const newEvent: Event = {
         id: crypto.randomUUID(),
         ...formData,
       } as Event;
-      setEvents([...events, newEvent]);
+      updatedEvents = [...events, newEvent];
       toast({ title: "Success", description: "New event added successfully." });
     }
+    setEvents(updatedEvents);
+    updateEvents(updatedEvents);
     handleCloseDialog();
   };
   
@@ -94,7 +95,9 @@ export default function SchedulePage() {
 
   const confirmDelete = () => {
     if (eventToDelete) {
-        setEvents(events.filter(e => e.id !== eventToDelete.id));
+        const updatedEvents = events.filter(e => e.id !== eventToDelete.id)
+        setEvents(updatedEvents);
+        updateEvents(updatedEvents);
         toast({ title: "Event Deleted", description: `"${eventToDelete.title}" has been removed.` });
         setEventToDelete(null);
     }
@@ -139,7 +142,9 @@ export default function SchedulePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {(selectedDate ? filteredEvents : upcomingEvents).length > 0 ? (
+                {loading ? (
+                    Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)
+                ) : (selectedDate ? filteredEvents : upcomingEvents).length > 0 ? (
                   (selectedDate ? filteredEvents : upcomingEvents).map((event) => (
                     <div key={event.id} className="flex items-start gap-3 group">
                       <div className="flex-shrink-0 w-12 h-12 bg-primary/20 rounded-md flex flex-col items-center justify-center">
