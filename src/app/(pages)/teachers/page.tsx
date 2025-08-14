@@ -48,7 +48,8 @@ import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher, ty
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
-import { FormDescription } from "@/components/ui/form";
+import { Form, FormDescription } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 
 
 export default function TeachersPage() {
@@ -61,6 +62,7 @@ export default function TeachersPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const form = useForm();
 
   const fetchTeachers = async () => {
     setLoading(true);
@@ -224,76 +226,78 @@ export default function TeachersPage() {
                         {editingTeacher ? 'Update the details for this teacher.' : 'Fill in the details to add a new teacher to the system.'}
                     </DialogDescription>
                     </DialogHeader>
-                    <form id="teacher-form" onSubmit={handleFormSubmit} className="space-y-6">
-                        <div className="flex flex-col items-center text-center">
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                id="photo-upload"
-                                onChange={handlePhotoChange}
-                            />
-                            <label htmlFor="photo-upload" className="cursor-pointer">
-                                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-2 border-dashed mx-auto">
-                                    {photoPreview ? (
-                                        <Image src={photoPreview} alt="Teacher photo" width={96} height={96} className="rounded-full object-cover w-full h-full" />
-                                    ) : (
-                                        <span className="text-xs text-muted-foreground text-center">Upload Photo</span>
-                                    )}
+                    <Form {...form}>
+                        <form id="teacher-form" onSubmit={handleFormSubmit} className="space-y-6">
+                            <div className="flex flex-col items-center text-center">
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    id="photo-upload"
+                                    onChange={handlePhotoChange}
+                                />
+                                <label htmlFor="photo-upload" className="cursor-pointer">
+                                    <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center border-2 border-dashed mx-auto">
+                                        {photoPreview ? (
+                                            <Image src={photoPreview} alt="Teacher photo" width={96} height={96} className="rounded-full object-cover w-full h-full" />
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground text-center">Upload Photo</span>
+                                        )}
+                                    </div>
+                                </label>
+                                <FormDescription className="mt-2">Click above to upload a photo.</FormDescription>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="name">Name</Label>
+                                    <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
                                 </div>
-                            </label>
-                            <FormDescription className="mt-2">Click above to upload a photo.</FormDescription>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
+                                <div className="space-y-2">
+                                    <Label htmlFor="designation">Designation</Label>
+                                    <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="department">Department</Label>
+                                    <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="phone">Contact Number</Label>
+                                    <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="classCenter">Class Center</Label>
+                                    <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="noOfBatches">No of Batches</Label>
+                                    <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="totalStudents">Total Students</Label>
+                                    <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
+                                    <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
+                                </div>
+                                <div className="space-y-2 col-span-2">
+                                    <Label htmlFor="weekOff">Week Off</Label>
+                                    <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
+                                        <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Sunday">Sunday</SelectItem>
+                                            <SelectItem value="Monday">Monday</SelectItem>
+                                            <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                            <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                            <SelectItem value="Thursday">Thursday</SelectItem>
+                                            <SelectItem value="Friday">Friday</SelectItem>
+                                            <SelectItem value="Saturday">Saturday</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="designation">Designation</Label>
-                                <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="department">Department</Label>
-                                <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
-                            </div>
-                             <div className="space-y-2">
-                                <Label htmlFor="phone">Contact Number</Label>
-                                <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="classCenter">Class Center</Label>
-                                <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="noOfBatches">No of Batches</Label>
-                                <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="totalStudents">Total Students</Label>
-                                <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
-                                <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
-                            </div>
-                            <div className="space-y-2 col-span-2">
-                                <Label htmlFor="weekOff">Week Off</Label>
-                                 <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
-                                    <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Sunday">Sunday</SelectItem>
-                                        <SelectItem value="Monday">Monday</SelectItem>
-                                        <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                        <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                        <SelectItem value="Thursday">Thursday</SelectItem>
-                                        <SelectItem value="Friday">Friday</SelectItem>
-                                        <SelectItem value="Saturday">Saturday</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
+                    </Form>
                     <DialogFooter>
                         <Button variant="outline" onClick={handleCloseDialog}>Cancel</Button>
                         <Button type="submit" form="teacher-form">
@@ -421,3 +425,5 @@ export default function TeachersPage() {
     </Card>
   );
 }
+
+    
