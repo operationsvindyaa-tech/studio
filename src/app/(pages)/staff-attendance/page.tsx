@@ -188,22 +188,22 @@ export default function StaffAttendancePage() {
                                         <p className="font-semibold text-sm">{staffMember.fullName}</p>
                                         <p className="text-xs text-muted-foreground">{staffMember.jobDetails.role}</p>
                                         <div className="mt-4 flex flex-col gap-2 w-full">
-                                            <div className="flex gap-2">
+                                            <div className="grid grid-cols-2 gap-2">
                                                 <Button
                                                     size="sm"
                                                     variant={status === "Present" ? "default" : "outline"}
                                                     onClick={() => handleAttendanceChange(staffMember.id, "Present")}
-                                                    className="w-full rounded-full bg-green-500 hover:bg-green-600 text-white data-[variant=outline]:bg-transparent data-[variant=outline]:text-green-600 data-[variant=outline]:border-green-600"
+                                                    className="bg-green-500 hover:bg-green-600 text-white data-[variant=outline]:bg-transparent data-[variant=outline]:text-green-600 data-[variant=outline]:border-green-600"
                                                 >
-                                                    <Check className="h-4 w-4 mr-1" /> Present
+                                                    <Check className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant={status === "Absent" ? "destructive" : "outline"}
                                                     onClick={() => handleAttendanceChange(staffMember.id, "Absent")}
-                                                    className="w-full rounded-full data-[variant=outline]:text-red-600 data-[variant=outline]:border-red-600"
+                                                    className="data-[variant=outline]:text-red-600 data-[variant=outline]:border-red-600"
                                                 >
-                                                    <X className="h-4 w-4 mr-1" /> Absent
+                                                    <X className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                             {status === 'Absent' && (
@@ -213,7 +213,7 @@ export default function StaffAttendancePage() {
                                                     className="w-full"
                                                     onClick={() => handleNotifyClick(staffMember)}
                                                 >
-                                                    <MessageSquareWarning className="mr-2 h-4 w-4" /> Notify Staff
+                                                    <MessageSquareWarning className="mr-2 h-4 w-4" /> Notify
                                                 </Button>
                                             )}
                                         </div>
