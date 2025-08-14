@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -17,14 +17,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, FileDown, Edit, Trash2, TrendingUp, UserCheck, ClipboardList } from "lucide-react";
+import { MoreHorizontal, PlusCircle, FileDown, Edit, Trash2, TrendingUp, UserCheck, ClipboardList, Upload } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { getEnquiries, type Enquiry } from "@/lib/enquiries-db";
+import { getEnquiries, addEnquiriesBatch, type Enquiry } from "@/lib/enquiries-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, isThisWeek } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import * as XLSX from 'xlsx';
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 
 type ChartData = {
@@ -36,6 +39,8 @@ export default function EnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<ChartData[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const fetchEnquiries = async () => {
     setLoading(true);
@@ -44,7 +49,8 @@ export default function EnquiriesPage() {
       setEnquiries(data);
 
       const sourceCounts = data.reduce((acc, enquiry) => {
-        acc[enquiry.source] = (acc[enquiry.source] || 0) + 1;
+        const sourceName = enquiry.source.charAt(0).toUpperCase() + enquiry.source.slice(1).replace('-', ' ');
+        acc[sourceName] = (acc[sourceName] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
@@ -56,6 +62,11 @@ export default function EnquiriesPage() {
 
     } catch (error) {
       console.error("Failed to fetch enquiries", error);
+       toast({
+        title: "Error",
+        description: "Failed to load enquiries data.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -84,6 +95,59 @@ export default function EnquiriesPage() {
     document.body.removeChild(link);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        const newEnquiries = json.map((row, index) => {
+            const courseInterest = row["Course Interest"] || row.courseInterest || "Not Specified";
+            const source = row.Source || row.source || "other";
+
+            return {
+                name: row.Name || row.name || `Enquirer ${index + 1}`,
+                contact: String(row.Contact || row.contact || ""),
+                email: row.Email || row.email || "",
+                courseInterest: courseInterest,
+                source: source.toLowerCase().replace(' ', '-'),
+            };
+        });
+
+        await addEnquiriesBatch(newEnquiries);
+
+        toast({
+          title: "Import Successful",
+          description: `${newEnquiries.length} enquiries have been imported.`,
+        });
+        fetchEnquiries(); // Refresh the list
+      } catch (error) {
+        console.error("Error parsing file:", error);
+        toast({
+          title: "Import Failed",
+          description: "Could not parse the file. Please ensure it is a valid Excel or CSV file.",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsBinaryString(file);
+    if(fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+
   const getStatusVariant = (status: Enquiry["status"]): "default" | "secondary" | "destructive" | "outline" => {
     switch(status) {
         case "New": return "default";
@@ -101,9 +165,20 @@ export default function EnquiriesPage() {
 
   return (
     <div className="space-y-6">
+       <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".xlsx, .xls, .csv"
+      />
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Enquiries Management</h1>
         <div className="flex gap-2">
+            <Button variant="outline" onClick={handleImportClick}>
+                <Upload className="h-4 w-4 mr-2" />
+                Import Sheet
+            </Button>
            <Button variant="outline" onClick={handleExport}>
                 <FileDown className="h-4 w-4 mr-2" />
                 Export CSV
