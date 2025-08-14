@@ -226,6 +226,141 @@ const initialStaff: Staff[] = [
             benefitsNumber: "EFGHI5678Q", // PAN
         },
     },
+    {
+        id: "EMP008",
+        fullName: "Suresh Patil",
+        initials: "SP",
+        personalInfo: {
+            dob: "1995-03-12",
+            gender: "Male",
+            contactNumber: "(555) 123-4567",
+            email: "suresh.patil@example.com",
+            address: "111 Support St, Bangalore",
+            emergencyContact: { name: "Kavita Patil", number: "(555) 123-4568" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Support Staff",
+            role: "Front Desk Executive",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2022-08-01",
+            employmentType: "Full-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 35000,
+            bankDetails: { accountNumber: "********6789", ifscCode: "BARB000789" },
+            benefitsNumber: "JKLMN9012R", // PAN
+        },
+    },
+    {
+        id: "EMP009",
+        fullName: "Deepa Nair",
+        initials: "DN",
+        personalInfo: {
+            dob: "1993-08-20",
+            gender: "Female",
+            contactNumber: "(555) 234-5678",
+            email: "deepa.nair@example.com",
+            address: "222 Accounts Ave, Bangalore",
+            emergencyContact: { name: "Rajesh Nair", number: "(555) 234-5679" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Administration",
+            role: "Accountant",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2021-10-05",
+            employmentType: "Full-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 48000,
+            bankDetails: { accountNumber: "********7890", ifscCode: "PUNB000890" },
+            benefitsNumber: "OPQRS3456S", // PAN
+        },
+    },
+    {
+        id: "EMP010",
+        fullName: "Rajesh Gupta",
+        initials: "RG",
+        personalInfo: {
+            dob: "1980-01-10",
+            gender: "Male",
+            contactNumber: "(555) 345-6789",
+            email: "rajesh.gupta@example.com",
+            address: "333 Clean St, Bangalore",
+            emergencyContact: { name: "Pooja Gupta", number: "(555) 345-6780" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Support Staff",
+            role: "Maintenance Staff",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2017-06-20",
+            employmentType: "Contract",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 22000,
+            bankDetails: { accountNumber: "********8901", ifscCode: "CNRB000901" },
+            benefitsNumber: "TUVWX7890T", // PAN
+        },
+    },
+    {
+        id: "EMP011",
+        fullName: "Nandini Rao",
+        initials: "NR",
+        personalInfo: {
+            dob: "1998-05-18",
+            gender: "Female",
+            contactNumber: "(555) 456-7890",
+            email: "nandini.rao@example.com",
+            address: "444 Creative Corner, Bangalore",
+            emergencyContact: { name: "Kiran Rao", number: "(555) 456-7891" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Academics",
+            role: "Art & Craft Teacher",
+            reportingManager: "Meera Iyer",
+            dateOfJoining: "2023-02-15",
+            employmentType: "Part-time",
+            workLocation: "Branch 2 (Marathahalli)",
+        },
+        payroll: {
+            salary: 40000,
+            bankDetails: { accountNumber: "********9012", ifscCode: "UBIN000012" },
+            benefitsNumber: "YZABC3456U", // PAN
+        },
+    },
+    {
+        id: "EMP012",
+        fullName: "Amit Verma",
+        initials: "AV",
+        personalInfo: {
+            dob: "1975-10-02",
+            gender: "Male",
+            contactNumber: "(555) 567-8901",
+            email: "amit.verma@example.com",
+            address: "555 Director's Quarters, Bangalore",
+            emergencyContact: { name: "Shalini Verma", number: "(555) 567-8902" },
+            photo: "https://placehold.co/100x100.png",
+        },
+        jobDetails: {
+            department: "Management",
+            role: "Director",
+            reportingManager: "Board",
+            dateOfJoining: "2010-01-01",
+            employmentType: "Full-time",
+            workLocation: "Main Campus",
+        },
+        payroll: {
+            salary: 150000,
+            bankDetails: { accountNumber: "********0123", ifscCode: "IOBA000123" },
+            benefitsNumber: "CDEFG7890V", // PAN
+        },
+    },
 ];
 
 let staff: Staff[] = [...initialStaff];
