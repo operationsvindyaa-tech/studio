@@ -86,6 +86,7 @@ const academicsNavItems = [
 const hrNavItems = [
     { href: "/teachers", icon: UserSquare, label: "Teachers" },
     { href: "/staff", icon: Building2, label: "Staff" },
+    { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
 ];
 
