@@ -410,7 +410,7 @@ export default function BillingPage() {
                     <div>
                         <div className="flex items-center gap-2 mb-2">
                             <GraduationCap className="h-8 w-8 text-primary" />
-                            <h1 className="text-2xl font-bold font-headline">VINDYAA - The Altitude of Art</h1>
+                            <h1 className="text-xl font-bold font-headline whitespace-nowrap">VINDYAA - The Altitude of Art</h1>
                         </div>
                         <p className="text-xs text-muted-foreground text-left">#19, 1st Cross, 1st Main, Sri Manjunatha Layout, <br/> Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049<br/>Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com</p>
                     </div>

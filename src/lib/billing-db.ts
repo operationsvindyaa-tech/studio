@@ -64,6 +64,7 @@ export const calculateTotal = (student: StudentBillingInfo) => {
 
 // In-memory cache for billing data to ensure consistency across pages
 let billingDataCache: StudentBillingInfo[] | null = null;
+let nextAutoInvoiceId = 1;
 
 export const getBillingData = async (forceRefresh: boolean = false): Promise<StudentBillingInfo[]> => {
     if (billingDataCache && !forceRefresh) {
@@ -75,6 +76,7 @@ export const getBillingData = async (forceRefresh: boolean = false): Promise<Stu
         const billingRecords: StudentBillingInfo[] = [];
         const today = new Date();
         const currentMonthIndex = getMonth(today);
+        nextAutoInvoiceId = 1; // Reset counter
 
         students.forEach((student, studentIndex) => {
             const courses = student.enrolledCourses || (student.desiredCourse ? [student.desiredCourse] : []);
@@ -111,7 +113,7 @@ export const getBillingData = async (forceRefresh: boolean = false): Promise<Stu
                     dueDate.setDate(dueDate.getDate() + 15);
 
                     const record: StudentBillingInfo = {
-                        id: `B${student.id.padStart(4, '0')}-${format(invoiceDate, 'yyyyMM')}-${courseKey}`,
+                        id: `B${String(nextAutoInvoiceId++).padStart(4, '0')}`,
                         studentId: student.id,
                         name: student.name,
                         email: student.email,
