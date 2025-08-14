@@ -44,6 +44,7 @@ import {
   HeartHandshake,
   Banknote,
   UserCheck as UserCheckIcon,
+  Users2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -66,6 +67,7 @@ const operationsNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
     { href: "/students", icon: Users, label: "Students" },
+    { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
 ]
