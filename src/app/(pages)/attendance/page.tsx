@@ -26,6 +26,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { timetableData } from "@/lib/timetable-db";
+import { getTeachers, Teacher } from "@/lib/teachers-db";
 
 const courses = [
   "All Courses", "Bharatanatyam", "Vocal Carnatic", "Keyboard/Piano", "Guitar",
@@ -50,18 +51,22 @@ export default function AttendancePage() {
     const [attendance, setAttendance] = useState<AttendanceRecord>({});
     const [studentToNotify, setStudentToNotify] = useState<Student | null>(null);
     const [isNotifyDialogOpen, setIsNotifyDialogOpen] = useState(false);
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
+    const [availableTeachers, setAvailableTeachers] = useState<string[]>([]);
+    const [selectedTeacher, setSelectedTeacher] = useState<string>("All Teachers");
     const { toast } = useToast();
 
     useEffect(() => {
         const fetchStudentData = async () => {
             setLoading(true);
             try {
-                const studentData = await getStudents();
+                const [studentData, teacherData] = await Promise.all([getStudents(), getTeachers()]);
                 setStudents(studentData);
+                setTeachers(teacherData);
             } catch (error) {
                 toast({
                     title: "Error",
-                    description: "Failed to load students. Please try again.",
+                    description: "Failed to load students or teachers. Please try again.",
                     variant: "destructive",
                 });
             } finally {
@@ -76,16 +81,23 @@ export default function AttendancePage() {
         const center = "Main Campus (Basavanapura)"; // Assuming a default center for now
         
         const batches = new Set<string>();
+        const teacherSet = new Set<string>();
+
         if (timetableData[center] && timetableData[center][dayOfWeek]) {
             for (const time in timetableData[center][dayOfWeek]) {
                 const entry = timetableData[center][dayOfWeek][time];
                 if (selectedActivity === "All Courses" || entry.course === selectedActivity) {
                     batches.add(entry.time);
+                    if (entry.instructor) {
+                        teacherSet.add(entry.instructor);
+                    }
                 }
             }
         }
         setAvailableBatches(Array.from(batches).sort());
+        setAvailableTeachers(Array.from(teacherSet).sort());
         setSelectedBatch("All Batches");
+        setSelectedTeacher("All Teachers");
     }, [selectedActivity, selectedDate]);
 
     useEffect(() => {
@@ -93,13 +105,14 @@ export default function AttendancePage() {
         
         if (selectedActivity !== "All Courses") {
             const courseKey = selectedActivity.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-            currentStudents = students.filter(s => s.desiredCourse === courseKey);
+            currentStudents = students.filter(s => s.enrolledCourses?.includes(courseKey));
         }
         
-        // Future logic can filter by batch time if students are assigned to specific batches
+        // This is a simplified logic. A real app would have students assigned to specific teachers/batches.
+        // For now, we assume if a teacher is selected, we show all students for the selected course.
         setFilteredStudents(currentStudents);
         setAttendance({});
-    }, [selectedActivity, selectedBatch, students, selectedDate]);
+    }, [selectedActivity, selectedBatch, selectedTeacher, students, selectedDate]);
     
     const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
         setAttendance(prev => ({
@@ -148,9 +161,9 @@ export default function AttendancePage() {
                             <CardTitle>Attendance Tracking</CardTitle>
                             <CardDescription>Mark student attendance for activities on a selected date.</CardDescription>
                         </div>
-                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto flex-wrap justify-end">
                             <Select value={selectedActivity} onValueChange={setSelectedActivity}>
-                                <SelectTrigger className="w-full md:w-[180px]">
+                                <SelectTrigger className="w-full min-w-[180px] md:w-auto">
                                     <SelectValue placeholder="Select an activity" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -159,8 +172,19 @@ export default function AttendancePage() {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select value={selectedTeacher} onValueChange={setSelectedTeacher} disabled={availableTeachers.length === 0}>
+                                <SelectTrigger className="w-full min-w-[180px] md:w-auto">
+                                    <SelectValue placeholder="Select teacher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="All Teachers">All Teachers</SelectItem>
+                                    {availableTeachers.map(teacher => (
+                                        <SelectItem key={teacher} value={teacher}>{teacher}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Select value={selectedBatch} onValueChange={setSelectedBatch} disabled={availableBatches.length === 0}>
-                                <SelectTrigger className="w-full md:w-[180px]">
+                                <SelectTrigger className="w-full min-w-[180px] md:w-auto">
                                     <SelectValue placeholder="Select batch" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -278,3 +302,5 @@ export default function AttendancePage() {
         </>
     );
 }
+
+    

@@ -15,6 +15,7 @@ const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Sat
 type ScheduleEntry = {
   course: string;
   time: string;
+  instructor: string;
 };
 
 type TimetableData = {
@@ -38,13 +39,13 @@ const initializeTimetableData = (centers: string[]): TimetableData => {
         data[centers[0]] = {
             ...data[centers[0]],
             "Monday": { 
-                "09:00 AM": { course: "Yoga", time: "09:00 AM" },
-                "05:00 PM": { course: "Yoga", time: "05:00 PM" },
+                "09:00 AM": { course: "Yoga", time: "09:00 AM", instructor: "Sunita Reddy" },
+                "05:00 PM": { course: "Yoga", time: "05:00 PM", instructor: "Sunita Reddy" },
             },
-            "Wednesday": { "06:00 PM": { course: "Bharatanatyam", time: "06:00 PM" } },
+            "Wednesday": { "06:00 PM": { course: "Bharatanatyam", time: "06:00 PM", instructor: "Priya Sharma" } },
             "Friday": { 
-                "05:00 PM": { course: "Guitar", time: "05:00 PM" },
-                "06:00 PM": { course: "Guitar", time: "06:00 PM" },
+                "05:00 PM": { course: "Guitar", time: "05:00 PM", instructor: "Vikram Singh" },
+                "06:00 PM": { course: "Guitar", time: "06:00 PM", instructor: "Vikram Singh" },
             },
         };
     }
@@ -52,3 +53,5 @@ const initializeTimetableData = (centers: string[]): TimetableData => {
 };
 
 export const timetableData = initializeTimetableData(initialCenters);
+
+    
