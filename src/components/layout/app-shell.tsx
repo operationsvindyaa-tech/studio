@@ -59,13 +59,13 @@ import { Badge } from "../ui/badge";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/students", icon: Users, label: "Students" },
   { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
 ];
 
 const operationsNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
+    { href: "/students", icon: Users, label: "Students" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
 ]
