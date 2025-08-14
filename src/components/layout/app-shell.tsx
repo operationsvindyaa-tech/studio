@@ -45,6 +45,7 @@ import {
   Banknote,
   UserCheck as UserCheckIcon,
   Users2,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -79,6 +80,7 @@ const academicsNavItems = [
     { href: "/timetable", icon: CalendarClock, label: "Time Table" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
+    { href: "/progress-report", icon: TrendingUp, label: "Progress Report" },
 ];
 
 const hrNavItems = [
