@@ -19,6 +19,16 @@ const initialEnquiries: Enquiry[] = [
     { id: "E003", name: "Ajay Singh", contact: "9876543212", email: "ajay.s@example.com", courseInterest: "Yoga", status: "Enrolled", enquiryDate: new Date("2024-07-25").toISOString(), source: "Social Media" },
     { id: "E004", name: "Priya Rao", contact: "9876543213", email: "priya.r@example.com", courseInterest: "Vocal Carnatic", status: "Closed", enquiryDate: new Date("2024-07-24").toISOString(), source: "Advertisement" },
     { id: "E005", name: "Karan Verma", contact: "9876543214", email: "karan.v@example.com", courseInterest: "Keyboard/Piano", status: "New", enquiryDate: new Date("2024-07-29").toISOString(), source: "Search Engine" },
+    { id: "E006", name: "Meera Iyer", contact: "9876543215", email: "meera.i@example.com", courseInterest: "Western Dance", status: "Contacted", enquiryDate: new Date("2024-07-20").toISOString(), source: "Social Media" },
+    { id: "E007", name: "Suresh Reddy", contact: "9876543216", email: "suresh.r@example.com", courseInterest: "Karate", status: "New", enquiryDate: new Date("2024-07-18").toISOString(), source: "Friend/Referral" },
+    { id: "E008", name: "Ananya Desai", contact: "9876543217", email: "ananya.d@example.com", courseInterest: "Art & Craft", status: "Enrolled", enquiryDate: new Date("2024-07-15").toISOString(), source: "Website" },
+    { id: "E009", name: "Vikram Kumar", contact: "9876543218", email: "vikram.k@example.com", courseInterest: "Zumba", status: "Contacted", enquiryDate: new Date("2024-07-12").toISOString(), source: "Advertisement" },
+    { id: "E010", name: "Nisha Agarwal", contact: "9876543219", email: "nisha.a@example.com", courseInterest: "Gymnastics", status: "New", enquiryDate: new Date("2024-07-10").toISOString(), source: "Social Media" },
+    { id: "E011", name: "Arun Sharma", contact: "9876543220", email: "arun.s@example.com", courseInterest: "Kalaripayattu", status: "Closed", enquiryDate: new Date("2024-07-08").toISOString(), source: "Search Engine" },
+    { id: "E012", name: "Pooja Mehta", contact: "9876543221", email: "pooja.m@example.com", courseInterest: "Yoga", status: "Enrolled", enquiryDate: new Date("2024-07-05").toISOString(), source: "Friend/Referral" },
+    { id: "E013", name: "Rajesh Nair", contact: "9876543222", email: "rajesh.n@example.com", courseInterest: "Guitar", status: "New", enquiryDate: new Date("2024-07-02").toISOString(), source: "Website" },
+    { id: "E014", name: "Sunita Singh", contact: "9876543223", email: "sunita.s@example.com", courseInterest: "Vocal Carnatic", status: "Contacted", enquiryDate: new Date("2024-06-30").toISOString(), source: "Social Media" },
+    { id: "E015", name: "Amit Joshi", contact: "9876543224", email: "amit.j@example.com", courseInterest: "Bharatanatyam", status: "New", enquiryDate: new Date("2024-06-28").toISOString(), source: "Advertisement" },
 ];
 
 let enquiries: Enquiry[] = [...initialEnquiries];
