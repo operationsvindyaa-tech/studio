@@ -46,6 +46,7 @@ import {
   UserCheck as UserCheckIcon,
   Users2,
   TrendingUp,
+  LineChart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,6 +89,7 @@ const hrNavItems = [
     { href: "/staff", icon: Building2, label: "Staff" },
     { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
+    { href: "/teacher-performance", icon: LineChart, label: "Teacher Performance" },
 ];
 
 const financeNavItems = [
@@ -332,3 +334,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
