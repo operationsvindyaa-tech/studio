@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getStudents, type Student } from "@/lib/db";
 import { getProgressReports, type ProgressReport } from "@/lib/progress-db";
-import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer } from "lucide-react";
+import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer, CalendarCheck } from "lucide-react";
 
 export default function ProgressReportPage() {
     const [students, setStudents] = useState<Student[]>([]);
