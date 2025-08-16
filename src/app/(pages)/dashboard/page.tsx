@@ -2,9 +2,7 @@
 "use client"
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Wallet, UserCheck, ArrowDown, ArrowUp, Circle, BookOpen, ClipboardList, Building2, CalendarDays, BadgeHelp } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { Users, UserCheck, Circle, BookOpen, ClipboardList, Building2, CalendarDays } from "lucide-react"
 import { getStudents, Student } from "@/lib/db"
 import { getStaff, Staff } from "@/lib/staff-db"
 import { getCourses, Course } from "@/lib/courses-db"
@@ -24,12 +22,6 @@ const COLORS = {
     Active: 'hsl(var(--chart-1))',
     Inactive: 'hsl(var(--chart-2))',
     Suspended: 'hsl(var(--chart-5))',
-};
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-        minimumFractionDigits: 0,
-    }).format(amount);
 };
 
 export default function DashboardPage() {
@@ -76,10 +68,7 @@ export default function DashboardPage() {
     fill: COLORS[name as keyof typeof COLORS] || '#cccccc' 
   }));
 
-  const feesCollected = 150500;
-  const feesPending = 45500;
   const newEnquiriesThisWeek = enquiries.filter(e => isThisWeek(new Date(e.enquiryDate))).length;
-  const totalSalary = staff.reduce((acc, s) => acc + s.payroll.salary, 0);
 
   const upcomingEvents = events
     .filter(e => new Date(e.date) >= new Date())
@@ -127,40 +116,6 @@ export default function DashboardPage() {
           <CardContent>
             {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{staff.length}</div>}
             <p className="text-xs text-muted-foreground">including teachers</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fees Collected</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(feesCollected)}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-              <ArrowUp className="h-3 w-3 text-green-500 mr-1"/> +15.2% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fees Pending</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(feesPending)}</div>
-            <p className="text-xs text-muted-foreground flex items-center">
-                <ArrowDown className="h-3 w-3 text-red-500 mr-1"/> -3.1% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Salary Disbursal</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-bold">{formatCurrency(totalSalary)}</div>}
-            <p className="text-xs text-muted-foreground">for this month</p>
           </CardContent>
         </Card>
         <Card>

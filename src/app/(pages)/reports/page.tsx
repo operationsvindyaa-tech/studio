@@ -2,7 +2,7 @@
 "use client"
 import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Wallet, UserCheck, ArrowUp, Circle, CalendarCheck, UserMinus } from "lucide-react"
+import { Users, Wallet, UserCheck, ArrowUp, Circle, CalendarCheck, UserMinus, ArrowDown } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { getStudents, Student } from "@/lib/db"
@@ -82,39 +82,43 @@ export default function ReportsPage() {
 
   const totalFeesCollected = 150500;
   const totalFeesPending = 45500;
-  const totalSalaryDisbursed = 320000;
+  const totalSalaryDisbursed = staff.reduce((acc, s) => acc + s.payroll.salary, 0);
 
   return (
     <div className="space-y-6">
        <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Fees Collected</CardTitle>
+            <CardTitle className="text-sm font-medium">Fees Collected</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalFeesCollected)}</div>
-            <p className="text-xs text-muted-foreground">in this financial year</p>
+             <p className="text-xs text-muted-foreground flex items-center">
+              <ArrowUp className="h-3 w-3 text-green-500 mr-1"/> +15.2% from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Fees Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">Fees Pending</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalFeesPending)}</div>
-             <p className="text-xs text-muted-foreground">across all students</p>
+             <p className="text-xs text-muted-foreground flex items-center">
+                <ArrowDown className="h-3 w-3 text-red-500 mr-1"/> -3.1% from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Salary Disbursed</CardTitle>
+            <CardTitle className="text-sm font-medium">Salary Disbursal</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalSalaryDisbursed)}</div>
-             <p className="text-xs text-muted-foreground">in this financial year</p>
+            {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-bold">{formatCurrency(totalSalaryDisbursed)}</div>}
+             <p className="text-xs text-muted-foreground">for this month</p>
           </CardContent>
         </Card>
       </div>
