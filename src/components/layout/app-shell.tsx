@@ -119,8 +119,6 @@ const otherNavItems = [
 const managementNavItems = [
     { href: "/reports", icon: AreaChart, label: "Financial Reports" },
     { href: "/admissions", icon: BookUser, label: "Admission Trends" },
-    { href: "/teacher-performance", icon: LineChart, label: "Teacher Performance" },
-    { href: "/progress-report", icon: TrendingUp, label: "Student Progress" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
