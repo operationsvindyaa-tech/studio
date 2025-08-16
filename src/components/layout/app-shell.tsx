@@ -51,6 +51,7 @@ import {
   ReceiptText,
   Mail,
   Store,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -115,6 +116,12 @@ const otherNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
 ];
 
+const managementNavItems = [
+    { href: "/reports", icon: AreaChart, label: "Financial Reports" },
+    { href: "/admissions", icon: BookUser, label: "Admission Trends" },
+    { href: "/teacher-performance", icon: LineChart, label: "Teacher Performance" },
+    { href: "/progress-report", icon: TrendingUp, label: "Student Progress" },
+];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -159,6 +166,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>Senior Management</SidebarGroupLabel>
+                <SidebarMenu>
+                    {managementNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>Operations</SidebarGroupLabel>
@@ -326,7 +354,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
