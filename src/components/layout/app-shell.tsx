@@ -49,6 +49,7 @@ import {
   LineChart,
   BookText,
   ReceiptText,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -92,6 +93,7 @@ const hrNavItems = [
     { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
     { href: "/teacher-performance", icon: LineChart, label: "Teacher Performance" },
+    { href: "/letters", icon: Mail, label: "Letters" },
 ];
 
 const financeNavItems = [
