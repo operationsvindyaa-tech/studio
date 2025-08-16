@@ -36,6 +36,7 @@ export default function CertificatesPage() {
   
   const achievementRef = useRef<HTMLDivElement>(null);
   const transferRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState("achievement");
 
   const handlePrintAchievement = useReactToPrint({
     content: () => achievementRef.current,
@@ -80,7 +81,7 @@ export default function CertificatesPage() {
                 className="text-sm file:mr-2 file:text-foreground"
               />
             </div>
-            <Tabs defaultValue="achievement">
+            <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="achievement">Achievement</TabsTrigger>
                     <TabsTrigger value="transfer">Transfer</TabsTrigger>
@@ -165,12 +166,7 @@ export default function CertificatesPage() {
       </div>
 
       <div className="md:col-span-2">
-        <Tabs defaultValue="achievement">
-            <TabsList className="hidden">
-                <TabsTrigger value="achievement">Achievement</TabsTrigger>
-                <TabsTrigger value="transfer">Transfer</TabsTrigger>
-            </TabsList>
-            <TabsContent value="achievement">
+            <div style={{ display: activeTab === 'achievement' ? 'block' : 'none' }}>
                 <Card className="aspect-[sqrt(2)/1] w-full">
                     <CardContent className="p-0">
                         <div ref={achievementRef} className="p-8 border-8 border-primary/20 h-full relative flex flex-col justify-between bg-white text-black">
@@ -229,8 +225,8 @@ export default function CertificatesPage() {
                         </div>
                     </CardContent>
                 </Card>
-            </TabsContent>
-            <TabsContent value="transfer">
+            </div>
+             <div style={{ display: activeTab === 'transfer' ? 'block' : 'none' }}>
                 <Card className="aspect-[1/sqrt(2)] w-full">
                   <CardContent className="p-0">
                     <div ref={transferRef} className="p-8 bg-white text-black font-serif h-full flex flex-col">
@@ -290,10 +286,8 @@ export default function CertificatesPage() {
                     </div>
                   </CardContent>
                 </Card>
-            </TabsContent>
-        </Tabs>
+            </div>
       </div>
     </div>
   );
 }
-
