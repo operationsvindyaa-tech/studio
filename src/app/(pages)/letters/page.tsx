@@ -9,17 +9,19 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useReactToPrint } from "react-to-print";
-import { Mail, Printer } from "lucide-react";
+import { Mail, Printer, GraduationCap } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { getStaff, type Staff } from "@/lib/staff-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
+import Image from "next/image";
 
 export default function LettersPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStaffId, setSelectedStaffId] = useState<string>("");
+  const [logo, setLogo] = useState<string | null>(null);
 
   // Appointment Letter State
   const [joiningDate, setJoiningDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -67,6 +69,17 @@ export default function LettersPage() {
         setJoiningDate(format(new Date(selectedStaff.jobDetails.dateOfJoining), 'yyyy-MM-dd'));
     }
   }, [selectedStaff]);
+  
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogo(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const defaultAppointmentBody = `Further to your application and the subsequent interview you had with us, we are pleased to appoint you as **${designation}** in our organization, on the following terms and conditions:
 
@@ -107,6 +120,16 @@ Management`;
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+             <div className="space-y-2">
+                <Label>Academy Logo</Label>
+                <Input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleLogoChange}
+                    className="text-sm file:mr-2 file:text-foreground"
+                />
+            </div>
              <div className="space-y-2">
                 <Label>Select Staff Member</Label>
                 {loading ? <Skeleton className="h-10 w-full" /> : (
@@ -181,7 +204,23 @@ Management`;
                 <Card className="min-h-[80vh]">
                   <CardHeader><CardTitle>Appointment Letter Preview</CardTitle></CardHeader>
                   <CardContent>
-                    <div ref={appointmentLetterRef} className="p-4 bg-white text-black text-sm">
+                    <div ref={appointmentLetterRef} className="p-8 bg-white text-black text-sm">
+                        <header className="text-center mb-6">
+                            <div className="flex items-center justify-center gap-3">
+                                {logo ? (
+                                    <Image src={logo} alt="Institution Logo" width={60} height={60} className="object-contain" />
+                                ) : (
+                                    <GraduationCap className="h-10 w-10 text-gray-800" />
+                                )}
+                                <h1 className="text-2xl font-bold font-headline text-gray-900">VINDYAA - The Altitude of Art</h1>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-2">
+                                #19, 1st Cross, 1st Main, Sri Manjunatha Layout, Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049
+                                <br />
+                                Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com
+                            </p>
+                        </header>
+                        <Separator className="my-6 bg-gray-300" />
                       <p className="text-right font-semibold">Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
                       <br />
                       <p>To,</p>
@@ -201,7 +240,23 @@ Management`;
                  <Card className="min-h-[80vh]">
                   <CardHeader><CardTitle>Relieving Letter Preview</CardTitle></CardHeader>
                   <CardContent>
-                    <div ref={relievingLetterRef} className="p-4 bg-white text-black text-sm">
+                    <div ref={relievingLetterRef} className="p-8 bg-white text-black text-sm">
+                       <header className="text-center mb-6">
+                            <div className="flex items-center justify-center gap-3">
+                                {logo ? (
+                                    <Image src={logo} alt="Institution Logo" width={60} height={60} className="object-contain" />
+                                ) : (
+                                    <GraduationCap className="h-10 w-10 text-gray-800" />
+                                )}
+                                <h1 className="text-2xl font-bold font-headline text-gray-900">VINDYAA - The Altitude of Art</h1>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-2">
+                                #19, 1st Cross, 1st Main, Sri Manjunatha Layout, Basavanapura Main Rd, Near SBI Bank, Bengaluru, Karnataka 560049
+                                <br />
+                                Phone: +91 95909 59005 | Email: vindyaa.art@gmail.com
+                            </p>
+                        </header>
+                        <Separator className="my-6 bg-gray-300" />
                       <p className="text-right font-semibold">Date: {format(new Date(), 'MMMM dd, yyyy')}</p>
                       <br />
                       <p>To,</p>
