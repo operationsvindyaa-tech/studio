@@ -22,15 +22,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, ClipboardCheck } from "lucide-react";
+import { CalendarIcon, Loader2, ClipboardCheck, ClipboardList, Check, X, Phone, MoreHorizontal } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
-import { createDemoRequest } from "./actions";
+import { createDemoRequest, updateRequestStatus } from "./actions";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDemoRequests, type DemoRequest } from "@/lib/demo-requests-db";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const demoFormSchema = z.object({
   studentName: z.string().min(2, "Name must be at least 2 characters."),
@@ -61,11 +67,10 @@ function SubmitButton() {
     );
 }
 
-export default function ActivityDemoPage() {
+function DemoRequestForm() {
     const [state, formAction] = useActionState(createDemoRequest, initialState);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
-
     const form = useForm<DemoFormValues>({
         resolver: zodResolver(demoFormSchema),
         defaultValues: {
@@ -87,11 +92,11 @@ export default function ActivityDemoPage() {
             }
         }
     }, [state, toast, form]);
-
+    
     return (
-        <Card className="max-w-2xl mx-auto">
+        <Card className="max-w-2xl mx-auto border-none shadow-none">
             <CardHeader className="text-center">
-                <div className="mx-auto bg-muted p-4 rounded-full w-fit mb-2">
+                 <div className="mx-auto bg-muted p-4 rounded-full w-fit mb-2">
                     <ClipboardCheck className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <CardTitle>Request an Activity Demo</CardTitle>
@@ -138,5 +143,140 @@ export default function ActivityDemoPage() {
                 </Form>
             </CardContent>
         </Card>
+    );
+}
+
+
+function ManageRequests() {
+    const [requests, setRequests] = useState<DemoRequest[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isPending, startTransition] = useTransition();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        const fetchRequests = async () => {
+            setLoading(true);
+            const data = await getDemoRequests();
+            setRequests(data);
+            setLoading(false);
+        };
+        fetchRequests();
+    }, []);
+    
+    const handleStatusUpdate = async (id: string, status: DemoRequest['status']) => {
+        startTransition(async () => {
+            const result = await updateRequestStatus(id, status);
+            toast({
+                title: result.success ? "Status Updated" : "Error",
+                description: result.message,
+                variant: result.success ? "default" : "destructive",
+            });
+            if (result.success) {
+                setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+            }
+        });
+    }
+
+    const getStatusVariant = (status: DemoRequest['status']) => {
+        switch (status) {
+            case 'Pending': return 'default';
+            case 'Confirmed': return 'secondary';
+            case 'Completed': return 'outline';
+            default: return 'default';
+        }
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Manage Demo Requests</CardTitle>
+                <CardDescription>Review and update the status of incoming demo requests from prospective students.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <div className="border rounded-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Student</TableHead>
+                                <TableHead>Activity</TableHead>
+                                <TableHead>Preferred Date</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                Array.from({length: 3}).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                                    </TableRow>
+                                ))
+                            ) : requests.length > 0 ? (
+                                requests.map(req => (
+                                    <TableRow key={req.id}>
+                                        <TableCell>
+                                            <div className="font-medium">{req.studentName}</div>
+                                            <div className="text-sm text-muted-foreground">{req.phone}</div>
+                                        </TableCell>
+                                        <TableCell>{req.activityName}</TableCell>
+                                        <TableCell>{format(new Date(req.preferredDate), 'PPP')}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant(req.status)}>{req.status}</Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" disabled={isPending}>
+                                                        {isPending ? <Loader2 className="animate-spin" /> : <MoreHorizontal />}
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Confirmed')}>
+                                                        <Check className="mr-2 h-4 w-4" /> Confirm
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Completed')}>
+                                                        <ClipboardCheck className="mr-2 h-4 w-4" /> Mark as Completed
+                                                    </DropdownMenuItem>
+                                                     <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Pending')}>
+                                                        <X className="mr-2 h-4 w-4" /> Mark as Pending
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center h-24">
+                                        No demo requests yet.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+export default function ActivityDemoPage() {
+    return (
+        <Tabs defaultValue="request">
+            <TabsList className="grid w-full grid-cols-2 max-w-lg mx-auto">
+                <TabsTrigger value="request"><ClipboardCheck className="mr-2"/>Request a Demo</TabsTrigger>
+                <TabsTrigger value="manage"><ClipboardList className="mr-2"/>Manage Requests</TabsTrigger>
+            </TabsList>
+            <TabsContent value="request">
+                <DemoRequestForm />
+            </TabsContent>
+            <TabsContent value="manage">
+                <ManageRequests />
+            </TabsContent>
+        </Tabs>
     );
 }

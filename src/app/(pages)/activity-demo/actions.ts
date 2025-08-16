@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { addDemoRequest } from "@/lib/demo-requests-db";
+import { addDemoRequest, updateDemoRequestStatus as updateStatusInDb } from "@/lib/demo-requests-db";
 
 const demoFormSchema = z.object({
   studentName: z.string().min(2, "Name must be at least 2 characters."),
@@ -69,4 +69,21 @@ export async function createDemoRequest(prevState: State, formData: z.infer<type
       success: false,
     };
   }
+}
+
+export async function updateRequestStatus(id: string, status: 'Pending' | 'Confirmed' | 'Completed'): Promise<State> {
+    try {
+        await updateStatusInDb(id, status);
+        revalidatePath('/activity-demo');
+        return {
+            message: `Request status has been updated to ${status}.`,
+            success: true,
+        };
+    } catch(error) {
+        console.error("Error updating status:", error);
+         return {
+            message: "There was an error updating the status. Please try again.",
+            success: false,
+        };
+    }
 }
