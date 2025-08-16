@@ -134,6 +134,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!isMounted) {
     return null; 
   }
+  
+  // TODO: Replace this with your actual authentication logic
+  const userIsSeniorManagement = true;
 
   return (
     <SidebarProvider>
@@ -166,27 +169,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-          <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Senior Management</SidebarGroupLabel>
-                <SidebarMenu>
-                    {managementNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>Operations</SidebarGroupLabel>
@@ -271,6 +253,36 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     ))}
                 </SidebarMenu>
             </SidebarGroup>
+            
+          {userIsSeniorManagement && (
+            <>
+                <SidebarSeparator />
+                <SidebarGroup>
+                    <SidebarGroupLabel className="flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Senior Management
+                    </SidebarGroupLabel>
+                    <SidebarMenu>
+                        {managementNavItems.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                            <Link href={item.href} passHref>
+                            <SidebarMenuButton
+                                isActive={pathname.startsWith(item.href)}
+                                asChild
+                            >
+                                <span>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                </span>
+                            </SidebarMenuButton>
+                            </Link>
+                        </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
+            </>
+          )}
+
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>Media</SidebarGroupLabel>
