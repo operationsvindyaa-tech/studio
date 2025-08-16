@@ -73,13 +73,13 @@ const navItems = [
 ];
 
 const operationsNavItems = [
-    { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
+    { href: "/activity-demo", icon: ClipboardCheck, label: "Activity Demo" },
+    { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
-    { href: "/activity-demo", icon: ClipboardCheck, label: "Activity Demo" },
 ]
 
 const academicsNavItems = [
