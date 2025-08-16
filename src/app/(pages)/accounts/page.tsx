@@ -11,8 +11,6 @@ import { Banknote, FileSpreadsheet } from "lucide-react";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 2,
     }).format(amount);
 };
@@ -109,7 +107,7 @@ export default function AccountsPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Particulars</TableHead>
-                                        <TableHead className="text-right">Amount (INR)</TableHead>
+                                        <TableHead className="text-right">Amount</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

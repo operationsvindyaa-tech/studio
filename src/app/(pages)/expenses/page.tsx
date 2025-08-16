@@ -29,8 +29,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 2,
     }).format(amount);
 };
@@ -264,7 +262,7 @@ export default function ExpensesPage() {
                     </Popover>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="amount">Amount (INR)</Label>
+                    <Label htmlFor="amount">Amount</Label>
                     <Input id="amount" type="number" value={formData.amount} onChange={(e) => handleFormChange('amount', e.target.value)} placeholder="e.g., 500.00" />
                 </div>
             </div>
