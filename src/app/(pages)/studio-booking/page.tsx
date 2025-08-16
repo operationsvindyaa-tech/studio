@@ -32,6 +32,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { createBooking } from "./actions";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 
 const bookingFormSchema = z.object({
   center: z.string({ required_error: "Please select a center." }),
