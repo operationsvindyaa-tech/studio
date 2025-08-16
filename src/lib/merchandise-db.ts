@@ -21,6 +21,7 @@ const initialMerchandise: MerchandiseItem[] = [
 ];
 
 let merchandise: MerchandiseItem[] = [...initialMerchandise];
+let nextId = merchandise.length + 1;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -41,15 +42,27 @@ export const updateMerchandiseStock = async (id: string, newStock: number): Prom
 
 export const addMerchandiseItem = async (itemData: Omit<MerchandiseItem, 'id'>): Promise<MerchandiseItem> => {
     await delay(500);
-    const newId = `M${String(merchandise.length + 1).padStart(3, '0')}`;
+    const newId = `M${String(nextId++).padStart(3, '0')}`;
     const newItem: MerchandiseItem = {
         ...itemData,
         id: newId,
     };
     merchandise.push(newItem);
     return Promise.resolve(newItem);
-}
+};
+
+export const updateMerchandiseItem = async (id: string, updates: Partial<MerchandiseItem>): Promise<MerchandiseItem> => {
+    await delay(300);
+    const itemIndex = merchandise.findIndex(item => item.id === id);
+    if (itemIndex === -1) {
+        throw new Error("Merchandise item not found");
+    }
+    merchandise[itemIndex] = { ...merchandise[itemIndex], ...updates };
+    return Promise.resolve(merchandise[itemIndex]);
+};
+
 
 export const resetMerchandise = () => {
     merchandise = [...initialMerchandise];
+    nextId = merchandise.length + 1;
 }

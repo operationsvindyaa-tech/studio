@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getMerchandise, updateMerchandiseStock, type MerchandiseItem } from "@/lib/merchandise-db";
+import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem } from "@/lib/merchandise-db";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, MinusCircle, PackagePlus, ShoppingCart, ArrowDown, ArrowUp } from "lucide-react";
+import { PlusCircle, MinusCircle, PackagePlus, ShoppingCart, ArrowDown, ArrowUp, Edit, Trash2, Link as LinkIcon } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -24,7 +25,10 @@ export default function MerchandisePage() {
   const [loading, setLoading] = useState(true);
   const [isStockInDialogOpen, setIsStockInDialogOpen] = useState(false);
   const [isSaleDialogOpen, setIsSaleDialogOpen] = useState(false);
+  const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
+  const [isPaymentLinkDialogOpen, setIsPaymentLinkDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
+  const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> | null>(null);
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
@@ -44,20 +48,26 @@ export default function MerchandisePage() {
     fetchInventory();
   }, [toast]);
 
-  const handleOpenDialog = (item: MerchandiseItem, type: 'stock-in' | 'sale') => {
+  const handleOpenDialog = (item: MerchandiseItem, type: 'stock-in' | 'sale' | 'payment-link') => {
     setSelectedItem(item);
     setQuantity(1);
-    if (type === 'stock-in') {
-      setIsStockInDialogOpen(true);
-    } else {
-      setIsSaleDialogOpen(true);
-    }
+    if (type === 'stock-in') setIsStockInDialogOpen(true);
+    else if (type === 'sale') setIsSaleDialogOpen(true);
+    else setIsPaymentLinkDialogOpen(true);
+  };
+  
+  const handleOpenAddEditDialog = (item: MerchandiseItem | null) => {
+    setEditingItem(item ? { ...item } : { name: '', category: 'Apparel', price: 0, stock: 0 });
+    setIsAddEditDialogOpen(true);
   };
 
   const handleCloseDialogs = () => {
     setIsStockInDialogOpen(false);
     setIsSaleDialogOpen(false);
+    setIsAddEditDialogOpen(false);
+    setIsPaymentLinkDialogOpen(false);
     setSelectedItem(null);
+    setEditingItem(null);
     setQuantity(1);
   };
 
@@ -90,6 +100,31 @@ export default function MerchandisePage() {
     fetchInventory();
     handleCloseDialogs();
   };
+  
+  const handleSaveItem = async () => {
+    if (!editingItem || !editingItem.name || !editingItem.category || editingItem.price! < 0 || editingItem.stock! < 0) {
+        toast({ title: "Invalid Data", description: "Please fill all fields with valid data.", variant: "destructive" });
+        return;
+    }
+
+    if (editingItem.id) {
+        await updateMerchandiseItem(editingItem.id, editingItem);
+        toast({ title: "Item Updated", description: `${editingItem.name} has been updated.` });
+    } else {
+        await addMerchandiseItem(editingItem as Omit<MerchandiseItem, 'id'>);
+        toast({ title: "Item Added", description: `${editingItem.name} has been added to inventory.` });
+    }
+    fetchInventory();
+    handleCloseDialogs();
+  };
+
+  const handleCopyLink = () => {
+    if (!selectedItem) return;
+    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${selectedItem.price * quantity}`;
+    navigator.clipboard.writeText(link).then(() => {
+        toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
+    });
+  }
 
   const totalStockValue = inventory.reduce((sum, item) => sum + (item.price * item.stock), 0);
   const totalStockItems = inventory.reduce((sum, item) => sum + item.stock, 0);
@@ -128,7 +163,7 @@ export default function MerchandisePage() {
                   Track stock levels and manage sales of academy merchandise.
                 </CardDescription>
               </div>
-              <Button disabled>
+              <Button onClick={() => handleOpenAddEditDialog(null)}>
                 <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
               </Button>
             </div>
@@ -153,7 +188,7 @@ export default function MerchandisePage() {
                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                         <TableCell className="text-center"><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-48 ml-auto" /></TableCell>
                       </TableRow>
                     ))
                   ) : inventory.map(item => (
@@ -164,12 +199,18 @@ export default function MerchandisePage() {
                       <TableCell className={`text-center font-bold ${item.stock < 10 ? 'text-destructive' : ''}`}>
                         {item.stock}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" className="mr-2" onClick={() => handleOpenDialog(item, 'stock-in')}>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(item, 'stock-in')}>
                            <ArrowUp className="mr-2 h-4 w-4" /> Stock In
                         </Button>
                         <Button size="sm" onClick={() => handleOpenDialog(item, 'sale')} disabled={item.stock === 0}>
                            <ArrowDown className="mr-2 h-4 w-4" /> Sell
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => handleOpenDialog(item, 'payment-link')}>
+                            <LinkIcon className="mr-2 h-4 w-4" /> Payment Link
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleOpenAddEditDialog(item)}>
+                           <Edit className="mr-2 h-4 w-4" /> Edit
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -245,6 +286,88 @@ export default function MerchandisePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add/Edit Item Dialog */}
+        <Dialog open={isAddEditDialogOpen} onOpenChange={handleCloseDialogs}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{editingItem?.id ? 'Edit' : 'Add New'} Product</DialogTitle>
+                    <DialogDescription>
+                        {editingItem?.id ? 'Update the details for this product.' : 'Enter the details for the new product.'}
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="item-name">Product Name</Label>
+                        <Input id="item-name" value={editingItem?.name} onChange={(e) => setEditingItem(prev => ({...prev, name: e.target.value}))} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="item-category">Category</Label>
+                            <Select value={editingItem?.category} onValueChange={(value) => setEditingItem(prev => ({...prev, category: value as any}))}>
+                                <SelectTrigger id="item-category"><SelectValue placeholder="Select category" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Apparel">Apparel</SelectItem>
+                                    <SelectItem value="Books">Books</SelectItem>
+                                    <SelectItem value="Costumes">Costumes</SelectItem>
+                                    <SelectItem value="Accessories">Accessories</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="item-price">Price</Label>
+                            <Input id="item-price" type="number" value={editingItem?.price} onChange={(e) => setEditingItem(prev => ({...prev, price: parseFloat(e.target.value) || 0}))} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="item-stock">Initial Stock</Label>
+                        <Input id="item-stock" type="number" value={editingItem?.stock} onChange={(e) => setEditingItem(prev => ({...prev, stock: parseInt(e.target.value) || 0}))} />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button onClick={handleSaveItem}>Save Product</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+         {/* Payment Link Dialog */}
+        <Dialog open={isPaymentLinkDialogOpen} onOpenChange={handleCloseDialogs}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create Payment Link for {selectedItem?.name}</DialogTitle>
+                    <DialogDescription>
+                    Generate a shareable link for this purchase.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="payment-link-quantity">Quantity</Label>
+                        <Input
+                            id="payment-link-quantity"
+                            type="number"
+                            value={quantity}
+                            onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                            min="1"
+                            max={selectedItem?.stock}
+                        />
+                    </div>
+                    <div className="text-lg font-bold">
+                        Total: {formatCurrency((selectedItem?.price || 0) * quantity)}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="payment-link">Payment Link</Label>
+                        <div className="flex gap-2">
+                            <Input id="payment-link" value={`https://your-academy.com/pay?item=${selectedItem?.id}&qty=${quantity}`} readOnly />
+                            <Button onClick={handleCopyLink} variant="outline" size="icon"><LinkIcon /></Button>
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Close</Button></DialogClose>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </>
   );
 }
