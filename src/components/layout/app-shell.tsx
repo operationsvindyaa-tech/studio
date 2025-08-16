@@ -50,6 +50,7 @@ import {
   BookText,
   ReceiptText,
   Mail,
+  Store,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -111,6 +112,7 @@ const mediaNavItems = [
 
 const otherNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
+    { href: "/studio-booking", icon: Store, label: "Studio Booking" },
 ];
 
 
