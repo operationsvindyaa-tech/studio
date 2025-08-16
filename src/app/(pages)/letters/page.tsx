@@ -31,9 +31,11 @@ export default function LettersPage() {
   // Relieving Letter State
   const [lastWorkingDate, setLastWorkingDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [resignationDate, setResignationDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [customRelievingBody, setCustomRelievingBody] = useState("");
   
   const appointmentLetterRef = useRef<HTMLDivElement>(null);
   const relievingLetterRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState("appointment");
 
   const handlePrintAppointment = useReactToPrint({
     content: () => appointmentLetterRef.current,
@@ -66,11 +68,11 @@ export default function LettersPage() {
     }
   }, [selectedStaff]);
 
-  const appointmentLetterBody = customAppointmentBody || `Further to your application and the subsequent interview you had with us, we are pleased to appoint you as **${designation}** in our organization, on the following terms and conditions:
+  const defaultAppointmentBody = `Further to your application and the subsequent interview you had with us, we are pleased to appoint you as **${designation}** in our organization, on the following terms and conditions:
 
 1.  **Date of Joining**: Your appointment will be effective from **${joiningDate ? format(new Date(joiningDate), 'MMMM dd, yyyy') : ''}**.
 
-2.  **Probation**: You will be on probation for a period of **${probationPeriod}** from the date of your joining.
+2.  **Probation**: You will be on probation for a period of **${probationPeriod}**.
 
 3.  **Remuneration**: Your salary will be **${salary} per month**.
 
@@ -80,8 +82,8 @@ We welcome you to VINDYAA - The Altitude of Art and look forward to a long and s
 
 Yours sincerely,
 Management`;
-  
-  const relievingLetterBody = `This letter is to confirm your official relieving from your duties as **${selectedStaff?.jobDetails.role || ''}** at VINDYAA - The Altitude of Art, effective at the close of business on **${lastWorkingDate ? format(new Date(lastWorkingDate), 'MMMM dd, yyyy') : ''}**.
+
+  const defaultRelievingBody = `This letter is to confirm your official relieving from your duties as **${selectedStaff?.jobDetails.role || ''}** at VINDYAA - The Altitude of Art, effective at the close of business on **${lastWorkingDate ? format(new Date(lastWorkingDate), 'MMMM dd, yyyy') : ''}**.
 
 This follows your resignation dated **${resignationDate ? format(new Date(resignationDate), 'MMMM dd, yyyy') : ''}**. We confirm that you have completed all your exit formalities, and all dues have been settled.
 
@@ -89,6 +91,9 @@ We thank you for your contribution to the organization and wish you all the best
 
 Yours sincerely,
 Management`;
+
+  const appointmentLetterBody = customAppointmentBody || defaultAppointmentBody;
+  const relievingLetterBody = customRelievingBody || defaultRelievingBody;
 
 
   return (
@@ -114,7 +119,7 @@ Management`;
                 )}
             </div>
             <Separator />
-            <Tabs defaultValue="appointment">
+            <Tabs defaultValue="appointment" onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="appointment">Appointment</TabsTrigger>
                     <TabsTrigger value="relieving">Relieving</TabsTrigger>
@@ -136,6 +141,10 @@ Management`;
                         <Label htmlFor="probation">Probation Period</Label>
                         <Input id="probation" value={probationPeriod} onChange={e => setProbationPeriod(e.target.value)} />
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="appointment-body">Letter Body</Label>
+                        <Textarea id="appointment-body" value={customAppointmentBody} onChange={e => setCustomAppointmentBody(e.target.value)} placeholder={defaultAppointmentBody} rows={10} />
+                    </div>
                     <Button onClick={handlePrintAppointment} className="w-full">
                         <Printer className="mr-2 h-4 w-4" /> Print Appointment Letter
                     </Button>
@@ -149,6 +158,10 @@ Management`;
                         <Label htmlFor="resignation-date">Date of Resignation</Label>
                         <Input id="resignation-date" type="date" value={resignationDate} onChange={e => setResignationDate(e.target.value)} />
                     </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="relieving-body">Letter Body</Label>
+                        <Textarea id="relieving-body" value={customRelievingBody} onChange={e => setCustomRelievingBody(e.target.value)} placeholder={defaultRelievingBody} rows={10} />
+                    </div>
                     <Button onClick={handlePrintRelieving} className="w-full">
                         <Printer className="mr-2 h-4 w-4" /> Print Relieving Letter
                     </Button>
@@ -159,7 +172,7 @@ Management`;
       </div>
 
       <div className="md:col-span-2">
-        <Tabs defaultValue="appointment">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="hidden">
                  <TabsTrigger value="appointment">Appointment</TabsTrigger>
                  <TabsTrigger value="relieving">Relieving</TabsTrigger>
