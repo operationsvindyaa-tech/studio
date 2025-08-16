@@ -233,68 +233,75 @@ export default function CertificatesPage() {
             <TabsContent value="transfer">
                 <Card className="aspect-[1/sqrt(2)] w-full">
                   <CardContent className="p-0">
-                    <div ref={transferRef} className="p-10 bg-white text-black font-serif text-sm h-full flex flex-col">
-                        <header className="text-center mb-6">
-                            <div className="flex items-center justify-center gap-3">
+                    <div ref={transferRef} className="p-8 bg-white text-black font-serif h-full flex flex-col border-4 border-black double">
+                        <div className="p-4 border-2 border-black">
+                            <header className="text-center mb-6">
+                                <div className="flex justify-center mb-2">
                                 {logo ? (
                                     <Image src={logo} alt="Institution Logo" width={60} height={60} className="object-contain" />
                                 ) : (
-                                    <div className="w-16 h-16"></div>
+                                    <div className="w-16 h-16 flex items-center justify-center">
+                                        <GraduationCap className="h-12 w-12 text-black" />
+                                    </div>
                                 )}
-                                <div className="text-center">
-                                    <h1 className="text-3xl font-bold font-headline">VINDYAA - The Altitude of Art</h1>
-                                    <p className="text-xs text-slate-600 mt-1">
-                                        #19, 1st Cross, 1st Main, Basavanapura Main Rd, Bengaluru, 560049
-                                    </p>
                                 </div>
+                                <h1 className="text-3xl font-bold font-headline">VINDYAA - The Altitude of Art</h1>
+                                <p className="text-xs text-slate-600 mt-1">
+                                    #19, 1st Cross, 1st Main, Basavanapura Main Rd, Bengaluru, 560049
+                                </p>
+                                <h2 className="text-2xl font-bold tracking-widest mt-4 underline">TRANSFER CERTIFICATE</h2>
+                            </header>
+                            
+                            <div className="flex-grow space-y-3 text-sm leading-relaxed">
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">1. Name of Student</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcStudentName}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">2. Father's / Guardian's Name</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcFatherName}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">3. Nationality</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcNationality}</span>
+                               </div>
+                                <div className="flex">
+                                   <span className="w-48 font-semibold">4. Date of Admission</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {new Date(tcAdmissionDate).toLocaleDateString('en-GB')}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">5. Date of Leaving</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {new Date(tcLeavingDate).toLocaleDateString('en-GB')}</span>
+                               </div>
+                                <div className="flex">
+                                   <span className="w-48 font-semibold">6. Last Course Enrolled</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcLastClass}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">7. Reason for Leaving</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcReasonForLeaving}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">8. General Conduct</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: {tcConduct}</span>
+                               </div>
+                               <div className="flex">
+                                   <span className="w-48 font-semibold">9. Remarks</span>
+                                   <span className="border-b border-dotted border-black flex-grow text-left">: All dues have been cleared.</span>
+                               </div>
                             </div>
-                            <Separator className="mt-4"/>
-                            <h2 className="text-2xl font-bold tracking-widest mt-4">TRANSFER CERTIFICATE</h2>
-                        </header>
-                        
-                        <div className="flex-grow space-y-4 text-base">
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Student's Name:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcStudentName}</span>
-                           </div>
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Father's Name:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcFatherName}</span>
-                           </div>
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Nationality:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcNationality}</span>
-                           </div>
-                            <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Date of Admission:</span>
-                               <span className="border-b border-dotted border-black pb-1">{new Date(tcAdmissionDate).toLocaleDateString('en-GB')}</span>
-                           </div>
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Date of Leaving:</span>
-                               <span className="border-b border-dotted border-black pb-1">{new Date(tcLeavingDate).toLocaleDateString('en-GB')}</span>
-                           </div>
-                            <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Last Course Enrolled:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcLastClass}</span>
-                           </div>
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Reason for Leaving:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcReasonForLeaving}</span>
-                           </div>
-                           <div className="grid grid-cols-[200px_1fr] items-center">
-                               <span className="font-semibold">Conduct:</span>
-                               <span className="border-b border-dotted border-black pb-1">{tcConduct}</span>
-                           </div>
-                        </div>
 
-                        <footer className="flex justify-between items-end pt-12">
-                            <div>
-                                <p className="font-semibold">Date: {new Date().toLocaleDateString('en-GB')}</p>
-                            </div>
-                            <div className="text-center">
-                                <p className="border-t border-black pt-2 px-8 font-semibold">Signature of Principal</p>
-                            </div>
-                        </footer>
+                            <footer className="flex justify-between items-end pt-16">
+                                <div>
+                                    <p className="font-semibold">Date: <span className="font-normal">{new Date().toLocaleDateString('en-GB')}</span></p>
+                                    <p className="font-semibold">Place: <span className="font-normal">Bengaluru</span></p>
+                                </div>
+                                <div className="text-center">
+                                    <div className="h-12"></div>
+                                    <p className="border-t border-black pt-1 px-8 font-semibold">Signature of Principal</p>
+                                </div>
+                            </footer>
+                        </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -304,4 +311,3 @@ export default function CertificatesPage() {
     </div>
   );
 }
-
