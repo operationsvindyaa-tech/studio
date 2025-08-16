@@ -72,7 +72,7 @@ export default function LettersPage() {
 
 2.  **Probation**: You will be on probation for a period of **${probationPeriod}** from the date of your joining.
 
-3.  **Remuneration**: Your salary will be **₹${salary} per month**.
+3.  **Remuneration**: Your salary will be **${salary} per month**.
 
 4.  **Duties**: You will be expected to perform the duties assigned to you to the best of your abilities.
 
