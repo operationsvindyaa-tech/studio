@@ -22,14 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, ClipboardCheck, ClipboardList, Check, X, Phone, MoreHorizontal } from "lucide-react";
+import { CalendarIcon, Loader2, ClipboardCheck, ClipboardList, Check, X, Phone, MoreHorizontal, UserPlus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
-import { createDemoRequest, updateRequestStatus } from "./actions";
+import { createDemoRequest, updateRequestStatus, assignTeacher } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDemoRequests, type DemoRequest } from "@/lib/demo-requests-db";
@@ -37,6 +37,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { getTeachers, type Teacher } from "@/lib/teachers-db";
+import { Label } from "@/components/ui/label";
 
 const demoFormSchema = z.object({
   studentName: z.string().min(2, "Name must be at least 2 characters."),
@@ -149,20 +152,55 @@ function DemoRequestForm() {
 
 function ManageRequests() {
     const [requests, setRequests] = useState<DemoRequest[]>([]);
+    const [teachers, setTeachers] = useState<Teacher[]>([]);
     const [loading, setLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
+    const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState<DemoRequest | null>(null);
+
+    const [assignState, assignAction] = useActionState(assignTeacher, initialState);
 
     useEffect(() => {
-        const fetchRequests = async () => {
+        const fetchData = async () => {
             setLoading(true);
-            const data = await getDemoRequests();
-            setRequests(data);
-            setLoading(false);
+            try {
+                const [requestData, teacherData] = await Promise.all([
+                    getDemoRequests(),
+                    getTeachers()
+                ]);
+                setRequests(requestData);
+                setTeachers(teacherData);
+            } catch (error) {
+                 toast({
+                    title: "Error",
+                    description: "Failed to load data. Please try again.",
+                    variant: "destructive",
+                });
+            } finally {
+                setLoading(false);
+            }
         };
-        fetchRequests();
-    }, []);
+        fetchData();
+    }, [toast]);
     
+    useEffect(() => {
+        if(assignState.message) {
+             toast({
+                title: assignState.success ? "Success" : "Error",
+                description: assignState.message,
+                variant: assignState.success ? "default" : "destructive",
+            });
+            if (assignState.success) {
+                // Manually update the state to reflect the change immediately
+                setRequests(prev => prev.map(r => r.id === selectedRequest?.id ? { ...r, assignedTeacherName: (document.getElementById('teacher-select') as HTMLSelectElement)?.selectedOptions[0].text } : r));
+                setIsAssignDialogOpen(false);
+                setSelectedRequest(null);
+            }
+        }
+    }, [assignState, toast, selectedRequest]);
+
+
     const handleStatusUpdate = async (id: string, status: DemoRequest['status']) => {
         startTransition(async () => {
             const result = await updateRequestStatus(id, status);
@@ -176,6 +214,11 @@ function ManageRequests() {
             }
         });
     }
+    
+    const handleAssignClick = (request: DemoRequest) => {
+        setSelectedRequest(request);
+        setIsAssignDialogOpen(true);
+    }
 
     const getStatusVariant = (status: DemoRequest['status']) => {
         switch (status) {
@@ -187,80 +230,134 @@ function ManageRequests() {
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Manage Demo Requests</CardTitle>
-                <CardDescription>Review and update the status of incoming demo requests from prospective students.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <div className="border rounded-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Student</TableHead>
-                                <TableHead>Activity</TableHead>
-                                <TableHead>Preferred Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                Array.from({length: 3}).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : requests.length > 0 ? (
-                                requests.map(req => (
-                                    <TableRow key={req.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{req.studentName}</div>
-                                            <div className="text-sm text-muted-foreground">{req.phone}</div>
-                                        </TableCell>
-                                        <TableCell>{req.activityName}</TableCell>
-                                        <TableCell>{format(new Date(req.preferredDate), 'PPP')}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={getStatusVariant(req.status)}>{req.status}</Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" disabled={isPending}>
-                                                        {isPending ? <Loader2 className="animate-spin" /> : <MoreHorizontal />}
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Confirmed')}>
-                                                        <Check className="mr-2 h-4 w-4" /> Confirm
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Completed')}>
-                                                        <ClipboardCheck className="mr-2 h-4 w-4" /> Mark as Completed
-                                                    </DropdownMenuItem>
-                                                     <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Pending')}>
-                                                        <X className="mr-2 h-4 w-4" /> Mark as Pending
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Manage Demo Requests</CardTitle>
+                    <CardDescription>Review and update the status of incoming demo requests from prospective students.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="border rounded-lg">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center h-24">
-                                        No demo requests yet.
-                                    </TableCell>
+                                    <TableHead>Student</TableHead>
+                                    <TableHead>Activity</TableHead>
+                                    <TableHead>Preferred Date</TableHead>
+                                    <TableHead>Assigned To</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-            </CardContent>
-        </Card>
+                            </TableHeader>
+                            <TableBody>
+                                {loading ? (
+                                    Array.from({length: 3}).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : requests.length > 0 ? (
+                                    requests.map(req => (
+                                        <TableRow key={req.id}>
+                                            <TableCell>
+                                                <div className="font-medium">{req.studentName}</div>
+                                                <div className="text-sm text-muted-foreground">{req.phone}</div>
+                                            </TableCell>
+                                            <TableCell>{req.activityName}</TableCell>
+                                            <TableCell>{format(new Date(req.preferredDate), 'PPP')}</TableCell>
+                                            <TableCell>
+                                                {req.assignedTeacherName ? (
+                                                    <Badge variant="outline">{req.assignedTeacherName}</Badge>
+                                                ) : (
+                                                    <Button variant="link" className="p-0 h-auto" onClick={() => handleAssignClick(req)}>Assign</Button>
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={getStatusVariant(req.status)}>{req.status}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" disabled={isPending}>
+                                                            {isPending ? <Loader2 className="animate-spin" /> : <MoreHorizontal />}
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem onClick={() => handleAssignClick(req)}>
+                                                            <UserPlus className="mr-2 h-4 w-4" /> Assign Teacher
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Confirmed')}>
+                                                            <Check className="mr-2 h-4 w-4" /> Confirm
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Completed')}>
+                                                            <ClipboardCheck className="mr-2 h-4 w-4" /> Mark as Completed
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleStatusUpdate(req.id, 'Pending')}>
+                                                            <X className="mr-2 h-4 w-4" /> Mark as Pending
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center h-24">
+                                            No demo requests yet.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Assign Teacher to Demo</DialogTitle>
+                        <DialogDescription>
+                            Select a teacher to conduct the demo for {selectedRequest?.studentName}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form action={assignAction}>
+                        <div className="py-4">
+                             <input type="hidden" name="requestId" value={selectedRequest?.id} />
+                            <div className="space-y-2">
+                                <Label htmlFor="teacher-select">Teacher</Label>
+                                <Select name="teacherId" required>
+                                    <SelectTrigger id="teacher-select">
+                                        <SelectValue placeholder="Select a teacher" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {teachers.map(teacher => (
+                                            <SelectItem key={teacher.id} value={teacher.id}>
+                                                {teacher.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <input type="hidden" name="teacherName" value={
+                                    (document.getElementById('teacher-select') as HTMLSelectElement)?.selectedOptions[0]?.text
+                                } />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit">Assign Teacher</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }
 

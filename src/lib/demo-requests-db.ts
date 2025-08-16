@@ -9,6 +9,8 @@ export type DemoRequest = {
   preferredDate: string; // ISO date string
   requestDate: string; // ISO date string
   status: 'Pending' | 'Confirmed' | 'Completed';
+  assignedTeacherId?: string;
+  assignedTeacherName?: string;
 };
 
 let demoRequests: DemoRequest[] = [];
@@ -53,6 +55,17 @@ export const updateDemoRequestStatus = async (id: string, status: DemoRequest['s
     demoRequests[requestIndex].status = status;
     return Promise.resolve(demoRequests[requestIndex]);
 }
+
+export const assignTeacherToDemoRequest = async (id: string, teacherId: string, teacherName: string): Promise<DemoRequest> => {
+    await delay(300);
+    const requestIndex = demoRequests.findIndex(r => r.id === id);
+    if (requestIndex === -1) {
+        throw new Error("Demo request not found");
+    }
+    demoRequests[requestIndex].assignedTeacherId = teacherId;
+    demoRequests[requestIndex].assignedTeacherName = teacherName;
+    return Promise.resolve(demoRequests[requestIndex]);
+};
 
 export const resetDemoRequests = () => {
     demoRequests = [];

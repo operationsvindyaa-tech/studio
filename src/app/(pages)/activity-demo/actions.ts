@@ -3,7 +3,7 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { addDemoRequest, updateDemoRequestStatus as updateStatusInDb } from "@/lib/demo-requests-db";
+import { addDemoRequest, updateDemoRequestStatus as updateStatusInDb, assignTeacherToDemoRequest as assignTeacherInDb } from "@/lib/demo-requests-db";
 
 const demoFormSchema = z.object({
   studentName: z.string().min(2, "Name must be at least 2 characters."),
@@ -16,6 +16,7 @@ const demoFormSchema = z.object({
 type State = {
     message: string;
     success: boolean;
+    error?: string;
 };
 
 export async function createDemoRequest(prevState: State, formData: z.infer<typeof demoFormSchema>): Promise<State> {
@@ -84,6 +85,38 @@ export async function updateRequestStatus(id: string, status: 'Pending' | 'Confi
          return {
             message: "There was an error updating the status. Please try again.",
             success: false,
+        };
+    }
+}
+
+export async function assignTeacher(prevState: State, formData: FormData): Promise<State> {
+    const schema = z.object({
+        requestId: z.string(),
+        teacherId: z.string(),
+        teacherName: z.string(),
+    });
+
+    try {
+        const parsedData = schema.parse({
+            requestId: formData.get('requestId'),
+            teacherId: formData.get('teacherId'),
+            teacherName: formData.get('teacherName'),
+        });
+        
+        await assignTeacherInDb(parsedData.requestId, parsedData.teacherId, parsedData.teacherName);
+
+        revalidatePath('/activity-demo');
+
+        return {
+            message: `Assigned ${parsedData.teacherName} to the demo request.`,
+            success: true
+        };
+    } catch(error: any) {
+        console.error("Error assigning teacher:", error);
+        return {
+            message: "There was an error assigning the teacher. Please try again.",
+            success: false,
+            error: error.message
         };
     }
 }
