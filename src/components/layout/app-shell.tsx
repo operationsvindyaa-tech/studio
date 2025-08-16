@@ -48,6 +48,7 @@ import {
   TrendingUp,
   LineChart,
   BookText,
+  ReceiptText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -98,6 +99,7 @@ const financeNavItems = [
     { href: "/payroll", icon: Wallet, label: "Payroll" },
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
     { href: "/accounts", icon: BookText, label: "Accounts" },
+    { href: "/expenses", icon: ReceiptText, label: "Expenses" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
