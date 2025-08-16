@@ -11,6 +11,8 @@ const demoFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   activityName: z.string({ required_error: "Please select an activity." }),
   preferredDate: z.date({ required_error: "Please select a date." }),
+  branch: z.string({ required_error: "Please select a branch." }),
+  personInCharge: z.string(),
 });
 
 type State = {
@@ -23,7 +25,14 @@ export async function createDemoRequest(prevState: State, formData: z.infer<type
   try {
     const parsedData = demoFormSchema.parse(formData);
 
-    await addDemoRequest(parsedData);
+    await addDemoRequest({
+        studentName: parsedData.studentName,
+        phone: parsedData.phone,
+        email: parsedData.email,
+        activityName: parsedData.activityName,
+        preferredDate: parsedData.preferredDate,
+        branch: parsedData.branch,
+    });
 
     // --- Notification Simulation ---
     // In a real application, you would integrate with an SMS/Email service here.
@@ -32,20 +41,21 @@ export async function createDemoRequest(prevState: State, formData: z.infer<type
     console.log(`---
     SENDING DEMO CONFIRMATION TO STUDENT:
     To: ${parsedData.phone}
-    Message: Hi ${parsedData.studentName}, we've received your request for a ${parsedData.activityName} demo on ${parsedData.preferredDate.toLocaleDateString()}. Our team will contact you shortly to confirm the schedule.
+    Message: Hi ${parsedData.studentName}, we've received your request for a ${parsedData.activityName} demo on ${parsedData.preferredDate.toLocaleDateString()} at our ${parsedData.branch} branch. Our team will contact you shortly to confirm the schedule.
     Thank you, VINDYAA.
     ---`);
 
     // 2. Notify the branch in-charge
      console.log(`---
     SENDING DEMO NOTIFICATION TO BRANCH IN-CHARGE:
-    To: branch-incharge@vindyaa.com
-    Subject: New Demo Request
+    To: ${parsedData.personInCharge.split(' ')[0].toLowerCase()}@vindyaa.com
+    Subject: New Demo Request at ${parsedData.branch}
     Body:
     A new demo has been requested.
     Student: ${parsedData.studentName}
     Contact: ${parsedData.phone} / ${parsedData.email}
     Activity: ${parsedData.activityName}
+    Branch: ${parsedData.branch}
     Preferred Date: ${parsedData.preferredDate.toLocaleDateString()}
     Please contact the student to confirm the time slot.
     ---`);

@@ -47,7 +47,10 @@ const demoFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   activityName: z.string({ required_error: "Please select an activity." }),
   preferredDate: z.date({ required_error: "Please select a date." }),
+  branch: z.string({ required_error: "Please select a branch." }),
+  personInCharge: z.string(),
 });
+
 
 type DemoFormValues = z.infer<typeof demoFormSchema>;
 
@@ -60,6 +63,16 @@ const activities = [
     "Bharatanatyam", "Vocal Carnatic", "Keyboard/Piano", "Guitar",
     "Yoga", "Western Dance", "Art & Craft", "Karate", "Kalaripayattu", "Zumba", "Gymnastics"
 ];
+
+const branches = {
+  "Main Campus (Basavanapura)": "Mr. Anand Kumar",
+  "Branch 2 (Marathahalli)": "Ms. Sunita Reddy",
+  "Branch 3 (Koramangala)": "Mr. Rajesh Sharma",
+  "Branch 4 (Indiranagar)": "Ms. Priya Menon",
+  "Branch 5 (Jayanagar)": "Mr. Vijay Kumar",
+};
+
+const branchNames = Object.keys(branches);
 
 function SubmitButton() {
     const { pending } = useFormStatus();
@@ -80,8 +93,17 @@ function DemoRequestForm() {
             studentName: "",
             phone: "",
             email: "",
+            personInCharge: "",
         },
     });
+    
+    const selectedBranch = form.watch("branch");
+
+    useEffect(() => {
+        if (selectedBranch) {
+            form.setValue("personInCharge", branches[selectedBranch as keyof typeof branches]);
+        }
+    }, [selectedBranch, form]);
 
     useEffect(() => {
         if (state.message) {
@@ -138,6 +160,16 @@ function DemoRequestForm() {
                                         <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
                                     </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date()} initialFocus /></PopoverContent></Popover><FormMessage />
                                 </FormItem>
+                            )} />
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-6">
+                             <FormField control={form.control} name="branch" render={({ field }) => (
+                                <FormItem><FormLabel>Select Branch</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Choose a branch" /></SelectTrigger></FormControl><SelectContent>
+                                    {branchNames.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                                </SelectContent></Select><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name="personInCharge" render={({ field }) => (
+                                <FormItem><FormLabel>Person In-Charge</FormLabel><FormControl><Input placeholder="Select a branch first" {...field} readOnly className="bg-muted" /></FormControl><FormMessage /></FormItem>
                             )} />
                         </div>
                         

@@ -8,6 +8,7 @@ export type DemoRequest = {
   activityName: string;
   preferredDate: string; // ISO date string
   requestDate: string; // ISO date string
+  branch: string;
   status: 'Pending' | 'Confirmed' | 'Completed';
   assignedTeacherId?: string;
   assignedTeacherName?: string;
@@ -30,6 +31,7 @@ type AddDemoRequestData = {
   email: string;
   activityName: string;
   preferredDate: Date;
+  branch: string;
 }
 
 export const addDemoRequest = async (data: AddDemoRequestData): Promise<DemoRequest> => {
