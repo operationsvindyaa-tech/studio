@@ -78,6 +78,7 @@ export default function StudioBookingPage() {
     const [state, formAction] = useActionState(createBooking, initialState);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
+    const [rentalFee, setRentalFee] = useState("1000");
 
     const form = useForm<BookingFormValues>({
         resolver: zodResolver(bookingFormSchema),
@@ -134,6 +135,18 @@ export default function StudioBookingPage() {
                 </div>
             </CardHeader>
             <CardContent>
+                <div className="space-y-2 mb-8 p-4 border rounded-lg bg-muted/50">
+                    <Label htmlFor="rental-fee">Rental Fee (per hour)</Label>
+                    <Input 
+                        id="rental-fee"
+                        type="number"
+                        value={rentalFee}
+                        onChange={(e) => setRentalFee(e.target.value)}
+                        className="max-w-xs"
+                    />
+                    <p className="text-xs text-muted-foreground">Set the hourly rental fee. This will be communicated to the client upon confirmation.</p>
+                </div>
+
                 <Form {...form}>
                     <form
                         ref={formRef}
@@ -187,7 +200,7 @@ export default function StudioBookingPage() {
             </CardContent>
             <CardFooter>
                 <div className="text-xs text-muted-foreground">
-                    <p><strong>Note:</strong> Submission of this form is a request and does not guarantee a booking. Our team will contact you to confirm availability and process the payment. The rental fee is <strong>₹1000 per hour</strong>. Payment can be made via UPI or Bank Transfer upon confirmation.</p>
+                    <p><strong>Note:</strong> Submission of this form is a request and does not guarantee a booking. Our team will contact you to confirm availability and process the payment. Payment can be made via UPI or Bank Transfer upon confirmation.</p>
                 </div>
             </CardFooter>
         </Card>
