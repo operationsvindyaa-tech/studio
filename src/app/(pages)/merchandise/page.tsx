@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem } from "@/lib/merchandise-db";
+import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem, recordMerchandiseSale } from "@/lib/merchandise-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlusCircle, MinusCircle, PackagePlus, ShoppingCart, ArrowDown, ArrowUp, Edit, Trash2, Link as LinkIcon } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -94,8 +94,8 @@ export default function MerchandisePage() {
       return;
     }
 
-    const newStock = selectedItem.stock - quantity;
-    await updateMerchandiseStock(selectedItem.id, newStock);
+    await recordMerchandiseSale(selectedItem.id, quantity);
+
     toast({ title: "Sale Recorded", description: `${quantity} unit(s) of ${selectedItem.name} sold.` });
     fetchInventory();
     handleCloseDialogs();

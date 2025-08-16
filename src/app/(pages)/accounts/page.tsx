@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { getBillingData, calculateTotal } from "@/lib/billing-db";
 import { getStaff } from "@/lib/staff-db";
+import { getMerchandiseSales } from "@/lib/merchandise-db";
 import { Banknote, FileSpreadsheet } from "lucide-react";
 
 const formatCurrency = (amount: number) => {
@@ -18,6 +19,8 @@ const formatCurrency = (amount: number) => {
 export default function AccountsPage() {
     const [loading, setLoading] = useState(true);
     const [financials, setFinancials] = useState({
+        totalFeesRevenue: 0,
+        totalMerchandiseRevenue: 0,
         totalRevenue: 0,
         salaryExpenses: 0,
         operatingExpenses: 0,
@@ -29,11 +32,19 @@ export default function AccountsPage() {
         const calculateFinancials = async () => {
             setLoading(true);
             try {
-                const [billingData, staffData] = await Promise.all([getBillingData(), getStaff()]);
+                const [billingData, staffData, merchandiseSales] = await Promise.all([
+                    getBillingData(), 
+                    getStaff(),
+                    getMerchandiseSales()
+                ]);
 
-                const totalRevenue = billingData
+                const totalFeesRevenue = billingData
                     .filter(b => b.status === 'Paid')
                     .reduce((sum, b) => sum + calculateTotal(b), 0);
+
+                const totalMerchandiseRevenue = merchandiseSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+
+                const totalRevenue = totalFeesRevenue + totalMerchandiseRevenue;
 
                 const accountsReceivable = billingData
                     .filter(b => b.status === 'Due' || b.status === 'Overdue')
@@ -48,6 +59,8 @@ export default function AccountsPage() {
                 const netProfit = totalRevenue - totalExpenses;
 
                 setFinancials({
+                    totalFeesRevenue,
+                    totalMerchandiseRevenue,
                     totalRevenue,
                     salaryExpenses,
                     operatingExpenses,
@@ -117,7 +130,11 @@ export default function AccountsPage() {
                                     </TableRow>
                                     <TableRow>
                                         <TableCell className="pl-8">Total Fees Collected</TableCell>
-                                        <TableCell className="text-right">{formatCurrency(financials.totalRevenue)}</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(financials.totalFeesRevenue)}</TableCell>
+                                    </TableRow>
+                                     <TableRow>
+                                        <TableCell className="pl-8">Merchandise Sales</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(financials.totalMerchandiseRevenue)}</TableCell>
                                     </TableRow>
                                     <TableRow className="font-semibold">
                                         <TableCell>Total Revenue</TableCell>

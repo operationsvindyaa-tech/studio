@@ -9,6 +9,14 @@ export type MerchandiseItem = {
   stock: number;
 };
 
+export type MerchandiseSale = {
+    saleId: string;
+    itemId: string;
+    quantity: number;
+    totalAmount: number;
+    saleDate: string;
+};
+
 const initialMerchandise: MerchandiseItem[] = [
   { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", price: 499, stock: 50 },
   { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", price: 1200, stock: 25 },
@@ -21,13 +29,20 @@ const initialMerchandise: MerchandiseItem[] = [
 ];
 
 let merchandise: MerchandiseItem[] = [...initialMerchandise];
+let merchandiseSales: MerchandiseSale[] = [];
 let nextId = merchandise.length + 1;
+let nextSaleId = 1;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const getMerchandise = async (): Promise<MerchandiseItem[]> => {
   await delay(500);
   return Promise.resolve(merchandise);
+};
+
+export const getMerchandiseSales = async (): Promise<MerchandiseSale[]> => {
+    await delay(200);
+    return Promise.resolve(merchandiseSales);
 };
 
 export const updateMerchandiseStock = async (id: string, newStock: number): Promise<MerchandiseItem> => {
@@ -38,6 +53,30 @@ export const updateMerchandiseStock = async (id: string, newStock: number): Prom
   }
   merchandise[itemIndex].stock = newStock;
   return Promise.resolve(merchandise[itemIndex]);
+};
+
+export const recordMerchandiseSale = async (itemId: string, quantity: number): Promise<MerchandiseSale> => {
+    await delay(300);
+    const item = merchandise.find(item => item.id === itemId);
+    if (!item) {
+        throw new Error("Merchandise item not found");
+    }
+    if (item.stock < quantity) {
+        throw new Error("Insufficient stock");
+    }
+
+    item.stock -= quantity;
+
+    const newSale: MerchandiseSale = {
+        saleId: `SALE${String(nextSaleId++).padStart(4, '0')}`,
+        itemId,
+        quantity,
+        totalAmount: item.price * quantity,
+        saleDate: new Date().toISOString(),
+    };
+
+    merchandiseSales.push(newSale);
+    return Promise.resolve(newSale);
 };
 
 export const addMerchandiseItem = async (itemData: Omit<MerchandiseItem, 'id'>): Promise<MerchandiseItem> => {
@@ -64,5 +103,7 @@ export const updateMerchandiseItem = async (id: string, updates: Partial<Merchan
 
 export const resetMerchandise = () => {
     merchandise = [...initialMerchandise];
+    merchandiseSales = [];
     nextId = merchandise.length + 1;
+    nextSaleId = 1;
 }
