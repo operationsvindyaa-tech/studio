@@ -47,6 +47,7 @@ import {
   Users2,
   TrendingUp,
   LineChart,
+  BookText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,6 +97,7 @@ const financeNavItems = [
     { href: "/billing", icon: Banknote, label: "Billing" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
+    { href: "/accounts", icon: BookText, label: "Accounts" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
@@ -334,5 +336,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
