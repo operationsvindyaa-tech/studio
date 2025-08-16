@@ -52,6 +52,7 @@ import {
   Mail,
   Store,
   Shield,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -104,6 +105,7 @@ const financeNavItems = [
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
     { href: "/accounts", icon: BookText, label: "Accounts" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
+    { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
     { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
