@@ -53,6 +53,7 @@ import {
   Store,
   Shield,
   ShoppingCart,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -78,6 +79,7 @@ const operationsNavItems = [
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
+    { href: "/activity-demo", icon: ClipboardCheck, label: "Activity Demo" },
 ]
 
 const academicsNavItems = [
