@@ -34,6 +34,7 @@ export default function CertificatesPage() {
   const [tcLastClass, setTcLastClass] = useState("Advanced Guitar");
   const [tcReasonForLeaving, setTcReasonForLeaving] = useState("Relocation");
   const [tcConduct, setTcConduct] = useState("Good");
+  const [tcRemarks, setTcRemarks] = useState("All dues have been cleared.");
   
   const achievementRef = useRef<HTMLDivElement>(null);
   const transferRef = useRef<HTMLDivElement>(null);
@@ -172,8 +173,12 @@ export default function CertificatesPage() {
                           <Textarea id="tc-reason" value={tcReasonForLeaving} onChange={(e) => setTcReasonForLeaving(e.target.value)} />
                       </div>
                        <div className="space-y-2">
-                          <Label htmlFor="tc-conduct">Conduct</Label>
+                          <Label htmlFor="tc-conduct">General Conduct</Label>
                           <Input id="tc-conduct" value={tcConduct} onChange={(e) => setTcConduct(e.target.value)} />
+                      </div>
+                       <div className="space-y-2">
+                          <Label htmlFor="tc-remarks">Remarks</Label>
+                          <Textarea id="tc-remarks" value={tcRemarks} onChange={(e) => setTcRemarks(e.target.value)} />
                       </div>
                       <Button onClick={() => openPreview("transfer")} className="w-full">
                           <Printer className="mr-2 h-4 w-4" /> Print Transfer Certificate
@@ -288,7 +293,7 @@ export default function CertificatesPage() {
                                       <tr><td className="py-1 pr-2 font-semibold">Last Course Enrolled</td><td className="py-1">: {tcLastClass}</td></tr>
                                       <tr><td className="py-1 pr-2 font-semibold">Reason for Leaving</td><td className="py-1">: {tcReasonForLeaving}</td></tr>
                                       <tr><td className="py-1 pr-2 font-semibold">General Conduct</td><td className="py-1">: {tcConduct}</td></tr>
-                                      <tr><td className="py-1 pr-2 font-semibold">Remarks</td><td className="py-1">: All dues have been cleared.</td></tr>
+                                      <tr><td className="py-1 pr-2 font-semibold">Remarks</td><td className="py-1">: {tcRemarks}</td></tr>
                                   </tbody>
                               </table>
 
@@ -382,7 +387,7 @@ export default function CertificatesPage() {
                         <tr><td className="py-1 pr-2 font-semibold">Last Course Enrolled</td><td className="py-1">: {tcLastClass}</td></tr>
                         <tr><td className="py-1 pr-2 font-semibold">Reason for Leaving</td><td className="py-1">: {tcReasonForLeaving}</td></tr>
                         <tr><td className="py-1 pr-2 font-semibold">General Conduct</td><td className="py-1">: {tcConduct}</td></tr>
-                        <tr><td className="py-1 pr-2 font-semibold">Remarks</td><td className="py-1">: All dues have been cleared.</td></tr>
+                        <tr><td className="py-1 pr-2 font-semibold">Remarks</td><td className="py-1">: {tcRemarks}</td></tr>
                       </tbody>
                     </table>
                     <p className="pt-4">We wish {tcStudentName} all the very best for their future endeavors.</p>
