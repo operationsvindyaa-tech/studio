@@ -29,17 +29,21 @@ const centerColors = [
 ];
 
 export default function AdmissionsPage() {
-    const [admissions, setAdmissions] = useState<Student[]>([]);
+    const [allAdmissions, setAllAdmissions] = useState<Student[]>([]);
+    const [filteredAdmissions, setFilteredAdmissions] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeframe, setTimeframe] = useState<Timeframe>("monthly");
     const [chartData, setChartData] = useState<any[]>([]);
+    const [selectedCenter, setSelectedCenter] = useState<string>("All Centers");
+
 
     useEffect(() => {
         const fetchAdmissions = async () => {
             setLoading(true);
             try {
                 const data = await getStudents();
-                setAdmissions(data);
+                setAllAdmissions(data);
+                setFilteredAdmissions(data);
             } catch (error) {
                 console.error("Failed to fetch admissions", error);
             } finally {
@@ -50,8 +54,17 @@ export default function AdmissionsPage() {
     }, []);
 
     useEffect(() => {
-        if (admissions.length > 0) {
-            const groupedData = groupAdmissionsByTimeframe(admissions, timeframe);
+        if (selectedCenter === "All Centers") {
+            setFilteredAdmissions(allAdmissions);
+        } else {
+            setFilteredAdmissions(allAdmissions.filter(s => s.admissionCenter === selectedCenter));
+        }
+    }, [selectedCenter, allAdmissions]);
+
+
+    useEffect(() => {
+        if (filteredAdmissions.length > 0) {
+            const groupedData = groupAdmissionsByTimeframe(filteredAdmissions, timeframe);
             
             const formattedData = Object.entries(groupedData).map(([name, centers]) => {
                 const entry: { [key: string]: string | number } = { name };
@@ -65,24 +78,44 @@ export default function AdmissionsPage() {
             }).sort((a,b) => new Date(a.name as string).getTime() - new Date(b.name as string).getTime());
 
             setChartData(formattedData);
+        } else {
+            setChartData([]);
         }
-    }, [admissions, timeframe]);
+    }, [filteredAdmissions, timeframe]);
 
-    const totalAdmissions = admissions.length;
-    const admissionsThisMonth = admissions.filter(
+    const totalAdmissions = filteredAdmissions.length;
+    const admissionsThisMonth = filteredAdmissions.filter(
         s => new Date(s.joined).getMonth() === new Date().getMonth() && new Date(s.joined).getFullYear() === new Date().getFullYear()
     ).length;
 
   return (
     <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Admissions Overview</h1>
-            <Button asChild size="lg">
-                <Link href="/admissions/new">
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    New Admission
-                </Link>
-            </Button>
+        <div className="flex justify-between items-center flex-wrap gap-4">
+            <div>
+                <h1 className="text-2xl font-bold">Admissions Overview</h1>
+                <p className="text-muted-foreground">
+                    Showing data for: <span className="font-semibold">{selectedCenter}</span>
+                </p>
+            </div>
+            <div className="flex gap-2 items-center">
+                 <Select value={selectedCenter} onValueChange={setSelectedCenter}>
+                    <SelectTrigger className="w-[240px]">
+                        <SelectValue placeholder="Select a center" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All Centers">All Centers</SelectItem>
+                        {admissionCenters.map(center => (
+                            <SelectItem key={center} value={center}>{center}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                <Button asChild>
+                    <Link href="/admissions/new">
+                        <PlusCircle className="mr-2 h-5 w-5" />
+                        New Admission
+                    </Link>
+                </Button>
+            </div>
         </div>
         
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -93,7 +126,7 @@ export default function AdmissionsPage() {
                 </CardHeader>
                 <CardContent>
                     {loading ? <Skeleton className="h-8 w-16" /> : <div className="text-2xl font-bold">{totalAdmissions}</div>}
-                    <p className="text-xs text-muted-foreground">All-time student admissions</p>
+                    <p className="text-xs text-muted-foreground">Student admissions for selected center</p>
                 </CardContent>
             </Card>
              <Card>
