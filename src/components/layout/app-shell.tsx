@@ -80,7 +80,7 @@ const operationsNavItems = [
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
     { href: "/batches", icon: Users2, label: "Batches" },
-    { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/attendance", icon: CalendarCheck, label: "Student Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
 ]
 

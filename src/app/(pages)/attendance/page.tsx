@@ -158,7 +158,7 @@ export default function AttendancePage() {
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                         <div>
-                            <CardTitle>Attendance Tracking</CardTitle>
+                            <CardTitle>Student Attendance Tracking</CardTitle>
                             <CardDescription>Mark student attendance for activities on a selected date.</CardDescription>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto flex-wrap justify-end">
@@ -302,5 +302,3 @@ export default function AttendancePage() {
         </>
     );
 }
-
-    
