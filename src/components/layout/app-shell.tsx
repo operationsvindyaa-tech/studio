@@ -99,8 +99,8 @@ const hrNavItems = [
     { href: "/staff", icon: Building2, label: "Staff" },
     { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
-    { href: "/teacher-performance", icon: LineChart, label: "Teacher Performance" },
     { href: "/letters", icon: Mail, label: "Letters" },
+    { href: "/staff-login", icon: LogIn, label: "Staff Login" },
 ];
 
 const financeNavItems = [
@@ -110,7 +110,6 @@ const financeNavItems = [
     { href: "/accounts", icon: BookText, label: "Accounts" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
-    { href: "/reports", icon: AreaChart, label: "Reports" },
 ]
 
 const mediaNavItems = [
