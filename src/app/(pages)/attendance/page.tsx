@@ -103,13 +103,25 @@ export default function AttendancePage() {
     useEffect(() => {
         let currentStudents = students;
         
+        const dayOfWeek = daysOfWeek[getDay(selectedDate)];
+        const center = "Main Campus (Basavanapura)"; // Assuming a default center for now
+
         if (selectedActivity !== "All Courses") {
             const courseKey = selectedActivity.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
             currentStudents = students.filter(s => s.enrolledCourses?.includes(courseKey));
         }
         
-        // This is a simplified logic. A real app would have students assigned to specific teachers/batches.
-        // For now, we assume if a teacher is selected, we show all students for the selected course.
+        if (selectedBatch !== "All Batches") {
+            const entry = timetableData[center]?.[dayOfWeek]?.[selectedBatch];
+            if (entry) {
+                const courseKey = entry.course.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+                // Further filter by students enrolled in the specific course of that batch
+                currentStudents = currentStudents.filter(s => s.enrolledCourses?.includes(courseKey));
+            } else {
+                currentStudents = []; // No entry for this batch, so no students.
+            }
+        }
+        
         setFilteredStudents(currentStudents);
         setAttendance({});
     }, [selectedActivity, selectedBatch, selectedTeacher, students, selectedDate]);
