@@ -54,6 +54,7 @@ import {
   Shield,
   ShoppingCart,
   ClipboardCheck,
+  LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -70,6 +71,7 @@ import { Badge } from "../ui/badge";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
+  { href: "/login", icon: LogIn, label: "Student Login" },
 ];
 
 const operationsNavItems = [
