@@ -168,9 +168,7 @@ export default function StaffPage() {
                                 <Eye className="mr-2 h-4 w-4"/> View Profile
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Link href={`/staff/${member.id}/edit`}>Edit</Link>
-                          </DropdownMenuItem>
+                          <DropdownMenuItem>Edit</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive">
                             Delete

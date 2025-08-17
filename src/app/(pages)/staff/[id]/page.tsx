@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStaffById, type Staff } from "@/lib/staff-db";
+import { getStaffById } from "@/lib/staff-db";
 import { Building, Cake, CalendarDays, Edit, Hash, Home, Mail, MapPin, Phone, ShieldCheck, Trash2, User, UserCheck, Wallet, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";

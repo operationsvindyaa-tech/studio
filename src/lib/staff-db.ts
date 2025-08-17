@@ -36,6 +36,9 @@ export type Staff = {
     };
 };
 
+export type AddStaffData = Omit<Staff, 'id' | 'initials'>;
+
+
 const initialStaff: Staff[] = [
     {
         id: "EMP001",
@@ -383,17 +386,13 @@ export const getStaffById = async (id: string): Promise<Staff | undefined> => {
     return Promise.resolve(staff.find(s => s.id === id));
 }
 
-export const addStaff = async (staffData: Omit<Staff, 'id' | 'initials' | 'personalInfo.photo'>): Promise<Staff> => {
+export const addStaff = async (staffData: AddStaffData): Promise<Staff> => {
   await delay(500);
   const newId = `EMP${String(nextId++).padStart(3, '0')}`;
   const newStaffMember: Staff = {
     id: newId,
     ...staffData,
     initials: getInitials(staffData.fullName),
-    personalInfo: {
-        ...staffData.personalInfo,
-        photo: `https://placehold.co/100x100.png`,
-    }
   };
   staff.push(newStaffMember);
   return Promise.resolve(newStaffMember);
