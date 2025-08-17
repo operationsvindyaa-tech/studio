@@ -174,7 +174,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
           <SidebarSeparator />
             <SidebarGroup>
-                <SidebarGroupLabel>Operations</SidebarGroupLabel>
+                <SidebarGroupLabel>Class Management</SidebarGroupLabel>
                 <SidebarMenu>
                     {operationsNavItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
