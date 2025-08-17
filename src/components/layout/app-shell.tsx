@@ -71,8 +71,12 @@ import { Badge } from "../ui/badge";
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
-  { href: "/login", icon: LogIn, label: "Student Login" },
 ];
+
+const studentPortalNavItems = [
+    { href: "/student-attendance", icon: CalendarCheck, label: "My Attendance" },
+    { href: "/login", icon: LogIn, label: "Student Login" },
+]
 
 const operationsNavItems = [
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
@@ -172,6 +176,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+          <SidebarSeparator />
+            <SidebarGroup>
+                <SidebarGroupLabel>Student Portal</SidebarGroupLabel>
+                <SidebarMenu>
+                    {studentPortalNavItems.map((item) => (
+                    <SidebarMenuItem key={item.href}>
+                        <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                            isActive={pathname.startsWith(item.href)}
+                            asChild
+                        >
+                            <span>
+                                <item.icon />
+                                <span>{item.label}</span>
+                            </span>
+                        </SidebarMenuButton>
+                        </Link>
+                    </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
                 <SidebarGroupLabel>Class Management</SidebarGroupLabel>
@@ -369,7 +394,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
