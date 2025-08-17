@@ -26,8 +26,8 @@ export default function LoginPage() {
     // Simulate API call
     setTimeout(() => {
       // In a real application, you would handle authentication here.
-      // For now, we'll just redirect to the dashboard.
-      router.push("/dashboard");
+      // For now, we'll just redirect to the progress report page.
+      router.push("/progress-report");
     }, 1500);
   };
 

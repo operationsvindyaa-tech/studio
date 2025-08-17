@@ -75,6 +75,7 @@ const navItems = [
 
 const studentPortalNavItems = [
     { href: "/student-attendance", icon: CalendarCheck, label: "My Attendance" },
+    { href: "/progress-report", icon: TrendingUp, label: "My Progress" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
