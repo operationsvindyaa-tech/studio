@@ -1,59 +1,69 @@
-
 "use client"
-import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
+import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Wallet, UserCheck, ArrowUp, Circle, CalendarCheck, UserMinus, ArrowDown } from "lucide-react"
+import { Wallet, ArrowUp, ArrowDown, Users, BookOpen } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { getStudents, Student } from "@/lib/db"
 import { getStaff, Staff } from "@/lib/staff-db"
+import { getBillingData, StudentBillingInfo } from "@/lib/billing-db"
+import { getMerchandiseSales, MerchandiseSale } from "@/lib/merchandise-db"
+import { getExpenses, Expense } from "@/lib/expenses-db"
+import { 
+    getRevenueBreakdown, 
+    getExpenseAnalysis,
+    getOutstandingFees,
+    getClassProfitability,
+} from "@/lib/report-utils"
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 
-type ChartData = {
-  name: string;
-  value: number;
-  fill: string;
-};
-
-const STUDENT_STATUS_COLORS = {
-    Active: 'hsl(var(--chart-1))',
-    Inactive: 'hsl(var(--chart-2))',
-    Suspended: 'hsl(var(--chart-5))',
-};
-
-const FEE_STATUS_COLORS = {
-    Paid: 'hsl(var(--chart-1))',
-    Due: 'hsl(var(--chart-2))',
-    Overdue: 'hsl(var(--chart-5))',
-}
-
-const recentTransactions = [
-    { studentName: "Amelia Rodriguez", amount: 2500, status: "Paid" },
-    { studentName: "Benjamin Carter", amount: 3000, status: "Paid" },
-    { studentName: "David Kim", amount: 4500, status: "Due" },
-    { studentName: "Franklin Garcia", amount: 2000, status: "Overdue" },
-    { studentName: "Chloe Nguyen", amount: 4000, status: "Paid" },
-];
+const REVENUE_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+const EXPENSE_COLORS = ['hsl(var(--chart-5))', 'hsl(var(--chart-4))', 'hsl(var(--chart-2))', 'hsl(var(--chart-1))'];
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
         minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(amount);
 };
 
 export default function ReportsPage() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [expenseData, setExpenseData] = useState<any[]>([]);
+  const [outstandingFees, setOutstandingFees] = useState<StudentBillingInfo[]>([]);
+  const [classProfitability, setClassProfitability] = useState<any[]>([]);
+  const [totalFeesCollected, setTotalFeesCollected] = useState(0);
+  const [totalFeesPending, setTotalFeesPending] = useState(0);
+  const [totalSalaryDisbursed, setTotalSalaryDisbursed] = useState(0);
+
 
   useEffect(() => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [studentData, staffData] = await Promise.all([getStudents(), getStaff()]);
-            setStudents(studentData);
-            setStaff(staffData);
+            const [billingData, merchandiseSalesData, expenseData, staffData] = await Promise.all([
+                getBillingData(), 
+                getMerchandiseSales(),
+                getExpenses(),
+                getStaff(),
+            ]);
+            
+            const paidRecords = billingData.filter(b => b.status === 'Paid');
+            const pendingRecords = billingData.filter(b => b.status === 'Due' || b.status === 'Overdue');
+
+            setTotalFeesCollected(paidRecords.reduce((sum, b) => sum + b.activities.reduce((s, a) => s + a.fee, 0), 0));
+            setTotalFeesPending(pendingRecords.reduce((sum, b) => sum + b.activities.reduce((s, a) => s + a.fee, 0), 0));
+            setTotalSalaryDisbursed(staffData.reduce((sum, s) => sum + s.payroll.salary, 0));
+            
+            setRevenueData(getRevenueBreakdown(billingData, merchandiseSalesData));
+            setExpenseData(getExpenseAnalysis(expenseData, staffData));
+            setOutstandingFees(getOutstandingFees(billingData).slice(0, 5));
+            setClassProfitability(getClassProfitability());
+            
         } catch (error) {
             console.error("Failed to fetch dashboard data", error);
         } finally {
@@ -63,37 +73,18 @@ export default function ReportsPage() {
     fetchData();
   }, []);
 
-  const studentStatusData: ChartData[] = Object.entries(
-    students.reduce((acc, student) => {
-        acc[student.status] = (acc[student.status] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>)
-  ).map(([name, value]) => ({ 
-    name, 
-    value, 
-    fill: STUDENT_STATUS_COLORS[name as keyof typeof STUDENT_STATUS_COLORS] || '#cccccc' 
-  }));
-  
-  const feeStatusData: ChartData[] = [
-      { name: "Paid", value: 400, fill: FEE_STATUS_COLORS.Paid },
-      { name: "Due", value: 150, fill: FEE_STATUS_COLORS.Due },
-      { name: "Overdue", value: 50, fill: FEE_STATUS_COLORS.Overdue },
-  ];
-
-  const totalFeesCollected = 150500;
-  const totalFeesPending = 45500;
-  const totalSalaryDisbursed = staff.reduce((acc, s) => acc + s.payroll.salary, 0);
 
   return (
     <div className="space-y-6">
+       <h1 className="text-3xl font-bold">Financial Reports</h1>
        <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fees Collected</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Fees Collected (This Month)</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalFeesCollected)}</div>
+            {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalFeesCollected)}</div>}
              <p className="text-xs text-muted-foreground flex items-center">
               <ArrowUp className="h-3 w-3 text-green-500 mr-1"/> +15.2% from last month
             </p>
@@ -101,11 +92,11 @@ export default function ReportsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fees Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Fees Pending</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalFeesPending)}</div>
+            {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalFeesPending)}</div>}
              <p className="text-xs text-muted-foreground flex items-center">
                 <ArrowDown className="h-3 w-3 text-red-500 mr-1"/> -3.1% from last month
             </p>
@@ -113,12 +104,12 @@ export default function ReportsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Salary Disbursal</CardTitle>
+            <CardTitle className="text-sm font-medium">Salary Disbursed (This Month)</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {loading ? <Skeleton className="h-8 w-24" /> : <div className="text-2xl font-bold">{formatCurrency(totalSalaryDisbursed)}</div>}
-             <p className="text-xs text-muted-foreground">for this month</p>
+            {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalSalaryDisbursed)}</div>}
+             <p className="text-xs text-muted-foreground">for {new Date().toLocaleString('default', { month: 'long' })}</p>
           </CardContent>
         </Card>
       </div>
@@ -126,129 +117,96 @@ export default function ReportsPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Student Demographics</CardTitle>
-            <CardDescription>Distribution of students by their current status.</CardDescription>
+            <CardTitle>Revenue Breakdown</CardTitle>
+            <CardDescription>Sources of income for the current period.</CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
-             {loading ? <Skeleton className="h-48 w-48 rounded-full" /> : (
-                <div className="w-full h-64 flex items-center justify-around">
-                    <ResponsiveContainer width="50%" height="100%">
-                        <PieChart>
-                            <Tooltip contentStyle={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))" }} />
-                            <Pie data={studentStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} label>
-                                {studentStatusData.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
-                            </Pie>
-                        </PieChart>
-                    </ResponsiveContainer>
-                     <div className="flex flex-col gap-2 text-sm">
-                        {studentStatusData.map(entry => (
-                            <div key={entry.name} className="flex items-center gap-2">
-                                <Circle className="h-3 w-3" style={{ fill: entry.fill, color: entry.fill }}/>
-                                <div>
-                                    <span className="font-semibold">{entry.name}</span>
-                                    <span className="text-muted-foreground"> ({entry.value})</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+          <CardContent>
+             {loading ? <Skeleton className="h-64 w-full" /> : (
+                <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                        <Tooltip contentStyle={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))" }} formatter={(value) => formatCurrency(value as number)} />
+                        <Pie data={revenueData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} label={(entry) => entry.name}>
+                            {revenueData.map((entry, index) => <Cell key={`cell-${index}`} fill={REVENUE_COLORS[index % REVENUE_COLORS.length]} />)}
+                        </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
              )}
           </CardContent>
         </Card>
          <Card>
           <CardHeader>
-            <CardTitle>Fee Status Breakdown</CardTitle>
-            <CardDescription>Overview of paid, due, and overdue invoices.</CardDescription>
+            <CardTitle>Expense Analysis</CardTitle>
+            <CardDescription>Major expense categories for the current period.</CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
-              <div className="w-full h-64 flex items-center justify-around">
-                    <ResponsiveContainer width="50%" height="100%">
-                        <PieChart>
-                            <Tooltip contentStyle={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))" }} />
-                            <Pie data={feeStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={5} label>
-                                {feeStatusData.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
-                            </Pie>
-                        </PieChart>
-                    </ResponsiveContainer>
-                     <div className="flex flex-col gap-2 text-sm">
-                        {feeStatusData.map(entry => (
-                            <div key={entry.name} className="flex items-center gap-2">
-                                <Circle className="h-3 w-3" style={{ fill: entry.fill, color: entry.fill }}/>
-                                <div>
-                                    <span className="font-semibold">{entry.name}</span>
-                                    <span className="text-muted-foreground"> ({entry.value})</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+          <CardContent>
+              {loading ? <Skeleton className="h-64 w-full" /> : (
+                <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                        <Tooltip contentStyle={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border))" }} formatter={(value) => formatCurrency(value as number)}/>
+                        <Pie data={expenseData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} label={(entry) => entry.name}>
+                             {expenseData.map((entry, index) => <Cell key={`cell-${index}`} fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]} />)}
+                        </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
+              )}
           </CardContent>
         </Card>
       </div>
       
-      <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
+      <div className="grid gap-6 lg:grid-cols-5">
+          <Card className="lg:col-span-3">
             <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Latest fee payments from students.</CardDescription>
+                <CardTitle>Outstanding Fees Report</CardTitle>
+                <CardDescription>Top 5 students with due or overdue payments.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Student</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {recentTransactions.map((activity, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-medium">{activity.studentName}</TableCell>
-                            <TableCell className="text-right">{formatCurrency(activity.amount)}</TableCell>
-                            <TableCell>
-                                <Badge variant={
-                                    activity.status === 'Paid' ? 'secondary' : activity.status === 'Due' ? 'outline' : 'destructive'
-                                } className={
-                                    activity.status === 'Paid' ? "bg-green-100 text-green-800" : activity.status === 'Due' ? "bg-orange-100 text-orange-800" : ""
-                                }>
-                                    {activity.status}
-                                </Badge>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
+                {loading ? <Skeleton className="h-64 w-full" /> : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Student</TableHead>
+                                <TableHead>Month(s)</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {outstandingFees.map((record) => (
+                                <TableRow key={record.id}>
+                                    <TableCell className="font-medium">{record.name}</TableCell>
+                                    <TableCell>{record.months.join(', ')}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={record.status === 'Overdue' ? 'destructive' : 'outline'}>{record.status}</Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">{formatCurrency(record.activities.reduce((s, a) => s + a.fee, 0))}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
             </CardContent>
         </Card>
-        <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Attendance Overview</CardTitle>
-                    <CardDescription>Summary of staff and teacher attendance for the current month.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-4">
-                     <div className="p-4 rounded-lg bg-muted flex items-center gap-4">
-                        <div className="bg-background p-3 rounded-full">
-                            <UserCheck className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold">98%</p>
-                            <p className="text-sm text-muted-foreground">Teacher Attendance</p>
-                        </div>
-                     </div>
-                     <div className="p-4 rounded-lg bg-muted flex items-center gap-4">
-                        <div className="bg-background p-3 rounded-full">
-                            <UserMinus className="h-6 w-6 text-destructive" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold">95%</p>
-                            <p className="text-sm text-muted-foreground">Staff Attendance</p>
-                        </div>
-                     </div>
-                </CardContent>
-            </Card>
-        </div>
+        <Card className="lg:col-span-2">
+            <CardHeader>
+                <CardTitle>Per-Class Profitability</CardTitle>
+                <CardDescription>Revenue vs. estimated profit for top classes.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {loading ? <Skeleton className="h-64 w-full" /> : (
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={classProfitability} layout="vertical" margin={{ left: 20 }}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis type="number" tickFormatter={(value) => formatCurrency(value as number)} />
+                            <YAxis type="category" dataKey="name" width={80} tickLine={false} axisLine={false} />
+                            <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                            <Legend />
+                            <Bar dataKey="revenue" fill="hsl(var(--chart-2))" name="Revenue" />
+                            <Bar dataKey="profit" fill="hsl(var(--chart-1))" name="Profit" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                )}
+            </CardContent>
+        </Card>
       </div>
     </div>
   )
