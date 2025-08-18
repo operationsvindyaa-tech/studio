@@ -5,7 +5,8 @@ export type MerchandiseItem = {
   id: string;
   name: string;
   category: "Apparel" | "Books" | "Costumes" | "Accessories";
-  price: number;
+  sellingPrice: number;
+  buyingPrice: number;
   stock: number;
 };
 
@@ -18,14 +19,14 @@ export type MerchandiseSale = {
 };
 
 const initialMerchandise: MerchandiseItem[] = [
-  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", price: 499, stock: 50 },
-  { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", price: 1200, stock: 25 },
-  { id: "M003", name: "Beginner's Guide to Carnatic Music", category: "Books", price: 350, stock: 40 },
-  { id: "M004", name: "Guitar Picks (Set of 5)", category: "Accessories", price: 150, stock: 100 },
-  { id: "M005", name: "Yoga Mat", category: "Accessories", price: 800, stock: 30 },
-  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", price: 1800, stock: 20 },
-  { id: "M007", name: "Sketchbook & Pencils Set", category: "Books", price: 450, stock: 35 },
-  { id: "M008", name: "Ankle Bells (Salangai)", category: "Accessories", price: 600, stock: 15 },
+  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50 },
+  { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", sellingPrice: 1200, buyingPrice: 700, stock: 25 },
+  { id: "M003", name: "Beginner's Guide to Carnatic Music", category: "Books", sellingPrice: 350, buyingPrice: 180, stock: 40 },
+  { id: "M004", name: "Guitar Picks (Set of 5)", category: "Accessories", sellingPrice: 150, buyingPrice: 50, stock: 100 },
+  { id: "M005", name: "Yoga Mat", category: "Accessories", sellingPrice: 800, buyingPrice: 450, stock: 30 },
+  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", sellingPrice: 1800, buyingPrice: 1100, stock: 20 },
+  { id: "M007", name: "Sketchbook & Pencils Set", category: "Books", sellingPrice: 450, buyingPrice: 220, stock: 35 },
+  { id: "M008", name: "Ankle Bells (Salangai)", category: "Accessories", sellingPrice: 600, buyingPrice: 350, stock: 15 },
 ];
 
 let merchandise: MerchandiseItem[] = [...initialMerchandise];
@@ -71,7 +72,7 @@ export const recordMerchandiseSale = async (itemId: string, quantity: number): P
         saleId: `SALE${String(nextSaleId++).padStart(4, '0')}`,
         itemId,
         quantity,
-        totalAmount: item.price * quantity,
+        totalAmount: item.sellingPrice * quantity,
         saleDate: new Date().toISOString(),
     };
 

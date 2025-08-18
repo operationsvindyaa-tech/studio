@@ -57,7 +57,7 @@ export default function MerchandisePage() {
   };
   
   const handleOpenAddEditDialog = (item: MerchandiseItem | null) => {
-    setEditingItem(item ? { ...item } : { name: '', category: 'Apparel', price: 0, stock: 0 });
+    setEditingItem(item ? { ...item } : { name: '', category: 'Apparel', sellingPrice: 0, buyingPrice: 0, stock: 0 });
     setIsAddEditDialogOpen(true);
   };
 
@@ -102,7 +102,7 @@ export default function MerchandisePage() {
   };
   
   const handleSaveItem = async () => {
-    if (!editingItem || !editingItem.name || !editingItem.category || editingItem.price! < 0 || editingItem.stock! < 0) {
+    if (!editingItem || !editingItem.name || !editingItem.category || editingItem.sellingPrice! < 0 || editingItem.buyingPrice! < 0 || editingItem.stock! < 0) {
         toast({ title: "Invalid Data", description: "Please fill all fields with valid data.", variant: "destructive" });
         return;
     }
@@ -120,13 +120,13 @@ export default function MerchandisePage() {
 
   const handleCopyLink = () => {
     if (!selectedItem) return;
-    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${selectedItem.price * quantity}`;
+    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${selectedItem.sellingPrice * quantity}`;
     navigator.clipboard.writeText(link).then(() => {
         toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
     });
   }
 
-  const totalStockValue = inventory.reduce((sum, item) => sum + (item.price * item.stock), 0);
+  const totalStockValue = inventory.reduce((sum, item) => sum + (item.sellingPrice * item.stock), 0);
   const totalStockItems = inventory.reduce((sum, item) => sum + item.stock, 0);
 
   return (
@@ -175,7 +175,7 @@ export default function MerchandisePage() {
                   <TableRow>
                     <TableHead>Item Name</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Price</TableHead>
+                    <TableHead className="text-right">Selling Price</TableHead>
                     <TableHead className="text-center">Stock on Hand</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -195,7 +195,7 @@ export default function MerchandisePage() {
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
                       <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.price)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.sellingPrice)}</TableCell>
                       <TableCell className={`text-center font-bold ${item.stock < 10 ? 'text-destructive' : ''}`}>
                         {item.stock}
                       </TableCell>
@@ -277,7 +277,7 @@ export default function MerchandisePage() {
               />
             </div>
             <div className="text-lg font-bold">
-                Total: {formatCurrency((selectedItem?.price || 0) * quantity)}
+                Total: {formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}
             </div>
           </div>
           <DialogFooter>
@@ -301,22 +301,26 @@ export default function MerchandisePage() {
                         <Label htmlFor="item-name">Product Name</Label>
                         <Input id="item-name" value={editingItem?.name} onChange={(e) => setEditingItem(prev => ({...prev, name: e.target.value}))} />
                     </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="item-category">Category</Label>
+                        <Select value={editingItem?.category} onValueChange={(value) => setEditingItem(prev => ({...prev, category: value as any}))}>
+                            <SelectTrigger id="item-category"><SelectValue placeholder="Select category" /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Apparel">Apparel</SelectItem>
+                                <SelectItem value="Books">Books</SelectItem>
+                                <SelectItem value="Costumes">Costumes</SelectItem>
+                                <SelectItem value="Accessories">Accessories</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="item-category">Category</Label>
-                            <Select value={editingItem?.category} onValueChange={(value) => setEditingItem(prev => ({...prev, category: value as any}))}>
-                                <SelectTrigger id="item-category"><SelectValue placeholder="Select category" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Apparel">Apparel</SelectItem>
-                                    <SelectItem value="Books">Books</SelectItem>
-                                    <SelectItem value="Costumes">Costumes</SelectItem>
-                                    <SelectItem value="Accessories">Accessories</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="item-buying-price">Buying Price</Label>
+                            <Input id="item-buying-price" type="number" value={editingItem?.buyingPrice} onChange={(e) => setEditingItem(prev => ({...prev, buyingPrice: parseFloat(e.target.value) || 0}))} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="item-price">Price</Label>
-                            <Input id="item-price" type="number" value={editingItem?.price} onChange={(e) => setEditingItem(prev => ({...prev, price: parseFloat(e.target.value) || 0}))} />
+                            <Label htmlFor="item-selling-price">Selling Price</Label>
+                            <Input id="item-selling-price" type="number" value={editingItem?.sellingPrice} onChange={(e) => setEditingItem(prev => ({...prev, sellingPrice: parseFloat(e.target.value) || 0}))} />
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -353,7 +357,7 @@ export default function MerchandisePage() {
                         />
                     </div>
                     <div className="text-lg font-bold">
-                        Total: {formatCurrency((selectedItem?.price || 0) * quantity)}
+                        Total: {formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="payment-link">Payment Link</Label>
