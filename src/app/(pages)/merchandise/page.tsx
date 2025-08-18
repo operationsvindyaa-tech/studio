@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -11,11 +10,15 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem, recordMerchandiseSale } from "@/lib/merchandise-db";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, MinusCircle, PackagePlus, ShoppingCart, ArrowDown, ArrowUp, Edit, Trash2, Link as LinkIcon } from "lucide-react";
+import { PlusCircle, ArrowDown, ArrowUp, Edit, Link as LinkIcon, ShoppingCart, PackagePlus, DollarSign } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
         minimumFractionDigits: 2,
     }).format(amount);
 };
@@ -132,11 +135,20 @@ export default function MerchandisePage() {
   return (
     <>
       <div className="space-y-6">
+         <div className="flex justify-between items-center">
+            <div>
+                <h1 className="text-2xl font-bold">Merchandise Catalog</h1>
+                <p className="text-muted-foreground">Manage your academy's products and inventory.</p>
+            </div>
+            <Button onClick={() => handleOpenAddEditDialog(null)}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
+            </Button>
+         </div>
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
-                    <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalStockValue)}</div>}
@@ -154,77 +166,44 @@ export default function MerchandisePage() {
                 </CardContent>
             </Card>
         </div>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Merchandise Inventory</CardTitle>
-                <CardDescription>
-                  Track stock levels and manage sales of academy merchandise.
-                </CardDescription>
-              </div>
-              <Button onClick={() => handleOpenAddEditDialog(null)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item Name</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Selling Price</TableHead>
-                    <TableHead className="text-center">Stock on Hand</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                        <TableCell className="text-center"><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-8 w-48 ml-auto" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : inventory.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.category}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.sellingPrice)}</TableCell>
-                      <TableCell className={`text-center font-bold ${item.stock < 10 ? 'text-destructive' : ''}`}>
-                        {item.stock}
-                      </TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(item, 'stock-in')}>
-                           <ArrowUp className="mr-2 h-4 w-4" /> Stock In
-                        </Button>
-                        <Button size="sm" onClick={() => handleOpenDialog(item, 'sale')} disabled={item.stock === 0}>
-                           <ArrowDown className="mr-2 h-4 w-4" /> Sell
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => handleOpenDialog(item, 'payment-link')}>
-                            <LinkIcon className="mr-2 h-4 w-4" /> Payment Link
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenAddEditDialog(item)}>
-                           <Edit className="mr-2 h-4 w-4" /> Edit
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground">
-              Showing <strong>{inventory.length}</strong> products.
-            </div>
-          </CardFooter>
-        </Card>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {loading ? (
+                Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-96 w-full" />)
+            ) : inventory.map(item => (
+                <Card key={item.id} className="flex flex-col overflow-hidden group">
+                    <CardHeader className="p-0 relative">
+                        <Image src="https://placehold.co/600x400.png" alt={item.name} width={600} height={400} className="object-cover" data-ai-hint={item.category.toLowerCase()} />
+                        <Badge variant={item.stock < 10 ? 'destructive' : 'secondary'} className="absolute top-2 right-2">
+                            {item.stock < 10 ? (item.stock > 0 ? `Low Stock` : 'Out of Stock') : 'In Stock'}
+                        </Badge>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-grow">
+                        <p className="text-xs text-muted-foreground">{item.category}</p>
+                        <h3 className="font-semibold text-lg truncate">{item.name}</h3>
+                        <p className="text-2xl font-bold">{formatCurrency(item.sellingPrice)}</p>
+                    </CardContent>
+                    <CardFooter className="p-2 border-t flex flex-col gap-2">
+                        <div className="grid grid-cols-2 gap-2 w-full">
+                            <Button variant="outline" size="sm" onClick={() => handleOpenDialog(item, 'stock-in')}>
+                               <ArrowUp className="mr-2 h-4 w-4" /> Stock In
+                            </Button>
+                            <Button size="sm" onClick={() => handleOpenDialog(item, 'sale')} disabled={item.stock === 0}>
+                               <ShoppingCart className="mr-2 h-4 w-4" /> Sell
+                            </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 w-full">
+                             <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item, 'payment-link')}>
+                                <LinkIcon className="mr-2 h-4 w-4" /> Payment Link
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenAddEditDialog(item)}>
+                               <Edit className="mr-2 h-4 w-4" /> Edit
+                            </Button>
+                        </div>
+                    </CardFooter>
+                </Card>
+            ))}
+        </div>
       </div>
 
       {/* Stock In Dialog */}
