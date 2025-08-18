@@ -23,8 +23,6 @@ const EXPENSE_COLORS = ['hsl(var(--chart-5))', 'hsl(var(--chart-4))', 'hsl(var(-
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(amount);
