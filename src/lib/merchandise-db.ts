@@ -18,6 +18,15 @@ export type MerchandiseSale = {
     saleDate: string;
 };
 
+export type StockTransaction = {
+    transactionId: string;
+    itemId: string;
+    type: 'in' | 'out';
+    quantity: number;
+    price: number; // Buying price for 'in', Selling price for 'out'
+    date: string;
+};
+
 const initialMerchandise: MerchandiseItem[] = [
   { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50 },
   { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", sellingPrice: 1200, buyingPrice: 700, stock: 25 },
@@ -31,8 +40,10 @@ const initialMerchandise: MerchandiseItem[] = [
 
 let merchandise: MerchandiseItem[] = [...initialMerchandise];
 let merchandiseSales: MerchandiseSale[] = [];
+let stockTransactions: StockTransaction[] = [];
 let nextId = merchandise.length + 1;
 let nextSaleId = 1;
+let nextTransactionId = 1;
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -46,13 +57,41 @@ export const getMerchandiseSales = async (): Promise<MerchandiseSale[]> => {
     return Promise.resolve(merchandiseSales);
 };
 
-export const updateMerchandiseStock = async (id: string, newStock: number): Promise<MerchandiseItem> => {
+export const getStockTransactions = async (type?: 'in' | 'out'): Promise<StockTransaction[]> => {
+    await delay(200);
+    let transactions = stockTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    if (type) {
+        return Promise.resolve(transactions.filter(t => t.type === type));
+    }
+    return Promise.resolve(transactions);
+};
+
+export const updateMerchandiseStock = async (id: string, newStock: number, newBuyingPrice?: number): Promise<MerchandiseItem> => {
   await delay(300);
   const itemIndex = merchandise.findIndex(item => item.id === id);
   if (itemIndex === -1) {
     throw new Error("Merchandise item not found");
   }
+
+  const quantityAdded = newStock - merchandise[itemIndex].stock;
+  
   merchandise[itemIndex].stock = newStock;
+  if (newBuyingPrice !== undefined) {
+    merchandise[itemIndex].buyingPrice = newBuyingPrice;
+  }
+
+  // Log the transaction
+  if (quantityAdded > 0) {
+      stockTransactions.push({
+          transactionId: `TIN${String(nextTransactionId++).padStart(4, '0')}`,
+          itemId: id,
+          type: 'in',
+          quantity: quantityAdded,
+          price: newBuyingPrice || merchandise[itemIndex].buyingPrice,
+          date: new Date().toISOString(),
+      });
+  }
+
   return Promise.resolve(merchandise[itemIndex]);
 };
 
@@ -75,8 +114,18 @@ export const recordMerchandiseSale = async (itemId: string, quantity: number): P
         totalAmount: item.sellingPrice * quantity,
         saleDate: new Date().toISOString(),
     };
-
     merchandiseSales.push(newSale);
+
+     // Log the transaction
+    stockTransactions.push({
+        transactionId: `TOUT${String(nextTransactionId++).padStart(4, '0')}`,
+        itemId: itemId,
+        type: 'out',
+        quantity: quantity,
+        price: item.sellingPrice,
+        date: new Date().toISOString(),
+    });
+
     return Promise.resolve(newSale);
 };
 
@@ -88,6 +137,19 @@ export const addMerchandiseItem = async (itemData: Omit<MerchandiseItem, 'id'>):
         id: newId,
     };
     merchandise.push(newItem);
+
+    // Log the initial stock-in
+     if (newItem.stock > 0) {
+      stockTransactions.push({
+          transactionId: `TIN${String(nextTransactionId++).padStart(4, '0')}`,
+          itemId: newId,
+          type: 'in',
+          quantity: newItem.stock,
+          price: newItem.buyingPrice,
+          date: new Date().toISOString(),
+      });
+  }
+
     return Promise.resolve(newItem);
 };
 
@@ -105,6 +167,8 @@ export const updateMerchandiseItem = async (id: string, updates: Partial<Merchan
 export const resetMerchandise = () => {
     merchandise = [...initialMerchandise];
     merchandiseSales = [];
+    stockTransactions = [];
     nextId = merchandise.length + 1;
     nextSaleId = 1;
+    nextTransactionId = 1;
 }

@@ -1,19 +1,21 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem, recordMerchandiseSale } from "@/lib/merchandise-db";
+import { getMerchandise, updateMerchandiseStock, addMerchandiseItem, updateMerchandiseItem, type MerchandiseItem, recordMerchandiseSale, getStockTransactions } from "@/lib/merchandise-db";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PlusCircle, ArrowDown, ArrowUp, Edit, Link as LinkIcon, ShoppingCart, PackagePlus, DollarSign } from "lucide-react";
+import { PlusCircle, ArrowDown, ArrowUp, Edit, Link as LinkIcon, ShoppingCart, PackagePlus, DollarSign, Download } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import * as XLSX from "xlsx";
+
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -31,6 +33,7 @@ export default function MerchandisePage() {
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
   const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [currentBuyingPrice, setCurrentBuyingPrice] = useState(0);
   const { toast } = useToast();
 
   const fetchInventory = async () => {
@@ -52,7 +55,10 @@ export default function MerchandisePage() {
   const handleOpenDialog = (item: MerchandiseItem, type: 'stock-in' | 'sale' | 'payment-link') => {
     setSelectedItem(item);
     setQuantity(1);
-    if (type === 'stock-in') setIsStockInDialogOpen(true);
+    if (type === 'stock-in') {
+        setCurrentBuyingPrice(item.buyingPrice);
+        setIsStockInDialogOpen(true);
+    }
     else if (type === 'sale') setIsSaleDialogOpen(true);
     else setIsPaymentLinkDialogOpen(true);
   };
@@ -70,6 +76,7 @@ export default function MerchandisePage() {
     setSelectedItem(null);
     setEditingItem(null);
     setQuantity(1);
+    setCurrentBuyingPrice(0);
   };
 
   const handleStockUpdate = async () => {
@@ -79,7 +86,7 @@ export default function MerchandisePage() {
     }
 
     const newStock = selectedItem.stock + quantity;
-    await updateMerchandiseStock(selectedItem.id, newStock);
+    await updateMerchandiseStock(selectedItem.id, newStock, currentBuyingPrice);
     toast({ title: "Stock Updated", description: `${quantity} unit(s) of ${selectedItem.name} added to inventory.` });
     fetchInventory();
     handleCloseDialogs();
@@ -127,20 +134,45 @@ export default function MerchandisePage() {
     });
   }
 
+    const handleExport = async (type: 'in' | 'out') => {
+        const transactions = await getStockTransactions(type);
+        if (transactions.length === 0) {
+            toast({ title: `No Stock ${type === 'in' ? 'In' : 'Out'} Data`, description: "There are no transactions to export.", variant: "default" });
+            return;
+        }
+
+        const reportData = transactions.map(t => ({
+            "Transaction ID": t.transactionId,
+            "Product Name": inventory.find(i => i.id === t.itemId)?.name || 'Unknown',
+            "Quantity": t.quantity,
+            "Price": t.price,
+            "Date": new Date(t.date).toLocaleString(),
+        }));
+        
+        const worksheet = XLSX.utils.json_to_sheet(reportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, `Stock ${type === 'in' ? 'In' : 'Out'} Report`);
+        XLSX.writeFile(workbook, `stock_${type}_report.xlsx`);
+    };
+
   const totalStockValue = inventory.reduce((sum, item) => sum + (item.sellingPrice * item.stock), 0);
   const totalStockItems = inventory.reduce((sum, item) => sum + item.stock, 0);
 
   return (
     <>
       <div className="space-y-6">
-         <div className="flex justify-between items-center">
+         <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
                 <h1 className="text-2xl font-bold">Merchandise Catalog</h1>
                 <p className="text-muted-foreground">Manage your academy's products and inventory.</p>
             </div>
-            <Button onClick={() => handleOpenAddEditDialog(null)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" onClick={() => handleExport('in')}><Download className="mr-2 h-4 w-4" /> Export Stock In</Button>
+                <Button variant="outline" onClick={() => handleExport('out')}><Download className="mr-2 h-4 w-4" /> Export Stock Out</Button>
+                <Button onClick={() => handleOpenAddEditDialog(null)}>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
+                </Button>
+            </div>
          </div>
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
@@ -210,7 +242,7 @@ export default function MerchandisePage() {
           <DialogHeader>
             <DialogTitle>Add Stock for {selectedItem?.name}</DialogTitle>
             <DialogDescription>
-              Enter the quantity of new items received.
+              Enter the quantity of new items received and the current buying price.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -222,6 +254,15 @@ export default function MerchandisePage() {
                 value={quantity}
                 onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                 min="1"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="buying-price">Current Buying Price (per item)</Label>
+              <Input
+                id="buying-price"
+                type="number"
+                value={currentBuyingPrice}
+                onChange={e => setCurrentBuyingPrice(parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
