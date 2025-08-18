@@ -59,6 +59,9 @@ const studentFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   address: z.string().min(10, "Address is required."),
   
+  password: z.string().min(8, "Password must be at least 8 characters."),
+  confirmPassword: z.string(),
+
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
   activitiesInterested: z.string().optional(),
@@ -68,6 +71,9 @@ const studentFormSchema = z.object({
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
   signature: z.string().min(1, "Signature is required to authorize."),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
 });
 
 
@@ -107,6 +113,8 @@ export default function NewStudentPage() {
       whatsappNumber: "",
       email: "",
       address: "",
+      password: "",
+      confirmPassword: "",
       previousSchool: "",
       activitiesInterested: "",
       healthIssues: "",
@@ -295,8 +303,21 @@ export default function NewStudentPage() {
                     <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Main Street, Anytown, USA 12345" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
-            
-             {/* Academic and Other Details */}
+
+            {/* Login Credentials */}
+            <div className="space-y-6">
+                <h3 className="text-xl font-semibold border-b pb-2">Login Credentials</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="password" render={({ field }) => (
+                        <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="confirmPassword" render={({ field }) => (
+                        <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
+            </div>
+
+            {/* Academic and Other Details */}
             <div className="space-y-6">
                 <h3 className="text-xl font-semibold border-b pb-2">Academic & Other Details</h3>
                 <div className="grid md:grid-cols-2 gap-6">

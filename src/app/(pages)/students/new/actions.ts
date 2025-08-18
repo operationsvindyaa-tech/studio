@@ -23,6 +23,9 @@ const studentFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   address: z.string().min(10, "Address is required."),
   
+  password: z.string().min(8, "Password must be at least 8 characters."),
+  confirmPassword: z.string(),
+
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
   activitiesInterested: z.string().optional(),
@@ -32,6 +35,9 @@ const studentFormSchema = z.object({
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
   signature: z.string().min(1, "Signature is required."),
+}).refine(data => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
 });
 
 
