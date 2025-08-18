@@ -120,20 +120,11 @@ export const getPayrollBreakdown = (staff: Staff[]) => {
     const breakdown = staff.reduce((acc, s) => {
         const dept = s.jobDetails.department;
         if (!acc[dept]) {
-            acc[dept] = { department: dept, baseSalary: 0, pf: 0, allowances: 0, total: 0 };
+            acc[dept] = { department: dept, total: 0 };
         }
-        
-        const baseSalary = s.payroll.salary;
-        const pf = baseSalary * 0.12; // 12% PF contribution
-        const allowances = baseSalary * 0.15; // Assume 15% for other allowances
-
-        acc[dept].baseSalary += baseSalary;
-        acc[dept].pf += pf;
-        acc[dept].allowances += allowances;
-        acc[dept].total += baseSalary + pf + allowances;
-        
+        acc[dept].total += s.payroll.salary;
         return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, { department: string; total: number }>);
     
     return Object.values(breakdown);
 };
@@ -160,4 +151,52 @@ export const getMaintenanceReport = (expenses: Expense[]) => {
         totalCost: maintenanceExpenses.reduce((sum, e) => sum + e.amount, 0),
         recentActivities: maintenanceExpenses.slice(0, 3),
     };
+};
+
+// Marketing & Growth Reports
+export const getConversionRate = (enquiries: Enquiry[], students: Student[]) => {
+    const totalEnquiries = enquiries.length;
+    // This is a simplified logic. In a real app, you'd link enquiries to student records.
+    // For this demo, we'll assume a portion of recent students came from enquiries.
+    const enrolledFromEnquiries = students.filter(s => new Date(s.joined) > new Date('2024-01-01')).length;
+
+    return {
+        enquiries: totalEnquiries,
+        enrollments: enrolledFromEnquiries,
+        rate: totalEnquiries > 0 ? (enrolledFromEnquiries / totalEnquiries) * 100 : 0,
+    };
+};
+
+export const analyzeEnquirySources = (enquiries: Enquiry[]) => {
+    const sourceCounts = enquiries.reduce((acc, enquiry) => {
+        const sourceName = (enquiry.source.charAt(0).toUpperCase() + enquiry.source.slice(1)).replace('-', ' ');
+        acc[sourceName] = (acc[sourceName] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      return Object.entries(sourceCounts).map(([source, count]) => ({
+        source,
+        count,
+      }));
+};
+
+// Strategic Reports
+export const getHistoricalEnrollmentData = () => {
+    return [
+        { year: "2020", students: 250 },
+        { year: "2021", students: 310 },
+        { year: "2022", students: 380 },
+        { year: "2023", students: 450 },
+        { year: "2024", students: 520 },
+    ];
+};
+
+export const getHistoricalRevenueData = () => {
+    return [
+        { year: "2020", revenue: 5000000 },
+        { year: "2021", revenue: 6200000 },
+        { year: "2022", revenue: 7500000 },
+        { year: "2023", revenue: 9000000 },
+        { year: "2024", revenue: 11000000 },
+    ];
 };
