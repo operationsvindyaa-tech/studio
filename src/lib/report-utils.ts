@@ -115,8 +115,26 @@ export const getInstructorPerformance = (staff: Staff[], performance: TeacherPer
         });
 };
 
-export const getPayrollSummary = (staff: Staff[]) => {
-    return staff.reduce((sum, s) => sum + s.payroll.salary, 0);
+export const getPayrollBreakdown = (staff: Staff[]) => {
+    const breakdown = staff.reduce((acc, s) => {
+        const dept = s.jobDetails.department;
+        if (!acc[dept]) {
+            acc[dept] = { department: dept, baseSalary: 0, pf: 0, allowances: 0, total: 0 };
+        }
+        
+        const baseSalary = s.payroll.salary;
+        const pf = baseSalary * 0.12; // 12% PF contribution
+        const allowances = baseSalary * 0.15; // Assume 15% for other allowances
+
+        acc[dept].baseSalary += baseSalary;
+        acc[dept].pf += pf;
+        acc[dept].allowances += allowances;
+        acc[dept].total += baseSalary + pf + allowances;
+        
+        return acc;
+    }, {} as Record<string, any>);
+    
+    return Object.values(breakdown);
 };
 
 

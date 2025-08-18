@@ -11,7 +11,7 @@ import { getTeacherPerformanceData, TeacherPerformance } from "@/lib/teacher-per
 import { 
     getInstructorUtilization,
     getInstructorPerformance,
-    getPayrollSummary,
+    getPayrollBreakdown,
 } from "@/lib/report-utils";
 import { Users, BarChart, Wallet, Star } from "lucide-react";
 
@@ -26,7 +26,7 @@ export default function InstructorStaffReportPage() {
     const [loading, setLoading] = useState(true);
     const [utilizationData, setUtilizationData] = useState<any[]>([]);
     const [performanceData, setPerformanceData] = useState<any[]>([]);
-    const [payrollSummary, setPayrollSummary] = useState(0);
+    const [payrollBreakdown, setPayrollBreakdown] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,7 +39,7 @@ export default function InstructorStaffReportPage() {
                 
                 setUtilizationData(getInstructorUtilization(staff));
                 setPerformanceData(getInstructorPerformance(staff, performance));
-                setPayrollSummary(getPayrollSummary(staff));
+                setPayrollBreakdown(getPayrollBreakdown(staff));
 
             } catch (error) {
                 console.error("Failed to fetch report data", error);
@@ -49,6 +49,8 @@ export default function InstructorStaffReportPage() {
         };
         fetchData();
     }, []);
+    
+    const totalPayroll = payrollBreakdown.reduce((sum, dept) => sum + dept.total, 0);
 
     return (
         <div className="space-y-6">
@@ -93,16 +95,35 @@ export default function InstructorStaffReportPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Wallet /> Payroll & Compensation</CardTitle>
-                        <CardDescription>Summary of monthly salary disbursements.</CardDescription>
+                        <CardDescription>Summary of monthly salary and benefits disbursements by department.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="p-4 rounded-lg bg-muted">
                             <p className="text-sm text-muted-foreground">Total Monthly Payroll</p>
-                            {loading ? <Skeleton className="h-8 w-32 mt-1" /> : <p className="text-3xl font-bold">{formatCurrency(payrollSummary)}</p>}
+                            {loading ? <Skeleton className="h-8 w-32 mt-1" /> : <p className="text-3xl font-bold">{formatCurrency(totalPayroll)}</p>}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            This report summarizes the gross monthly salary for all active full-time and part-time staff. It does not include bonuses or overtime.
-                        </p>
+                        {loading ? <Skeleton className="h-40 w-full" /> : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Department</TableHead>
+                                        <TableHead className="text-right">Total</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {payrollBreakdown.map(dept => (
+                                        <TableRow key={dept.department}>
+                                            <TableCell className="font-medium">{dept.department}</TableCell>
+                                            <TableCell className="text-right">{formatCurrency(dept.total)}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                     <TableRow className="font-bold border-t-2">
+                                        <TableCell>Total</TableCell>
+                                        <TableCell className="text-right">{formatCurrency(totalPayroll)}</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        )}
                     </CardContent>
                 </Card>
             </div>
