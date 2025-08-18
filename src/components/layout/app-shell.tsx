@@ -58,7 +58,6 @@ import {
   UsersRound,
   FilePieChart,
   Target,
-  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -135,7 +134,6 @@ const managementNavItems = [
     { href: "/student-enrollment-report", icon: UsersRound, label: "Student & Enrollment" },
     { href: "/instructor-staff-report", icon: UserCheckIcon, label: "Instructor & Staff" },
     { href: "/operations-report", icon: FilePieChart, label: "Operations Report" },
-    { href: "/marketing-growth-report", icon: Megaphone, label: "Marketing & Growth" },
     { href: "/strategic-reports", icon: Target, label: "Strategic Reports" },
 ];
 
