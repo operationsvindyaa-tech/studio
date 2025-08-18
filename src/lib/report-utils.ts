@@ -1,7 +1,9 @@
 
 import { Student } from "./db";
 import { Enquiry } from "./enquiries-db";
-import { BillingStudentInfo, MerchandiseSale, Expense } from "./financial-db";
+import { BillingStatus, StudentBillingInfo } from "./billing-db";
+import { MerchandiseSale } from "./merchandise-db";
+import { Expense } from "./expenses-db";
 import { Staff } from "./staff-db";
 import { TeacherPerformance } from "./teacher-performance-db";
 
@@ -49,7 +51,7 @@ export const getPerformanceSummary = () => ({
 
 
 // Financial Reports
-export const getRevenueBreakdown = (billing: BillingStudentInfo[], merchandise: MerchandiseSale[]) => {
+export const getRevenueBreakdown = (billing: StudentBillingInfo[], merchandise: MerchandiseSale[]) => {
     const tuitionFees = billing.reduce((sum, record) => sum + record.activities.reduce((s, a) => s + a.fee, 0), 0);
     const merchandiseSales = merchandise.reduce((sum, sale) => sum + sale.totalAmount, 0);
     const workshopFees = 50000; // Mock data
@@ -73,7 +75,7 @@ export const getExpenseAnalysis = (expenses: Expense[], staff: Staff[]) => {
     ];
 };
 
-export const getOutstandingFees = (billing: BillingStudentInfo[]) => {
+export const getOutstandingFees = (billing: StudentBillingInfo[]) => {
     return billing.filter(record => record.status === 'Overdue' || record.status === 'Due');
 };
 
