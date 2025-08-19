@@ -16,7 +16,9 @@ import { CheckCircle2, XCircle, Coffee, BookOpen } from "lucide-react";
 export default function StudentAttendancePage() {
     const [students, setStudents] = useState<Student[]>([]);
     const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-    const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+    const [allAttendance, setAllAttendance] = useState<AttendanceRecord[]>([]);
+    const [filteredAttendance, setFilteredAttendance] = useState<AttendanceRecord[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState<string>('All Courses');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -25,9 +27,11 @@ export default function StudentAttendancePage() {
             const studentData = await getStudents();
             setStudents(studentData);
             if (studentData.length > 0) {
-                setSelectedStudentId(studentData[0].id);
-                const attendanceData = await getAttendanceForStudent(studentData[0].id);
-                setAttendance(attendanceData);
+                const firstStudentId = studentData[0].id;
+                setSelectedStudentId(firstStudentId);
+                const attendanceData = await getAttendanceForStudent(firstStudentId);
+                setAllAttendance(attendanceData);
+                setFilteredAttendance(attendanceData);
             }
             setLoading(false);
         };
@@ -38,21 +42,32 @@ export default function StudentAttendancePage() {
         setSelectedStudentId(studentId);
         setLoading(true);
         const attendanceData = await getAttendanceForStudent(studentId);
-        setAttendance(attendanceData);
+        setAllAttendance(attendanceData);
+        setFilteredAttendance(attendanceData);
+        setSelectedCourse('All Courses');
         setLoading(false);
     };
+    
+    useEffect(() => {
+        if (selectedCourse === 'All Courses') {
+            setFilteredAttendance(allAttendance);
+        } else {
+            setFilteredAttendance(allAttendance.filter(a => a.course === selectedCourse));
+        }
+    }, [selectedCourse, allAttendance]);
 
     const student = students.find(s => s.id === selectedStudentId);
+    const enrolledCourses = student?.enrolledCourses?.map(courseKey => courseKey.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')) || [];
 
-    const presentDays = attendance.filter(a => a.status === 'Present').length;
-    const absentDays = attendance.filter(a => a.status === 'Absent').length;
+    const presentDays = filteredAttendance.filter(a => a.status === 'Present').length;
+    const absentDays = filteredAttendance.filter(a => a.status === 'Absent').length;
     const totalClasses = presentDays + absentDays;
     const attendancePercentage = totalClasses > 0 ? ((presentDays / totalClasses) * 100).toFixed(0) : 0;
 
     const modifiers = {
-        present: attendance.filter(a => a.status === 'Present').map(a => new Date(a.date)),
-        absent: attendance.filter(a => a.status === 'Absent').map(a => new Date(a.date)),
-        holiday: attendance.filter(a => a.status === 'Holiday').map(a => new Date(a.date)),
+        present: filteredAttendance.filter(a => a.status === 'Present').map(a => new Date(a.date)),
+        absent: filteredAttendance.filter(a => a.status === 'Absent').map(a => new Date(a.date)),
+        holiday: filteredAttendance.filter(a => a.status === 'Holiday').map(a => new Date(a.date)),
     };
     
     const modifiersClassNames = {
@@ -72,14 +87,25 @@ export default function StudentAttendancePage() {
                                 View your attendance record for all enrolled courses.
                             </CardDescription>
                         </div>
-                        <div className="w-full max-w-sm">
+                        <div className="flex gap-2">
                              <Select value={selectedStudentId} onValueChange={handleStudentChange} disabled={loading}>
-                                <SelectTrigger>
+                                <SelectTrigger className="w-[250px]">
                                     <SelectValue placeholder="Select Student" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {students.map(s => (
                                         <SelectItem key={s.id} value={s.id}>{s.name} ({s.id})</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select value={selectedCourse} onValueChange={setSelectedCourse} disabled={loading || !student}>
+                                <SelectTrigger className="w-[250px]">
+                                    <SelectValue placeholder="Select Course" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="All Courses">All Courses</SelectItem>
+                                    {enrolledCourses.map(course => (
+                                        <SelectItem key={course} value={course}>{course}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -113,7 +139,7 @@ export default function StudentAttendancePage() {
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
+                            <CardHeader><CardTitle>Summary for {selectedCourse === 'All Courses' ? 'All Courses' : selectedCourse}</CardTitle></CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span>Attendance</span>

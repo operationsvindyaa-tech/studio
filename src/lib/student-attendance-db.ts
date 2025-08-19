@@ -3,20 +3,30 @@
 // In a real application, this would be tied to your actual attendance records.
 
 import { subDays, eachDayOfInterval, format } from 'date-fns';
+import { getStudents } from './db';
 
 export type AttendanceStatus = 'Present' | 'Absent' | 'Holiday' | 'No Class';
 
 export type AttendanceRecord = {
     date: string; // ISO date string
     status: AttendanceStatus;
+    course?: string;
 };
 
 // Function to generate pseudo-random attendance data for a student
-const generateMockAttendance = (studentId: string): AttendanceRecord[] => {
+const generateMockAttendance = async (studentId: string): Promise<AttendanceRecord[]> => {
     const records: AttendanceRecord[] = [];
     const today = new Date();
     const startDate = subDays(today, 60); // Look at the last 60 days
     
+    const students = await getStudents();
+    const student = students.find(s => s.id === studentId);
+    const enrolledCourses = student?.enrolledCourses || [];
+
+    if (enrolledCourses.length === 0) {
+        return [];
+    }
+
     const interval = eachDayOfInterval({ start: startDate, end: today });
     
     interval.forEach(day => {
@@ -32,6 +42,10 @@ const generateMockAttendance = (studentId: string): AttendanceRecord[] => {
         const studentFactor = parseInt(studentId.replace('S', ''), 10);
         const dateFactor = parseInt(format(day, 'd'), 10);
         
+        // Assign a course for this day's record
+        const courseForDay = enrolledCourses[(dateFactor + studentFactor) % enrolledCourses.length];
+        const formattedCourseName = courseForDay.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
         // Pseudo-random logic for attendance
         const randomValue = (studentFactor + dateFactor) % 10;
         
@@ -40,7 +54,7 @@ const generateMockAttendance = (studentId: string): AttendanceRecord[] => {
             status = 'Absent';
         }
 
-        records.push({ date: day.toISOString(), status: status });
+        records.push({ date: day.toISOString(), status: status, course: formattedCourseName });
     });
 
     return records;
@@ -58,7 +72,7 @@ export const getAttendanceForStudent = async (studentId: string): Promise<Attend
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
     
-    const data = generateMockAttendance(studentId);
+    const data = await generateMockAttendance(studentId);
     attendanceCache.set(studentId, data);
     
     return Promise.resolve(data);
