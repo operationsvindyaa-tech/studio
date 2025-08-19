@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, FileDown, Edit, Trash2, TrendingUp, UserCheck, ClipboardList, Upload } from "lucide-react";
+import { MoreHorizontal, PlusCircle, FileDown, Edit, Trash2, TrendingUp, UserCheck, ClipboardList, Upload, Star } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -157,6 +157,12 @@ export default function EnquiriesPage() {
         default: return "default";
     }
   }
+
+  const getSatisfactionRating = (notes?: string) => {
+    if (!notes) return null;
+    const match = notes.match(/Satisfaction: (\d+)\/5/);
+    return match ? parseInt(match[1], 10) : null;
+  };
   
   const totalEnquiries = enquiries.length;
   const newEnquiriesThisWeek = enquiries.filter(e => isThisWeek(new Date(e.enquiryDate), { weekStartsOn: 1 })).length;
@@ -173,20 +179,20 @@ export default function EnquiriesPage() {
         accept=".xlsx, .xls, .csv"
       />
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Enquiries Management</h1>
+        <h1 className="text-2xl font-bold">Enquiries</h1>
         <div className="flex gap-2">
             <Button variant="outline" onClick={handleImportClick}>
                 <Upload className="h-4 w-4 mr-2" />
-                Import Sheet
+                Import
             </Button>
            <Button variant="outline" onClick={handleExport}>
                 <FileDown className="h-4 w-4 mr-2" />
-                Export CSV
+                Export
             </Button>
             <Button asChild>
                 <Link href="/enquiries/new">
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Enquiry
+                    Add
                 </Link>
             </Button>
         </div>
@@ -290,8 +296,8 @@ export default function EnquiriesPage() {
                 <TableRow>
                   <TableHead>Enquirer</TableHead>
                   <TableHead className="hidden md:table-cell">Course Interest</TableHead>
-                  <TableHead className="hidden lg:table-cell">Enquiry Date</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Feedback</TableHead>
                   <TableHead>
                     <span className="sr-only">Actions</span>
                   </TableHead>
@@ -308,45 +314,63 @@ export default function EnquiriesPage() {
                               </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                       </TableRow>
                   ))
                 ) : enquiries.length > 0 ? (
-                  enquiries.map((enquiry) => (
-                    <TableRow key={enquiry.id}>
-                      <TableCell>
-                        <div className="font-medium">{enquiry.name}</div>
-                        <div className="text-sm text-muted-foreground">{enquiry.contact}</div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">{enquiry.courseInterest}</TableCell>
-                      <TableCell className="hidden lg:table-cell">{format(new Date(enquiry.enquiryDate), "dd MMM, yyyy")}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusVariant(enquiry.status)}>
-                          {enquiry.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Toggle menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" /> Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  enquiries.map((enquiry) => {
+                    const rating = getSatisfactionRating(enquiry.notes);
+                    return (
+                        <TableRow key={enquiry.id}>
+                        <TableCell>
+                            <div className="font-medium">{enquiry.name}</div>
+                            <div className="text-sm text-muted-foreground">{enquiry.contact}</div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">{enquiry.courseInterest}</TableCell>
+                        <TableCell>
+                            <Badge variant={getStatusVariant(enquiry.status)}>
+                            {enquiry.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>
+                            {rating !== null ? (
+                                <div className="flex items-center">
+                                    {Array.from({ length: 5 }, (_, i) => (
+                                        <Star
+                                            key={i}
+                                            className={`h-4 w-4 ${
+                                                i < rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <span className="text-muted-foreground text-xs">N/A</span>
+                            )}
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    )
+                  })
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center h-24">
