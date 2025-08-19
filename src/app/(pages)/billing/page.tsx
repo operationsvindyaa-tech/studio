@@ -405,15 +405,21 @@ export default function BillingPage() {
                 </TabsList>
                 <TabsContent value="all" className="pt-4">
                     {loading ? (
-                        Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                                <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                            </TableRow>
-                        ))
+                        <div className="border rounded-lg">
+                            <Table>
+                                <TableBody>
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <InvoiceTable
                             invoices={billingData}
@@ -426,15 +432,21 @@ export default function BillingPage() {
                 </TabsContent>
                  <TabsContent value="pending" className="pt-4">
                     {loading ? (
-                        Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                                <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                            </TableRow>
-                        ))
+                         <div className="border rounded-lg">
+                            <Table>
+                                <TableBody>
+                                    {Array.from({ length: 3 }).map((_, i) => (
+                                        <TableRow key={i}>
+                                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
                     ) : (
                         <InvoiceTable
                             invoices={pendingInvoices}
