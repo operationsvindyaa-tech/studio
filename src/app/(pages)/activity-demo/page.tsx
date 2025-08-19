@@ -397,8 +397,8 @@ export default function ActivityDemoPage() {
     return (
         <Tabs defaultValue="request">
             <TabsList className="grid w-full grid-cols-2 max-w-lg mx-auto">
-                <TabsTrigger value="request"><ClipboardCheck className="mr-2"/>Request a Demo</TabsTrigger>
-                <TabsTrigger value="manage"><ClipboardList className="mr-2"/>Manage Requests</TabsTrigger>
+                <TabsTrigger value="request"><ClipboardCheck className="mr-2"/>Request</TabsTrigger>
+                <TabsTrigger value="manage"><ClipboardList className="mr-2"/>Manage</TabsTrigger>
             </TabsList>
             <TabsContent value="request">
                 <DemoRequestForm />
