@@ -60,6 +60,7 @@ import {
   Target,
   Megaphone,
   Building,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -81,6 +82,7 @@ const navItems = [
 const studentPortalNavItems = [
     { href: "/student-attendance", icon: CalendarCheck, label: "My Attendance" },
     { href: "/progress-report", icon: TrendingUp, label: "My Progress" },
+    { href: "/online-class", icon: Video, label: "Online Class" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
