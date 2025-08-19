@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone, CheckCircle } from "lucide-react";
+import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone, CheckCircle, AlertTriangle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import {
@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { format } from 'date-fns';
 import { getBillingData, StudentBillingInfo, Activity, courseFees, calculateTotal, activityHeads } from "@/lib/billing-db";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const formatAmount = (amount: number) => {
@@ -46,8 +47,94 @@ type NewInvoice = {
     tax: number;
 }
 
+const InvoiceTable = ({ invoices, onStatusChange, onView, onEdit, onDelete }: { invoices: StudentBillingInfo[], onStatusChange: (id: string, status: BillingStatus) => void, onView: (invoice: StudentBillingInfo) => void, onEdit: (invoice: StudentBillingInfo) => void, onDelete: (invoice: StudentBillingInfo) => void }) => {
+    return (
+        <div className="border rounded-lg">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Student</TableHead>
+                    <TableHead>Activities</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {invoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                        <TableCell>
+                            <div className="font-medium">{invoice.name}</div>
+                            <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
+                        </TableCell>
+                        <TableCell>
+                            {[...invoice.activities.map(a => a.name), invoice.admissionFee ? 'Admission Fee' : null].filter(Boolean).join(', ')}
+                        </TableCell>
+                        <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
+                        <TableCell>
+                            <Badge
+                            variant={
+                                invoice.status === "Paid" ? "secondary" : invoice.status === "Due" ? "outline" : "destructive"
+                            }
+                            className={
+                                invoice.status === "Paid" ? "bg-green-100 text-green-800" : invoice.status === "Due" ? "bg-orange-100 text-orange-800" : ""
+                            }
+                            >
+                            {invoice.status}
+                            </Badge>
+                        </TableCell>
+                        <TableCell>
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-haspopup="true" size="icon" variant="ghost">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Toggle menu</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => onView(invoice)}>
+                                <FileText className="mr-2 h-4 w-4" /> View Invoice
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onEdit(invoice)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit Invoice
+                                </DropdownMenuItem>
+                                <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    <span>Change Status</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem onClick={() => onStatusChange(invoice.id, 'Paid')} disabled={invoice.status === 'Paid'}>
+                                    Paid
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStatusChange(invoice.id, 'Due')} disabled={invoice.status === 'Due'}>
+                                    Due
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStatusChange(invoice.id, 'Overdue')} disabled={invoice.status === 'Overdue'}>
+                                    Overdue
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => onDelete(invoice)} className="text-destructive">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </div>
+    );
+};
+
 export default function BillingPage() {
   const [billingData, setBillingData] = useState<StudentBillingInfo[]>([]);
+  const [pendingInvoices, setPendingInvoices] = useState<StudentBillingInfo[]>([]);
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
@@ -69,6 +156,7 @@ export default function BillingPage() {
             setAllStudents(students);
             const billingRecords = await getBillingData();
             setBillingData(billingRecords);
+            setPendingInvoices(billingRecords.filter(b => b.status === 'Due' || b.status === 'Overdue'));
         } catch (error) {
             toast({
                 title: "Error",
@@ -151,7 +239,9 @@ export default function BillingPage() {
 
   const confirmDelete = () => {
     if (invoiceToDelete) {
-        setBillingData(prevData => prevData.filter(item => item.id !== invoiceToDelete.id));
+        const updatedBillingData = billingData.filter(item => item.id !== invoiceToDelete.id)
+        setBillingData(updatedBillingData);
+        setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
         toast({
             title: "Invoice Deleted",
             description: `Invoice for ${invoiceToDelete.name} has been successfully deleted.`
@@ -162,13 +252,14 @@ export default function BillingPage() {
   };
 
     const handleStatusChange = (invoiceId: string, newStatus: BillingStatus) => {
-        setBillingData(prevData =>
-            prevData.map(invoice =>
+        const updatedBillingData = billingData.map(invoice =>
                 invoice.id === invoiceId
                     ? { ...invoice, status: newStatus, paymentDate: newStatus === 'Paid' ? new Date().toISOString().split('T')[0] : undefined }
                     : invoice
             )
-        );
+        setBillingData(updatedBillingData);
+        setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
+        
         const studentName = billingData.find(inv => inv.id === invoiceId)?.name;
         toast({
             title: "Status Updated",
@@ -219,7 +310,9 @@ export default function BillingPage() {
           months: months.split(',').map(m => m.trim()),
       };
       
-      setBillingData(prev => [newBillingRecord, ...prev]);
+      const updatedBillingData = [newBillingRecord, ...billingData];
+      setBillingData(updatedBillingData);
+      setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
       toast({ title: "Success", description: `Invoice created for ${student.name}.` });
       setIsCreateInvoiceOpen(false);
       setNewInvoice({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '', discount: 0, tax: 0 });
@@ -301,102 +394,62 @@ export default function BillingPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Activities</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                            <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                        </TableRow>
-                    ))
-                ) : (
-                    billingData.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell>
-                          <div className="font-medium">{invoice.name}</div>
-                          <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
-                        </TableCell>
-                        <TableCell>
-                            {[...invoice.activities.map(a => a.name), invoice.admissionFee ? 'Admission Fee' : null].filter(Boolean).join(', ')}
-                        </TableCell>
-                        <TableCell className="text-right">{formatAmount(calculateTotal(invoice))}</TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              invoice.status === "Paid" ? "secondary" : invoice.status === "Due" ? "outline" : "destructive"
-                            }
-                            className={
-                              invoice.status === "Paid" ? "bg-green-100 text-green-800" : invoice.status === "Due" ? "bg-orange-100 text-orange-800" : ""
-                            }
-                          >
-                            {invoice.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleViewInvoice(invoice)}>
-                                <FileText className="mr-2 h-4 w-4" /> View Invoice
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditInvoice(invoice)}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit Invoice
-                              </DropdownMenuItem>
-                               <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  <span>Change Status</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Paid')} disabled={invoice.status === 'Paid'}>
-                                    Paid
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Due')} disabled={invoice.status === 'Due'}>
-                                    Due
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'Overdue')} disabled={invoice.status === 'Overdue'}>
-                                    Overdue
-                                  </DropdownMenuItem>
-                                </DropdownMenuSubContent>
-                              </DropdownMenuSub>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteInvoice(invoice)} className="text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                )}
-                </TableBody>
-            </Table>
-          </div>
+            <Tabs defaultValue="all">
+                <TabsList>
+                    <TabsTrigger value="all">All Invoices</TabsTrigger>
+                    <TabsTrigger value="pending" className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        Pending Fees
+                        {pendingInvoices.length > 0 && <Badge>{pendingInvoices.length}</Badge>}
+                    </TabsTrigger>
+                </TabsList>
+                <TabsContent value="all" className="pt-4">
+                    {loading ? (
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <InvoiceTable
+                            invoices={billingData}
+                            onStatusChange={handleStatusChange}
+                            onView={handleViewInvoice}
+                            onEdit={handleEditInvoice}
+                            onDelete={handleDeleteInvoice}
+                        />
+                    )}
+                </TabsContent>
+                 <TabsContent value="pending" className="pt-4">
+                    {loading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        <InvoiceTable
+                            invoices={pendingInvoices}
+                            onStatusChange={handleStatusChange}
+                            onView={handleViewInvoice}
+                            onEdit={handleEditInvoice}
+                            onDelete={handleDeleteInvoice}
+                        />
+                    )}
+                </TabsContent>
+            </Tabs>
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{billingData.length}</strong> records.
+                Showing <strong>{billingData.length}</strong> total records.
             </div>
         </CardFooter>
       </Card>
@@ -684,5 +737,3 @@ export default function BillingPage() {
     </>
   );
 }
-
-    
