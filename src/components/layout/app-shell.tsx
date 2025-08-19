@@ -59,6 +59,7 @@ import {
   FilePieChart,
   Target,
   Megaphone,
+  Building,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,6 +89,7 @@ const operationsNavItems = [
     { href: "/activity-demo", icon: ClipboardCheck, label: "Activity Demo" },
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
+    { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Student Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
