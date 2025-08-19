@@ -6,32 +6,14 @@ import { addEnquiry } from "@/lib/enquiries-db";
 import { revalidatePath } from "next/cache";
 
 const enquiryFormSchema = z.object({
-  photo: z.string().optional(),
-  studentName: z.string().min(2, "Name must be at least 2 characters."),
-  dateOfJoining: z.date({ required_error: "Date of joining is required." }),
-  dob: z.date({ required_error: "A date of birth is required." }),
-  age: z.string().min(1, "Age is required."),
-  gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
-  nationality: z.string().min(2, "Nationality is required."),
-  bloodGroup: z.string().optional(),
-  
-  fatherName: z.string().min(2, "Father's name is required."),
-  fatherContact: z.string().min(10, "Father's contact number is required."),
-  motherName: z.string().min(2, "Mother's name is required."),
-  motherContact: z.string().min(10, "Mother's contact number is required."),
-  whatsappNumber: z.string().min(10, "WhatsApp number is required."),
-  email: z.string().email("A valid email is required."),
-  address: z.string().min(10, "Address is required."),
-  
-  previousSchool: z.string().optional(),
-  desiredCourse: z.string({ required_error: "Please select a course." }),
-  activitiesInterested: z.string().optional(),
-  howDidYouKnow: z.string({ required_error: "This field is required."}),
-  
-  healthIssues: z.string().optional(),
-  emergencyContact: z.string().min(10, "Emergency contact is required."),
-  
-  signature: z.string().min(1, "Signature is required."),
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  age: z.coerce.number().min(1, "Age is required."),
+  activity: z.string({ required_error: "Please select an activity." }),
+  contactNumber: z.string().min(10, "A valid contact number is required."),
+  whatsappNumber: z.string().min(10, "A valid WhatsApp number is required."),
+  branch: z.string({ required_error: "Please select a branch." }),
+  coordinator: z.string({ required_error: "Please select a coordinator." }),
+  satisfaction: z.coerce.number().min(1, "Please provide a rating.").max(5),
 });
 
 
@@ -40,23 +22,22 @@ type State = {
     success: boolean;
 };
 
-export async function createEnquiry(prevState: State, formData: z.infer<typeof enquiryFormSchema>): Promise<State> {
+export async function createEnquiry(prevState: State, formData: FormData): Promise<State> {
   try {
-     const parsedData = enquiryFormSchema.parse(formData);
+     const parsedData = enquiryFormSchema.parse(Object.fromEntries(formData));
 
     await addEnquiry({
-        name: parsedData.studentName,
-        contact: parsedData.whatsappNumber,
-        email: parsedData.email,
-        courseInterest: parsedData.desiredCourse,
-        source: parsedData.howDidYouKnow,
+        name: parsedData.name,
+        contact: parsedData.contactNumber,
+        email: `enquiry+${Date.now()}@example.com`, // Email is not in the form, but required by db
+        courseInterest: parsedData.activity,
+        source: 'walk-in', // Source is not in the form, default to walk-in
         notes: `
-            DOB: ${parsedData.dob.toLocaleDateString()},
-            Gender: ${parsedData.gender},
-            Nationality: ${parsedData.nationality},
-            Father: ${parsedData.fatherName} (${parsedData.fatherContact}),
-            Mother: ${parsedData.motherName} (${parsedData.motherContact}),
-            Address: ${parsedData.address}
+            Age: ${parsedData.age},
+            WhatsApp: ${parsedData.whatsappNumber},
+            Branch: ${parsedData.branch},
+            Coordinator: ${parsedData.coordinator},
+            Satisfaction: ${parsedData.satisfaction}/5
         `
     });
 
