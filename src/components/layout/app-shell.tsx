@@ -80,20 +80,20 @@ const navItems = [
 ];
 
 const studentPortalNavItems = [
-    { href: "/student-attendance", icon: CalendarCheck, label: "My Attendance" },
-    { href: "/progress-report", icon: TrendingUp, label: "My Progress" },
+    { href: "/student-attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/progress-report", icon: TrendingUp, label: "Progress" },
     { href: "/online-class", icon: Video, label: "Online Class" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
 const operationsNavItems = [
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
-    { href: "/activity-demo", icon: ClipboardCheck, label: "Activity Demo" },
+    { href: "/activity-demo", icon: ClipboardCheck, label: "Demos" },
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
-    { href: "/attendance", icon: CalendarCheck, label: "Student Attendance" },
+    { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/communication", icon: MessageSquare, label: "Communication" },
 ]
 
@@ -101,10 +101,10 @@ const academicsNavItems = [
     { href: "/courses", icon: BookOpen, label: "Courses" },
     { href: "/syllabus", icon: FilePenLine, label: "Syllabus" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
-    { href: "/timetable", icon: CalendarClock, label: "Time Table" },
+    { href: "/timetable", icon: CalendarClock, label: "Timetable" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
-    { href: "/progress-report", icon: TrendingUp, label: "Progress Report" },
+    { href: "/progress-report", icon: TrendingUp, label: "Progress" },
 ];
 
 const hrNavItems = [
@@ -135,12 +135,12 @@ const otherNavItems = [
 ];
 
 const managementNavItems = [
-    { href: "/reports", icon: AreaChart, label: "Financial Reports" },
-    { href: "/student-enrollment-report", icon: UsersRound, label: "Student & Enrollment" },
-    { href: "/instructor-staff-report", icon: UserCheckIcon, label: "Instructor & Staff" },
-    { href: "/operations-report", icon: FilePieChart, label: "Operations Report" },
-    { href: "/marketing-growth-report", icon: Megaphone, label: "Marketing & Growth" },
-    { href: "/strategic-reports", icon: Target, label: "Strategic Reports" },
+    { href: "/reports", icon: AreaChart, label: "Financial" },
+    { href: "/student-enrollment-report", icon: UsersRound, label: "Student" },
+    { href: "/instructor-staff-report", icon: UserCheckIcon, label: "Instructor" },
+    { href: "/operations-report", icon: FilePieChart, label: "Operations" },
+    { href: "/marketing-growth-report", icon: Megaphone, label: "Marketing" },
+    { href: "/strategic-reports", icon: Target, label: "Strategic" },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -212,7 +212,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           <SidebarSeparator />
             <SidebarGroup>
-                <SidebarGroupLabel>Class Management</SidebarGroupLabel>
+                <SidebarGroupLabel>Operations</SidebarGroupLabel>
                 <SidebarMenu>
                     {operationsNavItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
@@ -301,7 +301,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarGroup>
                     <SidebarGroupLabel className="flex items-center gap-2">
                         <Shield className="h-4 w-4" />
-                        Senior Management
+                        Management
                     </SidebarGroupLabel>
                     <SidebarMenu>
                         {managementNavItems.map((item) => (
