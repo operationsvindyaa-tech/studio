@@ -188,7 +188,6 @@ export default function TeachersPage() {
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.href = url;
     link.setAttribute('download', 'teachers.csv');
@@ -425,5 +424,3 @@ export default function TeachersPage() {
     </Card>
   );
 }
-
-    
