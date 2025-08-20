@@ -153,7 +153,7 @@ const managementNavItems = [
 const NavGroup = ({ label, items, pathname }: { label: string, items: { href: string, icon: React.ElementType, label: string }[], pathname: string }) => {
     const isExpanded = items.some(item => pathname.startsWith(item.href));
     return (
-        <SidebarGroup asChild>
+        <SidebarGroup>
             <Collapsible defaultOpen={isExpanded}>
                 <CollapsibleTrigger asChild>
                     <SidebarGroupLabel className="w-full cursor-pointer">
@@ -311,5 +311,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
