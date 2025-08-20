@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   BookOpen,
-  Bot,
   Calendar,
   LayoutDashboard,
   MessageSquare,
@@ -77,7 +76,6 @@ import { Badge } from "../ui/badge";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/chatbot", icon: Bot, label: "AI Chatbot" },
 ];
 
 const studentPortalNavItems = [
