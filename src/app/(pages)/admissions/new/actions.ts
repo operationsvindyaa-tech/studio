@@ -34,6 +34,10 @@ const admissionFormSchema = z.object({
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
   signature: z.string().min(1, "Signature is required."),
+  
+  officeAdmissionOfficer: z.string().min(2, "Admission officer's name is required."),
+  officeAdmissionCenter: z.string({ required_error: "Please select the admission center for office records."}),
+  officeSignature: z.string().min(2, "Digital signature of the officer is required."),
 });
 
 

@@ -41,6 +41,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 
 const admissionFormSchema = z.object({
   photo: z.string().optional(),
@@ -71,6 +72,10 @@ const admissionFormSchema = z.object({
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
   signature: z.string().min(1, "Signature is required to authorize."),
+
+  officeAdmissionOfficer: z.string().min(2, "Admission officer's name is required."),
+  officeAdmissionCenter: z.string({ required_error: "Please select the admission center for office records."}),
+  officeSignature: z.string().min(2, "Digital signature of the officer is required."),
 });
 
 
@@ -123,6 +128,8 @@ export default function NewAdmissionPage() {
       healthIssues: "",
       emergencyContact: "",
       signature: "",
+      officeAdmissionOfficer: "",
+      officeSignature: "",
     },
   });
 
@@ -383,8 +390,30 @@ export default function NewAdmissionPage() {
                     </FormItem>
                 )} />
             </div>
-             <div className="flex items-center justify-center pt-4">
-                <p className="text-sm text-muted-foreground">Seal of Institution</p>
+
+             {/* OFFICE USE ONLY */}
+            <div className="space-y-6 pt-6 border-t-2 border-dashed border-primary/50">
+                <h3 className="text-xl font-bold text-center text-primary">FOR OFFICE USE ONLY</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                     <FormField control={form.control} name="officeAdmissionOfficer" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Officer Name</FormLabel><FormControl><Input placeholder="Enter staff name" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="officeAdmissionCenter" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Center (Office)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a center" /></SelectTrigger></FormControl><SelectContent>
+                            {admissionCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
+                        </SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <FormField control={form.control} name="officeSignature" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Officer's Digital Signature</FormLabel>
+                        <FormControl><Input placeholder="Type your full name to sign" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                 <div className="flex items-center justify-center pt-4">
+                    <p className="text-sm text-muted-foreground">Seal of Institution</p>
+                </div>
             </div>
 
             <SubmitButton />
