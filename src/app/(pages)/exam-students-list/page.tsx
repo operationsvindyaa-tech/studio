@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -17,16 +17,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarIcon, PlusCircle, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { CalendarIcon, PlusCircle, MoreHorizontal, Edit, Trash2, Upload, Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { getExamRecords, addExamRecord, updateExamRecord, deleteExamRecord, type ExamRecord } from "@/lib/exam-db";
+import { getExamRecords, addExamRecord, updateExamRecord, deleteExamRecord, addExamRecordsBatch, type ExamRecord } from "@/lib/exam-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { getStudents } from "@/lib/db";
 import { getCourses } from "@/lib/courses-db";
+import { useReactToPrint } from "react-to-print";
+import * as XLSX from "xlsx";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -45,6 +47,8 @@ export default function ExamStudentsListPage() {
   const [editingRecord, setEditingRecord] = useState<ExamRecord | null>(null);
   const [formData, setFormData] = useState<Partial<Omit<ExamRecord, 'id'>> & { date?: Date }>({});
   const { toast } = useToast();
+  const printRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -115,8 +119,75 @@ export default function ExamStudentsListPage() {
       fetchData();
   }
 
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+        const newRecords = json.map(row => ({
+          studentName: row["Student Name"],
+          activity: row["Activity"],
+          examType: row["Exam Type"],
+          universityName: row["University Name"],
+          feesAmount: Number(row["Fees Amount"]),
+          paymentStatus: row["Payment Status"] as ExamRecord['paymentStatus'],
+          examDate: new Date(row["Exam Date"]).toISOString(),
+          feePaymentDate: row["Fee Payment Date"] ? new Date(row["Fee Payment Date"]).toISOString() : undefined,
+        }));
+
+        await addExamRecordsBatch(newRecords as Omit<ExamRecord, 'id'>[]);
+        toast({ title: "Import Successful", description: `${newRecords.length} records have been imported.` });
+        fetchData();
+      } catch (error) {
+        toast({ title: "Import Failed", description: "Could not parse the file. Please check the format.", variant: "destructive" });
+      }
+    };
+    reader.readAsBinaryString(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+  
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(records.map(r => ({
+      "Student Name": r.studentName,
+      "Activity": r.activity,
+      "Exam Type": r.examType,
+      "University Name": r.universityName,
+      "Fees Amount": r.feesAmount,
+      "Payment Status": r.paymentStatus,
+      "Exam Date": new Date(r.examDate),
+      "Fee Payment Date": r.feePaymentDate ? new Date(r.feePaymentDate) : ""
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Exam Records");
+    XLSX.writeFile(workbook, "exam_records.xlsx");
+    toast({ title: "Export Successful", description: "Exam records have been downloaded." });
+  };
+
   return (
     <>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".xlsx, .xls, .csv"
+      />
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
@@ -126,14 +197,19 @@ export default function ExamStudentsListPage() {
                 Manage student examination details and payment status.
               </CardDescription>
             </div>
-            <Button onClick={() => handleOpenDialog(null)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Record
-            </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
+                <Button variant="outline" onClick={handleExport}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                <Button variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+                <Button onClick={() => handleOpenDialog(null)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Record
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg" ref={printRef}>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -144,7 +220,7 @@ export default function ExamStudentsListPage() {
                   <TableHead className="text-right">Fees</TableHead>
                   <TableHead>Payment Status</TableHead>
                   <TableHead>Exam Date</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="print:hidden">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -158,7 +234,7 @@ export default function ExamStudentsListPage() {
                             <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-8" /></TableCell>
+                            <TableCell className="print:hidden"><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))
                 ) : records.length > 0 ? (
@@ -175,7 +251,7 @@ export default function ExamStudentsListPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>{format(new Date(record.examDate), "dd MMM, yyyy")}</TableCell>
-                      <TableCell>
+                      <TableCell className="print:hidden">
                          <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button aria-haspopup="true" size="icon" variant="ghost">
@@ -308,3 +384,5 @@ export default function ExamStudentsListPage() {
     </>
   );
 }
+
+    

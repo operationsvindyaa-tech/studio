@@ -44,6 +44,19 @@ export const addExamRecord = async (recordData: Omit<ExamRecord, 'id'>): Promise
   return Promise.resolve(newRecord);
 };
 
+export const addExamRecordsBatch = async (recordData: Omit<ExamRecord, 'id'>[]): Promise<ExamRecord[]> => {
+    await delay(500);
+    const newRecords = recordData.map(data => {
+        const newId = `EXM${String(nextId++).padStart(3, '0')}`;
+        return {
+            ...data,
+            id: newId,
+        };
+    });
+    records.push(...newRecords);
+    return Promise.resolve(newRecords);
+};
+
 export const updateExamRecord = async (id: string, updates: Partial<ExamRecord>): Promise<ExamRecord> => {
     await delay(500);
     const recordIndex = records.findIndex(r => r.id === id);
@@ -59,3 +72,5 @@ export const deleteExamRecord = async (id: string): Promise<{ success: boolean }
     records = records.filter(r => r.id !== id);
     return Promise.resolve({ success: true });
 }
+
+    
