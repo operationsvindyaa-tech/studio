@@ -61,6 +61,7 @@ import {
   Megaphone,
   Building,
   Video,
+  ListOrdered,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,6 +103,7 @@ const academicsNavItems = [
     { href: "/syllabus", icon: FilePenLine, label: "Syllabus" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
     { href: "/timetable", icon: CalendarClock, label: "Timetable" },
+    { href: "/exam-students-list", icon: ListOrdered, label: "Exam List" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
     { href: "/progress-report", icon: TrendingUp, label: "Progress" },
