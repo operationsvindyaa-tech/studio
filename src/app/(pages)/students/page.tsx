@@ -26,6 +26,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react";
 import { getStudents } from "@/lib/db";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Student = {
   id: string;
@@ -36,18 +37,22 @@ type Student = {
   courses: number;
   avatar: string;
   initials: string;
+  classMode?: "Online" | "Regular";
 };
 
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [classModeFilter, setClassModeFilter] = useState<string>("All");
 
   useEffect(() => {
     async function fetchStudents() {
       try {
         const studentData = await getStudents();
         setStudents(studentData);
+        setFilteredStudents(studentData);
       } catch (error) {
         console.error("Failed to fetch students", error);
       } finally {
@@ -56,11 +61,19 @@ export default function StudentsPage() {
     }
     fetchStudents();
   }, []);
+  
+  useEffect(() => {
+    if (classModeFilter === "All") {
+      setFilteredStudents(students);
+    } else {
+      setFilteredStudents(students.filter(student => student.classMode === classModeFilter));
+    }
+  }, [classModeFilter, students]);
 
   const handleExport = () => {
     if (!students.length) return;
     
-    const headers = ["ID", "Name", "Email", "Date Joined", "Status", "Courses Enrolled"];
+    const headers = ["ID", "Name", "Email", "Date Joined", "Status", "Courses Enrolled", "Class Mode"];
     const csvContent = [
       headers.join(','),
       ...students.map(student => [
@@ -70,6 +83,7 @@ export default function StudentsPage() {
         new Date(student.joined).toLocaleDateString(),
         student.status,
         student.courses,
+        student.classMode || 'N/A',
       ].join(','))
     ].join('\n');
 
@@ -90,8 +104,18 @@ export default function StudentsPage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <div className="w-full max-w-sm">
-          <Input placeholder="Search students..." />
+        <div className="flex gap-2 items-center">
+            <Input placeholder="Search students..." className="w-full max-w-sm" />
+            <Select value={classModeFilter} onValueChange={setClassModeFilter}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by Class Mode" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All">All Class Modes</SelectItem>
+                    <SelectItem value="Regular">Regular</SelectItem>
+                    <SelectItem value="Online">Online</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
         <div className="flex gap-2">
             <Button variant="outline" onClick={handleExport}>
@@ -112,7 +136,7 @@ export default function StudentsPage() {
             <TableRow>
               <TableHead>Student</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell text-center">Courses Enrolled</TableHead>
+              <TableHead className="hidden md:table-cell">Class Mode</TableHead>
               <TableHead className="hidden md:table-cell">Date Joined</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
@@ -133,13 +157,13 @@ export default function StudentsPage() {
                             </div>
                         </TableCell>
                         <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                        <TableCell className="hidden md:table-cell text-center"><Skeleton className="h-4 w-4 mx-auto" /></TableCell>
+                        <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
                         <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                     </TableRow>
                 ))
             ) : (
-                students.map((student) => (
+                filteredStudents.map((student) => (
                 <TableRow key={student.id}>
                     <TableCell>
                     <div className="flex items-center gap-3">
@@ -161,7 +185,7 @@ export default function StudentsPage() {
                         {student.status}
                     </Badge>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-center">{student.courses}</TableCell>
+                    <TableCell className="hidden md:table-cell">{student.classMode || 'N/A'}</TableCell>
                     <TableCell className="hidden md:table-cell">{new Date(student.joined).toLocaleDateString()}</TableCell>
                     <TableCell>
                     <DropdownMenu>
