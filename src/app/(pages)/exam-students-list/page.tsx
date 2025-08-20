@@ -30,22 +30,22 @@ import { getCourses } from "@/lib/courses-db";
 import { useReactToPrint } from "react-to-print";
 import * as XLSX from "xlsx";
 
-const formatCurrency = (amount: number) => {
+const formatAmount = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 2,
     }).format(amount);
 };
 
 export default function ExamStudentsListPage() {
-  const [records, setRecords] = useState<ExamRecord[]>([]);
+  const [allRecords, setAllRecords] = useState<ExamRecord[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<ExamRecord[]>([]);
   const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
   const [courses, setCourses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ExamRecord | null>(null);
   const [formData, setFormData] = useState<Partial<Omit<ExamRecord, 'id'>> & { date?: Date }>({});
+  const [activityFilter, setActivityFilter] = useState<string>("All Activities");
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,7 +58,8 @@ export default function ExamStudentsListPage() {
         getStudents(),
         getCourses(),
       ]);
-      setRecords(recordData);
+      setAllRecords(recordData);
+      setFilteredRecords(recordData);
       setStudents(studentData.map(s => ({ id: s.id, name: s.name })));
       setCourses(courseData.map(c => c.title));
     } catch (error) {
@@ -71,6 +72,15 @@ export default function ExamStudentsListPage() {
   useEffect(() => {
     fetchData();
   }, [toast]);
+  
+  useEffect(() => {
+    if (activityFilter === "All Activities") {
+        setFilteredRecords(allRecords);
+    } else {
+        setFilteredRecords(allRecords.filter(record => record.activity === activityFilter));
+    }
+  }, [activityFilter, allRecords]);
+
 
   const handleOpenDialog = (record: ExamRecord | null) => {
     setEditingRecord(record);
@@ -163,7 +173,8 @@ export default function ExamStudentsListPage() {
   };
   
   const handleExport = () => {
-    const worksheet = XLSX.utils.json_to_sheet(records.map(r => ({
+    const recordsToExport = filteredRecords.length > 0 ? filteredRecords : allRecords;
+    const worksheet = XLSX.utils.json_to_sheet(recordsToExport.map(r => ({
       "Student Name": r.studentName,
       "Activity": r.activity,
       "Exam Type": r.examType,
@@ -190,14 +201,23 @@ export default function ExamStudentsListPage() {
       />
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <CardTitle>Exam Students List & Tracker</CardTitle>
               <CardDescription>
                 Manage student examination details and payment status.
               </CardDescription>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
+                <Select value={activityFilter} onValueChange={setActivityFilter}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by activity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All Activities">All Activities</SelectItem>
+                        {courses.map(course => <SelectItem key={course} value={course}>{course}</SelectItem>)}
+                    </SelectContent>
+                </Select>
                 <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
                 <Button variant="outline" onClick={handleExport}><Download className="mr-2 h-4 w-4" /> Export</Button>
                 <Button variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
@@ -237,14 +257,14 @@ export default function ExamStudentsListPage() {
                             <TableCell className="print:hidden"><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
                     ))
-                ) : records.length > 0 ? (
-                  records.map(record => (
+                ) : filteredRecords.length > 0 ? (
+                  filteredRecords.map(record => (
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.studentName}</TableCell>
                       <TableCell>{record.activity}</TableCell>
                       <TableCell>{record.examType}</TableCell>
                       <TableCell>{record.universityName}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(record.feesAmount)}</TableCell>
+                      <TableCell className="text-right">{formatAmount(record.feesAmount)}</TableCell>
                       <TableCell>
                         <Badge variant={record.paymentStatus === 'Paid' ? 'secondary' : (record.paymentStatus === 'Pending' ? 'outline' : 'destructive')}>
                           {record.paymentStatus}
@@ -281,7 +301,7 @@ export default function ExamStudentsListPage() {
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{records.length}</strong> records.
+                Showing <strong>{filteredRecords.length}</strong> of <strong>{allRecords.length}</strong> records.
             </div>
         </CardFooter>
       </Card>
@@ -384,5 +404,3 @@ export default function ExamStudentsListPage() {
     </>
   );
 }
-
-    
