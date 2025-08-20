@@ -1,4 +1,6 @@
 
+'use server';
+
 import { query } from './mysql';
 
 export type Student = {
@@ -47,29 +49,45 @@ CREATE TABLE students (
 export const getStudents = async (): Promise<Student[]> => {
   // The 'any' type is used here for simplicity. In a real application, you'd
   // want to use a tool like Zod to validate the shape of the data from the DB.
-  const students: any = await query('SELECT * FROM students');
-  
-  if (!students || students.length === 0) {
-      // Return a default student if the database is empty for demo purposes
-      return [{
-          id: "S001",
-          name: "Sample Student",
-          email: "sample@example.com",
-          joined: new Date().toISOString(),
-          status: "Active",
-          courses: 1,
-          avatar: "https://placehold.co/100x100.png",
-          initials: "SS",
-          classMode: "Regular",
-      }];
-  }
+  try {
+    const students: any = await query('SELECT * FROM students');
+    
+    if (!students || students.length === 0) {
+        // Return a default student if the database is empty for demo purposes
+        return [{
+            id: "S001",
+            name: "Sample Student",
+            email: "sample@example.com",
+            joined: new Date().toISOString(),
+            status: "Active",
+            courses: 1,
+            avatar: "https://placehold.co/100x100.png",
+            initials: "SS",
+            classMode: "Regular",
+        }];
+    }
 
-  // The database returns dates as objects, so we format them to ISO strings.
-  // This is a simplified mapping.
-  return students.map((student: any) => ({
-    ...student,
-    joined: new Date(student.joined).toISOString(),
-  }));
+    // The database returns dates as objects, so we format them to ISO strings.
+    // This is a simplified mapping.
+    return students.map((student: any) => ({
+      ...student,
+      joined: new Date(student.joined).toISOString(),
+    }));
+  } catch (error) {
+    console.error("Database query failed:", error);
+    // Return mock data if the database connection fails
+    return [{
+        id: "S001",
+        name: "Sample Student (DB Error)",
+        email: "sample@example.com",
+        joined: new Date().toISOString(),
+        status: "Active",
+        courses: 1,
+        avatar: "https://placehold.co/100x100.png",
+        initials: "SS",
+        classMode: "Regular",
+    }];
+  }
 };
 
 export const addStudent = async (studentData: any) => {
@@ -77,8 +95,8 @@ export const addStudent = async (studentData: any) => {
   const studentId = `S${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`;
   
   const sql = `
-    INSERT INTO students (id, name, email, joined, status, courses, avatar, initials, classMode)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO students (id, name, email, joined, status, courses, avatar, initials, classMode, admissionCenter)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
   
   await query(sql, [
@@ -90,7 +108,8 @@ export const addStudent = async (studentData: any) => {
     1, // Default courses
     studentData.photo || `https://placehold.co/100x100.png`,
     initials,
-    studentData.classMode
+    studentData.classMode,
+    studentData.admissionCenter,
   ]);
 
   const newStudent = await query('SELECT * FROM students WHERE id = ?', [studentId]);
