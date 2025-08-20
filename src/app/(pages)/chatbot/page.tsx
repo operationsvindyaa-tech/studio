@@ -32,7 +32,6 @@ function SubmitButton() {
 
 export default function ChatbotPage() {
   const [state, formAction] = useActionState(askQuestion, initialState);
-  const [input, setInput] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -43,14 +42,11 @@ export default function ChatbotPage() {
         behavior: "smooth",
       });
     }
+    // Reset form on new message
+    if (state.messages.length > 0) {
+        formRef.current?.reset();
+    }
   }, [state.messages]);
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formAction(formData);
-    setInput("");
-  };
 
   return (
     <div className="flex justify-center items-start h-full">
@@ -99,14 +95,12 @@ export default function ChatbotPage() {
         <CardFooter>
           <form
             ref={formRef}
-            onSubmit={handleFormSubmit}
+            action={formAction}
             className="w-full flex items-center gap-2"
           >
             <Input
               name="question"
               placeholder="Type your question..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
               autoComplete="off"
             />
             <SubmitButton />
