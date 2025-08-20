@@ -26,7 +26,7 @@ const admissionFormSchema = z.object({
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
   admissionCenter: z.string({ required_error: "Please select an admission center."}),
-  classMode: z.enum(["Online", "Offline"], { required_error: "Please select a class mode." }),
+  classMode: z.enum(["Online", "Regular"], { required_error: "Please select a class mode." }),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   

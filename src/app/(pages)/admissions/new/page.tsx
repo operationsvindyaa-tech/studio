@@ -63,7 +63,7 @@ const admissionFormSchema = z.object({
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
   admissionCenter: z.string({ required_error: "Please select an admission center."}),
-  classMode: z.enum(["Online", "Offline"], { required_error: "Please select a class mode." }),
+  classMode: z.enum(["Online", "Regular"], { required_error: "Please select a class mode." }),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
@@ -339,8 +339,8 @@ export default function NewAdmissionPage() {
                             className="flex items-center space-x-4"
                             >
                             <FormItem className="flex items-center space-x-2 space-y-0">
-                                <FormControl><RadioGroupItem value="Offline" /></FormControl>
-                                <FormLabel className="font-normal">Offline</FormLabel>
+                                <FormControl><RadioGroupItem value="Regular" /></FormControl>
+                                <FormLabel className="font-normal">Regular</FormLabel>
                             </FormItem>
                             <FormItem className="flex items-center space-x-2 space-y-0">
                                 <FormControl><RadioGroupItem value="Online" /></FormControl>
