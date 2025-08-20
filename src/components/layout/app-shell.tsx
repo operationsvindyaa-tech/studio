@@ -21,6 +21,11 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   BookOpen,
   Calendar,
   LayoutDashboard,
@@ -61,6 +66,7 @@ import {
   Building,
   Video,
   ListOrdered,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,6 +79,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "../ui/badge";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -143,6 +150,44 @@ const managementNavItems = [
     { href: "/strategic-reports", icon: Target, label: "Strategic" },
 ];
 
+const NavGroup = ({ label, items, pathname }: { label: string, items: { href: string, icon: React.ElementType, label: string }[], pathname: string }) => {
+    const isExpanded = items.some(item => pathname.startsWith(item.href));
+    return (
+        <SidebarGroup asChild>
+            <Collapsible defaultOpen={isExpanded}>
+                <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel className="w-full cursor-pointer">
+                        <div className="flex justify-between items-center w-full">
+                            <span>{label}</span>
+                            <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                        </div>
+                    </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <SidebarMenu className="mt-2">
+                        {items.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                            <Link href={item.href} passHref>
+                            <SidebarMenuButton
+                                isActive={pathname.startsWith(item.href)}
+                                asChild
+                            >
+                                <span>
+                                    <item.icon />
+                                    <span>{item.label}</span>
+                                </span>
+                            </SidebarMenuButton>
+                            </Link>
+                        </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </CollapsibleContent>
+            </Collapsible>
+        </SidebarGroup>
+    );
+}
+
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isMounted, setIsMounted] = React.useState(false);
@@ -190,182 +235,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </SidebarMenu>
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Student Portal</SidebarGroupLabel>
-                <SidebarMenu>
-                    {studentPortalNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="Student Portal" items={studentPortalNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Operations</SidebarGroupLabel>
-                <SidebarMenu>
-                    {operationsNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="Operations" items={operationsNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Academics</SidebarGroupLabel>
-                <SidebarMenu>
-                    {academicsNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="Academics" items={academicsNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>HR</SidebarGroupLabel>
-                <SidebarMenu>
-                    {hrNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="HR" items={hrNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Finance</SidebarGroupLabel>
-                <SidebarMenu>
-                    {financeNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
-            
+            <NavGroup label="Finance" items={financeNavItems} pathname={pathname} />
           {userIsSeniorManagement && (
             <>
                 <SidebarSeparator />
-                <SidebarGroup>
-                    <SidebarGroupLabel className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Management
-                    </SidebarGroupLabel>
-                    <SidebarMenu>
-                        {managementNavItems.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} passHref>
-                            <SidebarMenuButton
-                                isActive={pathname.startsWith(item.href)}
-                                asChild
-                            >
-                                <span>
-                                    <item.icon />
-                                    <span>{item.label}</span>
-                                </span>
-                            </SidebarMenuButton>
-                            </Link>
-                        </SidebarMenuItem>
-                        ))}
-                    </SidebarMenu>
-                </SidebarGroup>
+                <NavGroup label="Management" items={managementNavItems} pathname={pathname} />
             </>
           )}
-
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>Media</SidebarGroupLabel>
-                <SidebarMenu>
-                    {mediaNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="Media" items={mediaNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <SidebarGroup>
-                <SidebarGroupLabel>More</SidebarGroupLabel>
-                <SidebarMenu>
-                    {otherNavItems.map((item) => (
-                    <SidebarMenuItem key={item.href}>
-                        <Link href={item.href} passHref>
-                        <SidebarMenuButton
-                            isActive={pathname.startsWith(item.href)}
-                            asChild
-                        >
-                            <span>
-                                <item.icon />
-                                <span>{item.label}</span>
-                            </span>
-                        </SidebarMenuButton>
-                        </Link>
-                    </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-            </SidebarGroup>
+            <NavGroup label="More" items={otherNavItems} pathname={pathname} />
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
@@ -423,3 +311,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
