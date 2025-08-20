@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const admissionFormSchema = z.object({
   photo: z.string().optional(),
@@ -62,6 +63,7 @@ const admissionFormSchema = z.object({
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
   admissionCenter: z.string({ required_error: "Please select an admission center."}),
+  classMode: z.enum(["Online", "Offline"], { required_error: "Please select a class mode." }),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
@@ -328,6 +330,27 @@ export default function NewAdmissionPage() {
                             {admissionCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
                         </SelectContent></Select><FormMessage /></FormItem>
                     )} />
+                     <FormField control={form.control} name="classMode" render={({ field }) => (
+                        <FormItem><FormLabel>Class Mode</FormLabel>
+                        <FormControl>
+                            <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex items-center space-x-4"
+                            >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl><RadioGroupItem value="Offline" /></FormControl>
+                                <FormLabel className="font-normal">Offline</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl><RadioGroupItem value="Online" /></FormControl>
+                                <FormLabel className="font-normal">Online</FormLabel>
+                            </FormItem>
+                            </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )} />
                 </div>
                 <FormField control={form.control} name="activitiesInterested" render={({ field }) => (
                     <FormItem><FormLabel>Activities Interested In (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Sports, Music, Coding Club" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
@@ -371,3 +394,5 @@ export default function NewAdmissionPage() {
     </Card>
   );
 }
+
+    
