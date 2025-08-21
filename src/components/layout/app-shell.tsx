@@ -100,7 +100,7 @@ const operationsNavItems = [
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
-    { href: "/communication", icon: MessageSquare, label: "Communication" },
+    { href: "/announcements", icon: MessageSquare, label: "Announcements" },
 ]
 
 const academicsNavItems = [
