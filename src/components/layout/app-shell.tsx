@@ -132,7 +132,7 @@ const financeNavItems = [
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
 ]
 
-const mediaNavItems = [
+const communicationsNavItems = [
     { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
 ];
 
@@ -159,7 +159,7 @@ const NavGroup = ({ label, items, pathname }: { label: string, items: { href: st
                     <SidebarGroupLabel className="w-full cursor-pointer">
                         <div className="flex justify-between items-center w-full">
                             <span>{label}</span>
-                            <ChevronRight className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" />
+                            <ChevronRight className="h-4 w-4 transition-transform duration-200 data-[state=open]:rotate-90" />
                         </div>
                     </SidebarGroupLabel>
                 </CollapsibleTrigger>
@@ -251,7 +251,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </>
           )}
           <SidebarSeparator />
-            <NavGroup label="Media" items={mediaNavItems} pathname={pathname} />
+            <NavGroup label="Communications" items={communicationsNavItems} pathname={pathname} />
           <SidebarSeparator />
             <NavGroup label="More" items={otherNavItems} pathname={pathname} />
         </SidebarContent>
@@ -295,7 +295,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...mediaNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
