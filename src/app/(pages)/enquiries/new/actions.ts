@@ -43,7 +43,7 @@ export async function createEnquiry(prevState: State, formData: FormData): Promi
     
     // --- SMS Notification Simulation ---
     // In a real application, you would integrate with an SMS service here.
-    const smsMessage = `Hi ${parsedData.name}, thank you for your enquiry about ${parsedData.activity} at our ${parsedData.branch} branch. Our coordinator, ${parsedData.coordinator}, will contact you shortly. VINDYAA - The Altitude of Art.`;
+    const smsMessage = `Dear ${parsedData.name}, thank you for your enquiry at VINDYAA. We have received your interest in the ${parsedData.activity} classes at our ${parsedData.branch} branch. Our coordinator, ${parsedData.coordinator}, will contact you shortly to provide more details. VINDYAA - The Altitude of Art.`;
     
     console.log(`---
     SENDING ENQUIRY CONFIRMATION SMS:
