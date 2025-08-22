@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2, Ruler, Plus, X } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Ruler, Plus, X, Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, type Student } from "@/lib/db";
 import { getKmdRecords, addKmdRecord, updateKmdRecord, deleteKmdRecord, type KmdRecord } from "@/lib/kmd-db";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useReactToPrint } from "react-to-print";
+import * as XLSX from "xlsx";
 
 const courses = [
   "Bharatanatyam", "Vocal Carnatic", "Guitar", "Keyboard", "Piano", "Drums",
@@ -23,13 +25,16 @@ const courses = [
 ];
 
 export default function KmdPage() {
-  const [records, setRecords] = useState<KmdRecord[]>([]);
+  const [allRecords, setAllRecords] = useState<KmdRecord[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<KmdRecord[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<KmdRecord | null>(null);
   const [formData, setFormData] = useState<Partial<Omit<KmdRecord, 'id'>>>({});
+  const [activityFilter, setActivityFilter] = useState<string>("All Activities");
   const { toast } = useToast();
+  const printRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -38,7 +43,8 @@ export default function KmdPage() {
         getKmdRecords(),
         getStudents(),
       ]);
-      setRecords(recordData);
+      setAllRecords(recordData);
+      setFilteredRecords(recordData);
       setStudents(studentData);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load measurement data.", variant: "destructive" });
@@ -50,10 +56,17 @@ export default function KmdPage() {
   useEffect(() => {
     fetchData();
   }, [toast]);
+  
+  useEffect(() => {
+    if (activityFilter === "All Activities") {
+        setFilteredRecords(allRecords);
+    } else {
+        setFilteredRecords(allRecords.filter(record => record.activityName === activityFilter));
+    }
+  }, [activityFilter, allRecords]);
 
   const handleOpenDialog = (record: KmdRecord | null) => {
     setEditingRecord(record);
-    // Ensure measurements is always an array for the form
     setFormData(record ? { ...record, measurements: record.measurements ? [...record.measurements] : [] } : { activityName: courses[0], measurements: [{ name: "Chest", value: "" }] });
     setIsDialogOpen(true);
   };
@@ -108,7 +121,6 @@ export default function KmdPage() {
       return;
     }
 
-    // Filter out empty measurement rows before saving
     const finalFormData = {
         ...formData,
         measurements: formData.measurements?.filter(m => m.name.trim() !== "" && m.value.trim() !== "")
@@ -131,33 +143,69 @@ export default function KmdPage() {
     toast({ title: "Deleted", description: "The measurement record has been removed." });
     fetchData();
   };
+  
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+    documentTitle: `KMD_Report_${activityFilter.replace(' ','_')}`,
+  });
+  
+  const handleExport = () => {
+    if (filteredRecords.length === 0) {
+        toast({ title: "No data to export.", variant: "destructive" });
+        return;
+    }
+    const worksheetData = filteredRecords.map(record => ({
+        'Student Name': record.studentName,
+        'Phone': record.phone,
+        'Activity': record.activityName,
+        'Measurements': (record.measurements || []).map(m => `${m.name}: ${m.value}`).join(' | '),
+        'Notes': record.notes || ''
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'KMD Records');
+    XLSX.writeFile(workbook, `KMD_Report_${activityFilter.replace(' ','_')}.xlsx`);
+  }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center flex-wrap gap-4">
             <div>
               <CardTitle>KMD - Kids Measurement Details</CardTitle>
               <CardDescription>
                 Track student measurements for costumes, gejje, and other items.
               </CardDescription>
             </div>
-            <Button onClick={() => handleOpenDialog(null)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Measurement
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+                <Select value={activityFilter} onValueChange={setActivityFilter}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filter by activity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All Activities">All Activities</SelectItem>
+                        {courses.map(course => <SelectItem key={course} value={course}>{course}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Button variant="outline" onClick={handleExport}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                <Button variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+                <Button onClick={() => handleOpenDialog(null)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Measurement
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="border rounded-lg" ref={printRef}>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Activity</TableHead>
                   <TableHead>Measurements</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="print:hidden">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -167,11 +215,11 @@ export default function KmdPage() {
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                      <TableCell><Skeleton className="h-8 w-16" /></TableCell>
+                      <TableCell className="print:hidden"><Skeleton className="h-8 w-16" /></TableCell>
                     </TableRow>
                   ))
-                ) : records.length > 0 ? (
-                  records.map(record => (
+                ) : filteredRecords.length > 0 ? (
+                  filteredRecords.map(record => (
                     <TableRow key={record.id}>
                       <TableCell>
                         <div className="font-medium">{record.studentName}</div>
@@ -187,7 +235,7 @@ export default function KmdPage() {
                             ))}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="print:hidden">
                         <div className="flex gap-2">
                           <Button variant="outline" size="icon" onClick={() => handleOpenDialog(record)}>
                             <Edit className="h-4 w-4" />
@@ -212,7 +260,7 @@ export default function KmdPage() {
         </CardContent>
         <CardFooter>
           <div className="text-xs text-muted-foreground">
-            Showing <strong>{records.length}</strong> records.
+            Showing <strong>{filteredRecords.length}</strong> records.
           </div>
         </CardFooter>
       </Card>
