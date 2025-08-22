@@ -1,19 +1,18 @@
 
 // In-memory "database" for Kids Measurement Details (KMD).
 
+export type Measurement = {
+    name: string;
+    value: string;
+};
+
 export type KmdRecord = {
   id: string;
   studentId: string;
   studentName: string;
   phone: string;
   activityName: string;
-  chest?: string;
-  waist?: string;
-  hips?: string;
-  sleeveLength?: string;
-  topLength?: string;
-  bottomLength?: string;
-  gejjeSize?: string;
+  measurements?: Measurement[];
   notes?: string;
   lastUpdated: string; // ISO date string
 };
@@ -25,13 +24,15 @@ const initialRecords: KmdRecord[] = [
     studentName: "Amelia Rodriguez",
     phone: "9876543210",
     activityName: "Bharatanatyam",
-    chest: "28",
-    waist: "26",
-    hips: "30",
-    sleeveLength: "15",
-    topLength: "22",
-    bottomLength: "34",
-    gejjeSize: "5 inches",
+    measurements: [
+        { name: "Chest", value: "28" },
+        { name: "Waist", value: "26" },
+        { name: "Hips", value: "30" },
+        { name: "Sleeve Length", value: "15" },
+        { name: "Top Length", value: "22" },
+        { name: "Bottom Length", value: "34" },
+        { name: "Gejje Size", value: "5 inches" },
+    ],
     notes: "Standard temple jewelry set.",
     lastUpdated: new Date().toISOString(),
   },
@@ -41,10 +42,10 @@ const initialRecords: KmdRecord[] = [
     studentName: "Benjamin Carter",
     phone: "9876543211",
     activityName: "Vocal Carnatic",
-    chest: "30 (Kurta)",
-    waist: "28 (Dhoti)",
-    bottomLength: "36",
-    gejjeSize: "N/A",
+    measurements: [
+        { name: "Kurta Size", value: "30" },
+        { name: "Dhoti Length", value: "36" },
+    ],
     notes: "",
     lastUpdated: new Date().toISOString(),
   },

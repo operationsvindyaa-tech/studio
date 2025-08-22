@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Edit, Trash2, Ruler } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Ruler, Plus, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, type Student } from "@/lib/db";
 import { getKmdRecords, addKmdRecord, updateKmdRecord, deleteKmdRecord, type KmdRecord } from "@/lib/kmd-db";
@@ -53,7 +53,8 @@ export default function KmdPage() {
 
   const handleOpenDialog = (record: KmdRecord | null) => {
     setEditingRecord(record);
-    setFormData(record ? { ...record } : { activityName: courses[0] });
+    // Ensure measurements is always an array for the form
+    setFormData(record ? { ...record, measurements: record.measurements ? [...record.measurements] : [] } : { activityName: courses[0], measurements: [{ name: "Chest", value: "" }] });
     setIsDialogOpen(true);
   };
 
@@ -63,7 +64,7 @@ export default function KmdPage() {
     setFormData({});
   };
 
-  const handleFormChange = (field: keyof KmdRecord, value: any) => {
+  const handleFormChange = (field: keyof Omit<KmdRecord, 'measurements'>, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   
@@ -79,17 +80,46 @@ export default function KmdPage() {
     }
   }
 
+  const handleMeasurementChange = (index: number, field: 'name' | 'value', value: string) => {
+    setFormData(prev => {
+        const newMeasurements = [...(prev.measurements || [])];
+        newMeasurements[index] = { ...newMeasurements[index], [field]: value };
+        return { ...prev, measurements: newMeasurements };
+    });
+  };
+
+  const handleAddMeasurement = () => {
+      setFormData(prev => ({
+          ...prev,
+          measurements: [...(prev.measurements || []), { name: "", value: "" }],
+      }));
+  };
+
+  const handleRemoveMeasurement = (index: number) => {
+      setFormData(prev => ({
+          ...prev,
+          measurements: (prev.measurements || []).filter((_, i) => i !== index),
+      }));
+  };
+
   const handleFormSubmit = async () => {
     if (!formData.studentId || !formData.activityName) {
       toast({ title: "Error", description: "Please select a student and activity.", variant: "destructive" });
       return;
     }
 
+    // Filter out empty measurement rows before saving
+    const finalFormData = {
+        ...formData,
+        measurements: formData.measurements?.filter(m => m.name.trim() !== "" && m.value.trim() !== "")
+    };
+
+
     if (editingRecord) {
-      await updateKmdRecord(editingRecord.id, formData as KmdRecord);
+      await updateKmdRecord(editingRecord.id, finalFormData as KmdRecord);
       toast({ title: "Success", description: "Measurement record updated." });
     } else {
-      await addKmdRecord(formData as Omit<KmdRecord, 'id'>);
+      await addKmdRecord(finalFormData as Omit<KmdRecord, 'id'>);
       toast({ title: "Success", description: "New measurement record added." });
     }
     fetchData();
@@ -126,10 +156,7 @@ export default function KmdPage() {
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Activity</TableHead>
-                  <TableHead>Chest</TableHead>
-                  <TableHead>Waist</TableHead>
-                  <TableHead>Hips</TableHead>
-                  <TableHead>Gejje</TableHead>
+                  <TableHead>Measurements</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -139,10 +166,7 @@ export default function KmdPage() {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
                       <TableCell><Skeleton className="h-8 w-16" /></TableCell>
                     </TableRow>
                   ))
@@ -154,10 +178,15 @@ export default function KmdPage() {
                         <div className="text-sm text-muted-foreground">{record.phone}</div>
                       </TableCell>
                       <TableCell>{record.activityName}</TableCell>
-                      <TableCell>{record.chest || 'N/A'}</TableCell>
-                      <TableCell>{record.waist || 'N/A'}</TableCell>
-                      <TableCell>{record.hips || 'N/A'}</TableCell>
-                      <TableCell>{record.gejjeSize || 'N/A'}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {(record.measurements || []).map((m, i) => (
+                                <span key={i} className="text-xs">
+                                    <strong className="text-muted-foreground">{m.name}:</strong> {m.value}
+                                </span>
+                            ))}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button variant="outline" size="icon" onClick={() => handleOpenDialog(record)}>
@@ -172,7 +201,7 @@ export default function KmdPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                       No measurement records found.
                     </TableCell>
                   </TableRow>
@@ -220,35 +249,29 @@ export default function KmdPage() {
             </div>
             <div className="border-t pt-4 mt-4">
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Ruler /> Measurements</h3>
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="chest">Chest</Label>
-                        <Input id="chest" value={formData.chest || ''} onChange={(e) => handleFormChange('chest', e.target.value)} placeholder="e.g., 28" />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="waist">Waist</Label>
-                        <Input id="waist" value={formData.waist || ''} onChange={(e) => handleFormChange('waist', e.target.value)} placeholder="e.g., 26" />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="hips">Hips</Label>
-                        <Input id="hips" value={formData.hips || ''} onChange={(e) => handleFormChange('hips', e.target.value)} placeholder="e.g., 30" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="sleeveLength">Sleeve Length</Label>
-                        <Input id="sleeveLength" value={formData.sleeveLength || ''} onChange={(e) => handleFormChange('sleeveLength', e.target.value)} placeholder="e.g., 15" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="topLength">Top Length</Label>
-                        <Input id="topLength" value={formData.topLength || ''} onChange={(e) => handleFormChange('topLength', e.target.value)} placeholder="e.g., 22" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="bottomLength">Bottom Length</Label>
-                        <Input id="bottomLength" value={formData.bottomLength || ''} onChange={(e) => handleFormChange('bottomLength', e.target.value)} placeholder="e.g., 34" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="gejjeSize">Gejje Size</Label>
-                        <Input id="gejjeSize" value={formData.gejjeSize || ''} onChange={(e) => handleFormChange('gejjeSize', e.target.value)} placeholder="e.g., 5 inches" />
-                    </div>
+                <div className="space-y-2">
+                    {(formData.measurements || []).map((measurement, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                            <Input 
+                                value={measurement.name} 
+                                onChange={(e) => handleMeasurementChange(index, 'name', e.target.value)} 
+                                placeholder="e.g., Chest"
+                                className="w-1/3"
+                            />
+                            <Input 
+                                value={measurement.value} 
+                                onChange={(e) => handleMeasurementChange(index, 'value', e.target.value)} 
+                                placeholder="e.g., 28 inches"
+                                className="flex-grow"
+                            />
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveMeasurement(index)}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ))}
+                    <Button variant="outline" size="sm" onClick={handleAddMeasurement}>
+                        <Plus className="mr-2 h-4 w-4" /> Add Measurement
+                    </Button>
                 </div>
             </div>
             <div className="space-y-2 pt-4">
