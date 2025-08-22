@@ -131,7 +131,6 @@ const financeNavItems = [
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
     { href: "/accounts", icon: BookText, label: "Accounts" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
-    { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
 ]
 
 const communicationsNavItems = [
@@ -141,6 +140,7 @@ const communicationsNavItems = [
 const otherNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
+    { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
 ];
 
 const managementNavItems = [
