@@ -44,7 +44,7 @@ export default function ExamStudentsListPage() {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<ExamRecord | null>(null);
-  const [formData, setFormData] = useState<Partial<Omit<ExamRecord, 'id'>> & { date?: Date }>({});
+  const [formData, setFormData] = useState<Partial<Omit<ExamRecord, 'id' | 'examDate' | 'feePaymentDate'>> & { examDate?: Date; feePaymentDate?: Date }>({});
   const [activityFilter, setActivityFilter] = useState<string>("All Activities");
   const { toast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
@@ -84,7 +84,7 @@ export default function ExamStudentsListPage() {
 
   const handleOpenDialog = (record: ExamRecord | null) => {
     setEditingRecord(record);
-    setFormData(record ? { ...record, examDate: new Date(record.examDate), feePaymentDate: record.feePaymentDate ? new Date(record.feePaymentDate) : undefined } : { examDate: new Date(), paymentStatus: "Pending" });
+    setFormData(record ? { ...record, examDate: new Date(record.examDate), feePaymentDate: record.feePaymentDate ? new Date(record.feePaymentDate) : undefined } : { examDate: new Date(), paymentStatus: "Pending", applicationSubmitted: "No" });
     setIsDialogOpen(true);
   };
   
@@ -99,8 +99,8 @@ export default function ExamStudentsListPage() {
   };
   
   const handleFormSubmit = async () => {
-    const { studentName, activity, examType, universityName, feesAmount, feePaymentDate, paymentStatus, examDate } = formData;
-    if (!studentName || !activity || !examType || !feesAmount || !examDate) {
+    const { studentName, activity, examType, universityName, feesAmount, feePaymentDate, paymentStatus, examDate, applicationSubmitted } = formData;
+    if (!studentName || !activity || !examType || !feesAmount || !examDate || !applicationSubmitted) {
         toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
         return;
     }
@@ -157,6 +157,7 @@ export default function ExamStudentsListPage() {
           universityName: row["University Name"],
           feesAmount: Number(row["Fees Amount"]),
           paymentStatus: row["Payment Status"] as ExamRecord['paymentStatus'],
+          applicationSubmitted: row["Application Submitted"] as ExamRecord['applicationSubmitted'] || "No",
           examDate: new Date(row["Exam Date"]).toISOString(),
           feePaymentDate: row["Fee Payment Date"] ? new Date(row["Fee Payment Date"]).toISOString() : undefined,
         }));
@@ -181,6 +182,7 @@ export default function ExamStudentsListPage() {
       "University Name": r.universityName,
       "Fees Amount": r.feesAmount,
       "Payment Status": r.paymentStatus,
+      "Application Submitted": r.applicationSubmitted,
       "Exam Date": new Date(r.examDate),
       "Fee Payment Date": r.feePaymentDate ? new Date(r.feePaymentDate) : ""
     })));
@@ -235,10 +237,9 @@ export default function ExamStudentsListPage() {
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Activity</TableHead>
-                  <TableHead>Exam Type</TableHead>
-                  <TableHead>University</TableHead>
                   <TableHead className="text-right">Fees</TableHead>
                   <TableHead>Payment Status</TableHead>
+                  <TableHead>App. Submitted</TableHead>
                   <TableHead>Exam Date</TableHead>
                   <TableHead className="print:hidden">Actions</TableHead>
                 </TableRow>
@@ -249,10 +250,9 @@ export default function ExamStudentsListPage() {
                         <TableRow key={i}>
                             <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                             <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                             <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-16" /></TableCell>
                             <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                             <TableCell className="print:hidden"><Skeleton className="h-8 w-8" /></TableCell>
                         </TableRow>
@@ -262,12 +262,15 @@ export default function ExamStudentsListPage() {
                     <TableRow key={record.id}>
                       <TableCell className="font-medium">{record.studentName}</TableCell>
                       <TableCell>{record.activity}</TableCell>
-                      <TableCell>{record.examType}</TableCell>
-                      <TableCell>{record.universityName}</TableCell>
                       <TableCell className="text-right">{formatAmount(record.feesAmount)}</TableCell>
                       <TableCell>
                         <Badge variant={record.paymentStatus === 'Paid' ? 'secondary' : (record.paymentStatus === 'Pending' ? 'outline' : 'destructive')}>
                           {record.paymentStatus}
+                        </Badge>
+                      </TableCell>
+                       <TableCell>
+                        <Badge variant={record.applicationSubmitted === 'Yes' ? 'secondary' : 'outline'}>
+                          {record.applicationSubmitted}
                         </Badge>
                       </TableCell>
                       <TableCell>{format(new Date(record.examDate), "dd MMM, yyyy")}</TableCell>
@@ -373,7 +376,7 @@ export default function ExamStudentsListPage() {
                         </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={formData.feePaymentDate as Date} onSelect={(date) => date && handleFormChange('feePaymentDate', date)} initialFocus />
+                        <Calendar mode="single" selected={formData.feePaymentDate} onSelect={(date) => date && handleFormChange('feePaymentDate', date)} initialFocus />
                         </PopoverContent>
                     </Popover>
                 </div>
@@ -383,14 +386,24 @@ export default function ExamStudentsListPage() {
                         <PopoverTrigger asChild>
                         <Button variant={"outline"} className={cn("w-full justify-start text-left font-normal", !formData.examDate && "text-muted-foreground")}>
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {formData.examDate ? format(formData.examDate as Date, "PPP") : <span>Pick a date</span>}
+                            {formData.examDate ? format(formData.examDate, "PPP") : <span>Pick a date</span>}
                         </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={formData.examDate as Date} onSelect={(date) => date && handleFormChange('examDate', date)} initialFocus />
+                        <Calendar mode="single" selected={formData.examDate} onSelect={(date) => date && handleFormChange('examDate', date)} initialFocus />
                         </PopoverContent>
                     </Popover>
                 </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="application-submitted">Application Submitted to Board</Label>
+                <Select value={formData.applicationSubmitted} onValueChange={(value) => handleFormChange('applicationSubmitted', value)}>
+                    <SelectTrigger id="application-submitted"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Yes">Yes</SelectItem>
+                        <SelectItem value="No">No</SelectItem>
+                    </SelectContent>
+                </Select>
             </div>
           </div>
           <DialogFooter>
