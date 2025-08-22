@@ -345,7 +345,7 @@ function EnquiriesDashboard() {
                           <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                           <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                           <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                          <TableCell><TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell></TableCell>
+                          <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                       </TableRow>
                   ))
                 ) : enquiries.length > 0 ? (
