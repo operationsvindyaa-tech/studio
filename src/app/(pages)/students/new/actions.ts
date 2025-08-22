@@ -5,7 +5,7 @@ import { z } from "zod";
 import { addStudent } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-const studentFormSchema = z.object({
+const admissionFormSchema = z.object({
   photo: z.string().optional(),
   studentName: z.string().min(2, "Name must be at least 2 characters."),
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
@@ -23,11 +23,10 @@ const studentFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   address: z.string().min(10, "Address is required."),
   
-  password: z.string().min(8, "Password must be at least 8 characters."),
-  confirmPassword: z.string(),
-
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
+  admissionCenter: z.string({ required_error: "Please select an admission center."}),
+  classMode: z.enum(["Online", "Regular"], { required_error: "Please select a class mode." }),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
@@ -35,9 +34,10 @@ const studentFormSchema = z.object({
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
   signature: z.string().min(1, "Signature is required."),
-}).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+  
+  officeAdmissionOfficer: z.string().min(2, "Admission officer's name is required."),
+  officeAdmissionCenter: z.string({ required_error: "Please select the admission center for office records."}),
+  officeSignature: z.string().min(2, "Digital signature of the officer is required."),
 });
 
 
@@ -46,28 +46,30 @@ type State = {
     success: boolean;
 };
 
-export async function createStudent(prevState: State, formData: z.infer<typeof studentFormSchema>): Promise<State> {
+// Renamed to createStudent to match the file's context, but logic is from createAdmission
+export async function createStudent(prevState: State, formData: z.infer<typeof admissionFormSchema>): Promise<State> {
   try {
-     const parsedData = studentFormSchema.parse(formData);
+     const parsedData = admissionFormSchema.parse(formData);
 
     await addStudent({
       name: parsedData.studentName,
       email: parsedData.email,
       dateOfJoining: parsedData.dateOfJoining,
-      status: "Active", // New students are active by default
+      status: "Active", // New admissions are active by default
       photo: parsedData.photo,
-      // Add other fields from the form here to be saved
+      admissionCenter: parsedData.admissionCenter,
+      classMode: parsedData.classMode,
     });
 
     // This tells Next.js to re-fetch the data for the /students page on the next visit.
     revalidatePath("/students");
     
     return {
-      message: "Student has been created successfully!",
+      message: "Student application has been submitted successfully!",
       success: true,
     };
   } catch (error) {
-    console.error("Error creating student:", error);
+    console.error("Error creating student/admission:", error);
     if (error instanceof z.ZodError) {
         return {
             message: "Validation failed: " + error.errors.map(e => e.message).join(', '),
@@ -75,7 +77,7 @@ export async function createStudent(prevState: State, formData: z.infer<typeof s
         }
     }
     return {
-      message: "There was an error creating the student. Please try again.",
+      message: "There was an error submitting the application. Please try again.",
       success: false,
     };
   }

@@ -27,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, UserPlus } from "lucide-react";
+import { CalendarIcon, Loader2, School, UserPlus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,8 +40,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-const studentFormSchema = z.object({
+const admissionFormSchema = z.object({
   photo: z.string().optional(),
   studentName: z.string().min(2, "Name must be at least 2 characters."),
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
@@ -59,25 +60,25 @@ const studentFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   address: z.string().min(10, "Address is required."),
   
-  password: z.string().min(8, "Password must be at least 8 characters."),
-  confirmPassword: z.string(),
-
   previousSchool: z.string().optional(),
   desiredCourse: z.string({ required_error: "Please select a course." }),
+  admissionCenter: z.string({ required_error: "Please select an admission center."}),
+  classMode: z.enum(["Online", "Regular"], { required_error: "Please select a class mode." }),
   activitiesInterested: z.string().optional(),
   howDidYouKnow: z.string({ required_error: "This field is required."}),
   
   healthIssues: z.string().optional(),
   emergencyContact: z.string().min(10, "Emergency contact is required."),
   
-  signature: z.string().min(1, "Signature is required to authorize."),
-}).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
+  signature: z.string().min(1, "Signature is required."),
+  
+  officeAdmissionOfficer: z.string().min(2, "Admission officer's name is required."),
+  officeAdmissionCenter: z.string({ required_error: "Please select the admission center for office records."}),
+  officeSignature: z.string().min(2, "Digital signature of the officer is required."),
 });
 
 
-export type StudentFormValues = z.infer<typeof studentFormSchema>;
+export type AdmissionFormValues = z.infer<typeof admissionFormSchema>;
 
 const initialState = {
     message: "",
@@ -88,10 +89,18 @@ function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" disabled={pending} className="w-full">
-        {pending ? <Loader2 className="animate-spin" /> : "Create Student"}
+        {pending ? <Loader2 className="animate-spin" /> : "Submit Application"}
         </Button>
     );
 }
+
+const admissionCenters = [
+  "Main Campus (Basavanapura)",
+  "Branch 2 (Marathahalli)",
+  "Branch 3 (Koramangala)",
+  "Branch 4 (Indiranagar)",
+  "Branch 5 (Jayanagar)",
+];
 
 export default function NewStudentPage() {
   const [state, formAction] = useActionState(createStudent, initialState);
@@ -100,8 +109,8 @@ export default function NewStudentPage() {
   const formRef = useRef<HTMLFormElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  const form = useForm<StudentFormValues>({
-    resolver: zodResolver(studentFormSchema),
+  const form = useForm<AdmissionFormValues>({
+    resolver: zodResolver(admissionFormSchema),
     defaultValues: {
       studentName: "",
       age: "",
@@ -113,16 +122,16 @@ export default function NewStudentPage() {
       whatsappNumber: "",
       email: "",
       address: "",
-      password: "",
-      confirmPassword: "",
       previousSchool: "",
       activitiesInterested: "",
       healthIssues: "",
       emergencyContact: "",
       signature: "",
+      officeAdmissionOfficer: "",
+      officeSignature: "",
     },
   });
-
+  
   const dob = form.watch("dob");
 
   useEffect(() => {
@@ -174,7 +183,7 @@ export default function NewStudentPage() {
         </div>
         <CardTitle>Add New Student</CardTitle>
         <CardDescription>
-          Fill out the form below to add a new student to the system.
+          Fill out the form below to add a new student. This form is identical to the admission application.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -187,7 +196,7 @@ export default function NewStudentPage() {
             <div className="grid md:grid-cols-3 gap-8">
                 {/* Form Fields Column */}
                 <div className="md:col-span-2 space-y-12">
-                     {/* Student Details */}
+                    {/* Student Details */}
                     <div className="space-y-6">
                         <h3 className="text-xl font-semibold border-b pb-2">Student Details</h3>
                         <div className="grid md:grid-cols-2 gap-6">
@@ -201,7 +210,7 @@ export default function NewStudentPage() {
                                     </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus /></PopoverContent></Popover><FormMessage />
                                 </FormItem>
                             )} />
-                             <FormField control={form.control} name="dob" render={({ field }) => (
+                            <FormField control={form.control} name="dob" render={({ field }) => (
                                 <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel>
                                     <Popover><PopoverTrigger asChild>
                                         <FormControl><Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "dd-MM-yyyy") : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl>
@@ -223,7 +232,7 @@ export default function NewStudentPage() {
                             <FormField control={form.control} name="gender" render={({ field }) => (
                                 <FormItem><FormLabel>Gender</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger></FormControl><SelectContent><SelectItem value="male">Male</SelectItem><SelectItem value="female">Female</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                             )} />
-                             <FormField control={form.control} name="nationality" render={({ field }) => (
+                            <FormField control={form.control} name="nationality" render={({ field }) => (
                                 <FormItem><FormLabel>Nationality</FormLabel><FormControl><Input placeholder="American" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                             )} />
                             <FormField control={form.control} name="bloodGroup" render={({ field }) => (
@@ -279,13 +288,13 @@ export default function NewStudentPage() {
                     <FormField control={form.control} name="fatherName" render={({ field }) => (
                         <FormItem><FormLabel>Father's Name</FormLabel><FormControl><Input placeholder="Robert Doe" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                     )} />
-                     <FormField control={form.control} name="fatherContact" render={({ field }) => (
+                    <FormField control={form.control} name="fatherContact" render={({ field }) => (
                         <FormItem><FormLabel>Father's Contact No.</FormLabel><FormControl><Input placeholder="(555) 111-2222" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="motherName" render={({ field }) => (
                         <FormItem><FormLabel>Mother's Name</FormLabel><FormControl><Input placeholder="Susan Doe" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                     )} />
-                     <FormField control={form.control} name="motherContact" render={({ field }) => (
+                    <FormField control={form.control} name="motherContact" render={({ field }) => (
                         <FormItem><FormLabel>Mother's Contact No.</FormLabel><FormControl><Input placeholder="(555) 333-4444" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="whatsappNumber" render={({ field }) => (
@@ -295,24 +304,11 @@ export default function NewStudentPage() {
                         <FormItem><FormLabel>Email ID</FormLabel><FormControl><Input type="email" placeholder="parent@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
-                 <FormField control={form.control} name="address" render={({ field }) => (
+                <FormField control={form.control} name="address" render={({ field }) => (
                     <FormItem><FormLabel>Address</FormLabel><FormControl><Textarea placeholder="123 Main Street, Anytown, USA 12345" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
             </div>
-
-            {/* Login Credentials */}
-            <div className="space-y-6">
-                <h3 className="text-xl font-semibold border-b pb-2">Login Credentials</h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <FormField control={form.control} name="password" render={({ field }) => (
-                        <FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                    <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-                        <FormItem><FormLabel>Confirm Password</FormLabel><FormControl><Input type="password" {...field} /></FormControl><FormMessage /></FormItem>
-                    )} />
-                </div>
-            </div>
-
+            
             {/* Academic and Other Details */}
             <div className="space-y-6">
                 <h3 className="text-xl font-semibold border-b pb-2">Academic & Other Details</h3>
@@ -335,11 +331,37 @@ export default function NewStudentPage() {
                             <SelectItem value="gymnastics">Gymnastics</SelectItem>
                         </SelectContent></Select><FormMessage /></FormItem>
                     )} />
+                    <FormField control={form.control} name="admissionCenter" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Center</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a center" /></SelectTrigger></FormControl><SelectContent>
+                            {admissionCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
+                        </SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="classMode" render={({ field }) => (
+                        <FormItem><FormLabel>Class Mode</FormLabel>
+                        <FormControl>
+                            <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex items-center space-x-4"
+                            >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl><RadioGroupItem value="Regular" /></FormControl>
+                                <FormLabel className="font-normal">Regular</FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl><RadioGroupItem value="Online" /></FormControl>
+                                <FormLabel className="font-normal">Online</FormLabel>
+                            </FormItem>
+                            </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )} />
                 </div>
                 <FormField control={form.control} name="activitiesInterested" render={({ field }) => (
                     <FormItem><FormLabel>Activities Interested In (Optional)</FormLabel><FormControl><Textarea placeholder="e.g., Sports, Music, Coding Club" {...field} className="uppercase" /></FormControl><FormMessage /></FormItem>
                 )} />
-                 <FormField control={form.control} name="howDidYouKnow" render={({ field }) => (
+                <FormField control={form.control} name="howDidYouKnow" render={({ field }) => (
                     <FormItem><FormLabel>How did you know about the academy?</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select an option" /></SelectTrigger></FormControl><SelectContent><SelectItem value="social-media">Social Media</SelectItem><SelectItem value="friend-referral">Friend/Referral</SelectItem><SelectItem value="advertisement">Advertisement</SelectItem><SelectItem value="search-engine">Search Engine</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                 )} />
             </div>
@@ -357,7 +379,7 @@ export default function NewStudentPage() {
 
             {/* Authorization */}
             <div className="space-y-6">
-                 <h3 className="text-xl font-semibold border-b pb-2">Authorization</h3>
+                <h3 className="text-xl font-semibold border-b pb-2">Authorization</h3>
                 <FormField control={form.control} name="signature" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Signature of Authorization</FormLabel>
@@ -367,8 +389,30 @@ export default function NewStudentPage() {
                     </FormItem>
                 )} />
             </div>
-             <div className="flex items-center justify-center pt-4">
-                <p className="text-sm text-muted-foreground">Seal of Institution</p>
+
+            {/* OFFICE USE ONLY */}
+            <div className="space-y-6 pt-6 border-t-2 border-dashed border-primary/50">
+                <h3 className="text-xl font-bold text-center text-primary">FOR OFFICE USE ONLY</h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="officeAdmissionOfficer" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Officer Name</FormLabel><FormControl><Input placeholder="Enter staff name" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="officeAdmissionCenter" render={({ field }) => (
+                        <FormItem><FormLabel>Admission Center (Office)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a center" /></SelectTrigger></FormControl><SelectContent>
+                            {admissionCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
+                        </SelectContent></Select><FormMessage /></FormItem>
+                    )} />
+                </div>
+                <FormField control={form.control} name="officeSignature" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Officer's Digital Signature</FormLabel>
+                        <FormControl><Input placeholder="Type your full name to sign" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
+                <div className="flex items-center justify-center pt-4">
+                    <p className="text-sm text-muted-foreground">Seal of Institution</p>
+                </div>
             </div>
 
             <SubmitButton />
