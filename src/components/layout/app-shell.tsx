@@ -68,6 +68,7 @@ import {
   ListOrdered,
   ChevronRight,
   Notebook,
+  Ruler,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -134,6 +135,7 @@ const financeNavItems = [
 ]
 
 const communicationsNavItems = [
+    { href: "/announcements-hub", icon: MessageSquare, label: "Announcements Hub"},
     { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
 ];
 
@@ -141,6 +143,7 @@ const otherNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
+    { href: "/kmd", icon: Ruler, label: "KMD" },
 ];
 
 const managementNavItems = [
