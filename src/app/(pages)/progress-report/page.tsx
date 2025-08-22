@@ -122,6 +122,7 @@ export default function ProgressReportPage() {
                             </Avatar>
                             <div>
                                 <h2 className="text-2xl font-bold">{student.name}</h2>
+                                <p className="text-muted-foreground">ID: {student.id}</p>
                                 <p className="text-muted-foreground">Progress Report for <span className="font-semibold">{filteredReport.course}</span></p>
                             </div>
                         </div>

@@ -67,7 +67,7 @@ const InvoiceTable = ({ invoices, onStatusChange, onView, onEdit, onDelete }: { 
                         <TableRow key={invoice.id}>
                         <TableCell>
                             <div className="font-medium">{invoice.name}</div>
-                            <div className="text-sm text-muted-foreground">Invoice #{invoice.id}</div>
+                            <div className="text-sm text-muted-foreground">Invoice #{invoice.id} | ID: {invoice.studentId}</div>
                         </TableCell>
                         <TableCell>
                             {[...invoice.activities.map(a => a.name), invoice.admissionFee ? 'Admission Fee' : null].filter(Boolean).join(', ')}
@@ -592,7 +592,7 @@ export default function BillingPage() {
           {editingInvoice && (
             <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
                 <div className="space-y-2">
-                    <Label htmlFor="studentName">Student Name</Label>
+                    <Label htmlFor="studentName">Student Name ({editingInvoice.studentId})</Label>
                     <Input id="studentName" value={editingInvoice.name} onChange={(e) => setEditingInvoice({...editingInvoice, name: e.target.value })}/>
                 </div>
 

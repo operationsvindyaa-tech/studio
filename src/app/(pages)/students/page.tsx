@@ -32,9 +32,9 @@ type Student = {
   id: string;
   name: string;
   email: string;
-  joined: string;
+  joined: string; // Should be ISO date string
   status: "Active" | "Inactive" | "Suspended";
-  courses: number;
+  courses: number; // For simplicity, we'll just track the count.
   avatar: string;
   initials: string;
   classMode?: "Online" | "Regular";
@@ -171,9 +171,9 @@ export default function StudentsPage() {
                         <AvatarImage src={student.avatar} alt={student.name} data-ai-hint="person" />
                         <AvatarFallback>{student.initials}</AvatarFallback>
                         </Avatar>
-                        <div className="font-medium">
+                        <div>
                         <div className="font-semibold">{student.name}</div>
-                        <div className="text-sm text-muted-foreground">{student.email}</div>
+                        <div className="text-sm text-muted-foreground">{student.id} | {student.email}</div>
                         </div>
                     </div>
                     </TableCell>

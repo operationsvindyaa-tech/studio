@@ -222,7 +222,7 @@ export default function KmdPage() {
                   filteredRecords.map(record => (
                     <TableRow key={record.id}>
                       <TableCell>
-                        <div className="font-medium">{record.studentName}</div>
+                        <div className="font-medium">{record.studentName} ({record.studentId})</div>
                         <div className="text-sm text-muted-foreground">{record.phone}</div>
                       </TableCell>
                       <TableCell>{record.activityName}</TableCell>
@@ -279,7 +279,7 @@ export default function KmdPage() {
                     <SelectValue placeholder="Select a student" />
                   </SelectTrigger>
                   <SelectContent>
-                    {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.id})</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
