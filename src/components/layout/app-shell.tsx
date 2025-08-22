@@ -67,6 +67,7 @@ import {
   Video,
   ListOrdered,
   ChevronRight,
+  Notebook,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -88,6 +89,9 @@ const navItems = [
 const studentPortalNavItems = [
     { href: "/student-attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/progress-report", icon: TrendingUp, label: "Progress" },
+    { href: "/activities-and-exams", icon: Calendar, label: "Activities & Exams" },
+    { href: "/syllabus", icon: BookOpen, label: "Syllabus" },
+    { href: "/notes", icon: Notebook, label: "Notes" },
     { href: "/online-class", icon: Video, label: "Online Class" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
@@ -110,7 +114,6 @@ const academicsNavItems = [
     { href: "/exam-students-list", icon: ListOrdered, label: "Exam List" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
-    { href: "/progress-report", icon: TrendingUp, label: "Progress" },
 ];
 
 const hrNavItems = [
