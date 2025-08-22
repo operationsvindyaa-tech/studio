@@ -92,7 +92,16 @@ export const getStudents = async (): Promise<Student[]> => {
 
 export const addStudent = async (studentData: any) => {
   const initials = studentData.name.split(' ').map((n:string) => n[0]).join('').toUpperCase();
-  const studentId = `S${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`;
+
+  // Generate a new unique student ID
+  const result: any = await query('SELECT id FROM students ORDER BY id DESC LIMIT 1');
+  let newIdNumber = 1;
+  if (result.length > 0) {
+    const lastId = result[0].id;
+    const lastIdNumber = parseInt(lastId.replace('S', ''), 10);
+    newIdNumber = lastIdNumber + 1;
+  }
+  const studentId = `S${String(newIdNumber).padStart(3, '0')}`;
   
   const sql = `
     INSERT INTO students (id, name, email, joined, status, courses, avatar, initials, classMode, admissionCenter)
