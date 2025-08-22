@@ -4,6 +4,7 @@ import { format, subDays, addDays } from 'date-fns';
 
 export type ExamRecord = {
   id: string;
+  studentId: string;
   studentName: string;
   activity: string;
   examType: string;
@@ -16,10 +17,10 @@ export type ExamRecord = {
 };
 
 const initialRecords: ExamRecord[] = [
-    { id: "EXM001", studentName: "Amelia Rodriguez", activity: "Bharatanatyam", examType: "Annual", universityName: "Gandharva Mahavidyalaya", feesAmount: 1500, feePaymentDate: subDays(new Date(), 10).toISOString(), paymentStatus: "Paid", applicationSubmitted: "Yes", examDate: addDays(new Date(), 30).toISOString() },
-    { id: "EXM002", studentName: "Benjamin Carter", activity: "Vocal Carnatic", examType: "Grading", universityName: "Prayag Sangeet Samiti", feesAmount: 1200, paymentStatus: "Pending", applicationSubmitted: "No", examDate: addDays(new Date(), 45).toISOString() },
-    { id: "EXM003", studentName: "Chloe Garcia", activity: "Guitar", examType: "Grade 3", universityName: "Trinity College London", feesAmount: 2500, feePaymentDate: subDays(new Date(), 5).toISOString(), paymentStatus: "Paid", applicationSubmitted: "Yes", examDate: addDays(new Date(), 60).toISOString() },
-    { id: "EXM004", studentName: "David Kim", activity: "Keyboard", examType: "Practical", universityName: "Internal Assessment", feesAmount: 800, paymentStatus: "Waived", applicationSubmitted: "No", examDate: addDays(new Date(), 20).toISOString() },
+    { id: "EXM001", studentId: "S001", studentName: "Amelia Rodriguez", activity: "Bharatanatyam", examType: "Annual", universityName: "Gandharva Mahavidyalaya", feesAmount: 1500, feePaymentDate: subDays(new Date(), 10).toISOString(), paymentStatus: "Paid", applicationSubmitted: "Yes", examDate: addDays(new Date(), 30).toISOString() },
+    { id: "EXM002", studentId: "S002", studentName: "Benjamin Carter", activity: "Vocal Carnatic", examType: "Grading", universityName: "Prayag Sangeet Samiti", feesAmount: 1200, paymentStatus: "Pending", applicationSubmitted: "No", examDate: addDays(new Date(), 45).toISOString() },
+    { id: "EXM003", studentId: "S003", studentName: "Chloe Garcia", activity: "Guitar", examType: "Grade 3", universityName: "Trinity College London", feesAmount: 2500, feePaymentDate: subDays(new Date(), 5).toISOString(), paymentStatus: "Paid", applicationSubmitted: "Yes", examDate: addDays(new Date(), 60).toISOString() },
+    { id: "EXM004", studentId: "S004", studentName: "David Kim", activity: "Keyboard", examType: "Practical", universityName: "Internal Assessment", feesAmount: 800, paymentStatus: "Waived", applicationSubmitted: "No", examDate: addDays(new Date(), 20).toISOString() },
 ];
 
 let records: ExamRecord[] = [...initialRecords];

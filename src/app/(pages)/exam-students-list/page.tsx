@@ -25,7 +25,7 @@ import { getExamRecords, addExamRecord, updateExamRecord, deleteExamRecord, addE
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { getStudents } from "@/lib/db";
+import { getStudents, type Student } from "@/lib/db";
 import { getCourses } from "@/lib/courses-db";
 import { useReactToPrint } from "react-to-print";
 import * as XLSX from "xlsx";
@@ -39,7 +39,7 @@ const formatAmount = (amount: number) => {
 export default function ExamStudentsListPage() {
   const [allRecords, setAllRecords] = useState<ExamRecord[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<ExamRecord[]>([]);
-  const [students, setStudents] = useState<{ id: string; name: string }[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
   const [courses, setCourses] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function ExamStudentsListPage() {
       ]);
       setAllRecords(recordData);
       setFilteredRecords(recordData);
-      setStudents(studentData.map(s => ({ id: s.id, name: s.name })));
+      setStudents(studentData);
       setCourses(courseData.map(c => c.title));
     } catch (error) {
       toast({ title: "Error", description: "Failed to load data.", variant: "destructive" });
@@ -97,16 +97,28 @@ export default function ExamStudentsListPage() {
   const handleFormChange = (field: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleStudentSelect = (studentId: string) => {
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+        setFormData(prev => ({
+            ...prev,
+            studentId,
+            studentName: student.name,
+        }));
+    }
+  }
   
   const handleFormSubmit = async () => {
-    const { studentName, activity, examType, universityName, feesAmount, feePaymentDate, paymentStatus, examDate, applicationSubmitted } = formData;
-    if (!studentName || !activity || !examType || !feesAmount || !examDate || !applicationSubmitted) {
+    const { studentId, studentName, activity, examType, universityName, feesAmount, feePaymentDate, paymentStatus, examDate, applicationSubmitted } = formData;
+    if (!studentId || !studentName || !activity || !examType || !feesAmount || !examDate || !applicationSubmitted) {
         toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" });
         return;
     }
 
     const recordData = { 
         ...formData, 
+        studentId,
         examDate: (examDate as Date).toISOString(),
         feePaymentDate: feePaymentDate ? (feePaymentDate as Date).toISOString() : undefined,
         feesAmount: Number(feesAmount),
@@ -150,17 +162,21 @@ export default function ExamStudentsListPage() {
         const worksheet = workbook.Sheets[sheetName];
         const json = XLSX.utils.sheet_to_json(worksheet) as any[];
 
-        const newRecords = json.map(row => ({
-          studentName: row["Student Name"],
-          activity: row["Activity"],
-          examType: row["Exam Type"],
-          universityName: row["University Name"],
-          feesAmount: Number(row["Fees Amount"]),
-          paymentStatus: row["Payment Status"] as ExamRecord['paymentStatus'],
-          applicationSubmitted: row["Application Submitted"] as ExamRecord['applicationSubmitted'] || "No",
-          examDate: new Date(row["Exam Date"]).toISOString(),
-          feePaymentDate: row["Fee Payment Date"] ? new Date(row["Fee Payment Date"]).toISOString() : undefined,
-        }));
+        const newRecords = json.map(row => {
+            const student = students.find(s => s.name === row["Student Name"] || s.id === row["Student ID"]);
+            return {
+              studentId: student?.id || "N/A",
+              studentName: row["Student Name"],
+              activity: row["Activity"],
+              examType: row["Exam Type"],
+              universityName: row["University Name"],
+              feesAmount: Number(row["Fees Amount"]),
+              paymentStatus: row["Payment Status"] as ExamRecord['paymentStatus'],
+              applicationSubmitted: row["Application Submitted"] as ExamRecord['applicationSubmitted'] || "No",
+              examDate: new Date(row["Exam Date"]).toISOString(),
+              feePaymentDate: row["Fee Payment Date"] ? new Date(row["Fee Payment Date"]).toISOString() : undefined,
+            }
+        });
 
         await addExamRecordsBatch(newRecords as Omit<ExamRecord, 'id'>[]);
         toast({ title: "Import Successful", description: `${newRecords.length} records have been imported.` });
@@ -176,6 +192,7 @@ export default function ExamStudentsListPage() {
   const handleExport = () => {
     const recordsToExport = filteredRecords.length > 0 ? filteredRecords : allRecords;
     const worksheet = XLSX.utils.json_to_sheet(recordsToExport.map(r => ({
+      "Student ID": r.studentId,
       "Student Name": r.studentName,
       "Activity": r.activity,
       "Exam Type": r.examType,
@@ -260,7 +277,10 @@ export default function ExamStudentsListPage() {
                 ) : filteredRecords.length > 0 ? (
                   filteredRecords.map(record => (
                     <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.studentName}</TableCell>
+                      <TableCell>
+                        <div className="font-medium">{record.studentName}</div>
+                        <div className="text-sm text-muted-foreground">{record.studentId}</div>
+                      </TableCell>
                       <TableCell>{record.activity}</TableCell>
                       <TableCell className="text-right">{formatAmount(record.feesAmount)}</TableCell>
                       <TableCell>
@@ -320,11 +340,11 @@ export default function ExamStudentsListPage() {
           <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="student-name">Student Name</Label>
-                    <Select value={formData.studentName} onValueChange={(value) => handleFormChange('studentName', value)}>
+                    <Label htmlFor="student-name">Student</Label>
+                    <Select value={formData.studentId} onValueChange={handleStudentSelect}>
                         <SelectTrigger id="student-name"><SelectValue placeholder="Select a student" /></SelectTrigger>
                         <SelectContent>
-                            {students.map(s => <SelectItem key={s.id} value={s.name}>{s.name}</SelectItem>)}
+                            {students.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.id})</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </div>
