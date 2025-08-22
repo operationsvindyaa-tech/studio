@@ -7,8 +7,12 @@ export type KmdRecord = {
   studentName: string;
   phone: string;
   activityName: string;
-  topSize?: string;
-  bottomSize?: string;
+  chest?: string;
+  waist?: string;
+  hips?: string;
+  sleeveLength?: string;
+  topLength?: string;
+  bottomLength?: string;
   gejjeSize?: string;
   notes?: string;
   lastUpdated: string; // ISO date string
@@ -21,8 +25,12 @@ const initialRecords: KmdRecord[] = [
     studentName: "Amelia Rodriguez",
     phone: "9876543210",
     activityName: "Bharatanatyam",
-    topSize: "28",
-    bottomSize: "30",
+    chest: "28",
+    waist: "26",
+    hips: "30",
+    sleeveLength: "15",
+    topLength: "22",
+    bottomLength: "34",
     gejjeSize: "5 inches",
     notes: "Standard temple jewelry set.",
     lastUpdated: new Date().toISOString(),
@@ -33,8 +41,9 @@ const initialRecords: KmdRecord[] = [
     studentName: "Benjamin Carter",
     phone: "9876543211",
     activityName: "Vocal Carnatic",
-    topSize: "M (Kurta)",
-    bottomSize: "32 (Dhoti)",
+    chest: "30 (Kurta)",
+    waist: "28 (Dhoti)",
+    bottomLength: "36",
     gejjeSize: "N/A",
     notes: "",
     lastUpdated: new Date().toISOString(),

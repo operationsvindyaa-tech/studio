@@ -126,8 +126,9 @@ export default function KmdPage() {
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Activity</TableHead>
-                  <TableHead>Top</TableHead>
-                  <TableHead>Bottom</TableHead>
+                  <TableHead>Chest</TableHead>
+                  <TableHead>Waist</TableHead>
+                  <TableHead>Hips</TableHead>
                   <TableHead>Gejje</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -138,6 +139,7 @@ export default function KmdPage() {
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-16" /></TableCell>
@@ -152,8 +154,9 @@ export default function KmdPage() {
                         <div className="text-sm text-muted-foreground">{record.phone}</div>
                       </TableCell>
                       <TableCell>{record.activityName}</TableCell>
-                      <TableCell>{record.topSize || 'N/A'}</TableCell>
-                      <TableCell>{record.bottomSize || 'N/A'}</TableCell>
+                      <TableCell>{record.chest || 'N/A'}</TableCell>
+                      <TableCell>{record.waist || 'N/A'}</TableCell>
+                      <TableCell>{record.hips || 'N/A'}</TableCell>
                       <TableCell>{record.gejjeSize || 'N/A'}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
@@ -169,7 +172,7 @@ export default function KmdPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       No measurement records found.
                     </TableCell>
                   </TableRow>
@@ -219,16 +222,32 @@ export default function KmdPage() {
                 <h3 className="text-lg font-semibold mb-2 flex items-center gap-2"><Ruler /> Measurements</h3>
                 <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="top-size">Top Size</Label>
-                        <Input id="top-size" value={formData.topSize || ''} onChange={(e) => handleFormChange('topSize', e.target.value)} placeholder="e.g., 28" />
+                        <Label htmlFor="chest">Chest</Label>
+                        <Input id="chest" value={formData.chest || ''} onChange={(e) => handleFormChange('chest', e.target.value)} placeholder="e.g., 28" />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="bottom-size">Bottom Size</Label>
-                        <Input id="bottom-size" value={formData.bottomSize || ''} onChange={(e) => handleFormChange('bottomSize', e.target.value)} placeholder="e.g., 30" />
+                        <Label htmlFor="waist">Waist</Label>
+                        <Input id="waist" value={formData.waist || ''} onChange={(e) => handleFormChange('waist', e.target.value)} placeholder="e.g., 26" />
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="gejje-size">Gejje Size</Label>
-                        <Input id="gejje-size" value={formData.gejjeSize || ''} onChange={(e) => handleFormChange('gejjeSize', e.target.value)} placeholder="e.g., 5 inches" />
+                        <Label htmlFor="hips">Hips</Label>
+                        <Input id="hips" value={formData.hips || ''} onChange={(e) => handleFormChange('hips', e.target.value)} placeholder="e.g., 30" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="sleeveLength">Sleeve Length</Label>
+                        <Input id="sleeveLength" value={formData.sleeveLength || ''} onChange={(e) => handleFormChange('sleeveLength', e.target.value)} placeholder="e.g., 15" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="topLength">Top Length</Label>
+                        <Input id="topLength" value={formData.topLength || ''} onChange={(e) => handleFormChange('topLength', e.target.value)} placeholder="e.g., 22" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="bottomLength">Bottom Length</Label>
+                        <Input id="bottomLength" value={formData.bottomLength || ''} onChange={(e) => handleFormChange('bottomLength', e.target.value)} placeholder="e.g., 34" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="gejjeSize">Gejje Size</Label>
+                        <Input id="gejjeSize" value={formData.gejjeSize || ''} onChange={(e) => handleFormChange('gejjeSize', e.target.value)} placeholder="e.g., 5 inches" />
                     </div>
                 </div>
             </div>
