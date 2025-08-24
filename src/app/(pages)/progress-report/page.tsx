@@ -12,7 +12,50 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getStudents, type Student } from "@/lib/db";
 import { getProgressReports, type ProgressReport } from "@/lib/progress-db";
-import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer, CalendarCheck } from "lucide-react";
+import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer, CalendarCheck, AlertTriangle } from "lucide-react";
+import { getBillingData, type StudentBillingInfo, calculateTotal } from "@/lib/billing-db";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
+
+function PaymentNotification({ studentId }: { studentId: string }) {
+    const [pendingInvoices, setPendingInvoices] = useState<StudentBillingInfo[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchInvoices = async () => {
+            if (!studentId) return;
+            setLoading(true);
+            const allBillingData = await getBillingData();
+            const studentPending = allBillingData.filter(
+                inv => inv.studentId === studentId && (inv.status === 'Due' || inv.status === 'Overdue')
+            );
+            setPendingInvoices(studentPending);
+            setLoading(false);
+        };
+        fetchInvoices();
+    }, [studentId]);
+
+    const totalDue = pendingInvoices.reduce((sum, inv) => sum + calculateTotal(inv), 0);
+
+    if (loading || pendingInvoices.length === 0) {
+        return null;
+    }
+
+    return (
+         <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Payment Reminder</AlertTitle>
+            <AlertDescription className="flex justify-between items-center">
+                <div>
+                    You have {pendingInvoices.length} pending invoice(s) totaling ₹{totalDue.toFixed(2)}. Please clear your dues.
+                </div>
+                <Button asChild>
+                    <Link href="/my-payments">View Invoices</Link>
+                </Button>
+            </AlertDescription>
+        </Alert>
+    );
+}
 
 export default function ProgressReportPage() {
     const [students, setStudents] = useState<Student[]>([]);
@@ -72,6 +115,7 @@ export default function ProgressReportPage() {
 
     return (
         <div className="space-y-6">
+            <PaymentNotification studentId={selectedStudentId} />
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">

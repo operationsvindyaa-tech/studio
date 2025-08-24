@@ -94,6 +94,7 @@ const studentPortalNavItems = [
     { href: "/syllabus", icon: BookOpen, label: "Syllabus" },
     { href: "/notes", icon: Notebook, label: "Notes" },
     { href: "/online-class", icon: Video, label: "Online Class" },
+    { href: "/my-payments", icon: Wallet, label: "My Payments" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
@@ -316,5 +317,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
