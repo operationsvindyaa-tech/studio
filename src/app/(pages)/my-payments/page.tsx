@@ -11,8 +11,51 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getStudents, type Student } from "@/lib/db";
 import { getBillingData, updateBillingData, type StudentBillingInfo, calculateTotal } from "@/lib/billing-db";
 import { useToast } from "@/hooks/use-toast";
-import { Wallet, CreditCard, CheckCircle } from "lucide-react";
+import { Wallet, CreditCard, CheckCircle, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Link from "next/link";
+
+
+function PaymentNotification({ studentId }: { studentId: string }) {
+    const [pendingInvoices, setPendingInvoices] = useState<StudentBillingInfo[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchInvoices = async () => {
+            if (!studentId) return;
+            setLoading(true);
+            const allBillingData = await getBillingData();
+            const studentPending = allBillingData.filter(
+                inv => inv.studentId === studentId && (inv.status === 'Due' || inv.status === 'Overdue')
+            );
+            setPendingInvoices(studentPending);
+            setLoading(false);
+        };
+        fetchInvoices();
+    }, [studentId]);
+
+    const totalDue = pendingInvoices.reduce((sum, inv) => sum + calculateTotal(inv), 0);
+
+    if (loading || pendingInvoices.length === 0) {
+        return null;
+    }
+
+    return (
+         <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Payment Reminder</AlertTitle>
+            <AlertDescription className="flex justify-between items-center">
+                <div>
+                    You have {pendingInvoices.length} pending invoice(s) totaling {totalDue.toFixed(2)}. Please clear your dues.
+                </div>
+                <Button asChild size="sm">
+                    <Link href="/my-payments">Pay Now</Link>
+                </Button>
+            </AlertDescription>
+        </Alert>
+    );
+}
 
 export default function MyPaymentsPage() {
     const [students, setStudents] = useState<Student[]>([]);
@@ -84,6 +127,7 @@ export default function MyPaymentsPage() {
 
     return (
         <div className="space-y-6">
+             <PaymentNotification studentId={selectedStudentId} />
             <Card>
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
