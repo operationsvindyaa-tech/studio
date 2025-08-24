@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle, Edit, Trash2, Ruler, Plus, X, Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getStudents, type Student } from "@/lib/db";
-import { getKmdRecords, addKmdRecord, updateKmdRecord, deleteKmdRecord, type KmdRecord } from "@/lib/kmd-db";
+import { getKmdRecords, addKmdRecord, updateKmdRecord, deleteKmdRecord, type KmdRecord, measurementTemplates } from "@/lib/kmd-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useReactToPrint } from "react-to-print";
 import * as XLSX from "xlsx";
@@ -67,7 +67,13 @@ export default function KmdPage() {
 
   const handleOpenDialog = (record: KmdRecord | null) => {
     setEditingRecord(record);
-    setFormData(record ? { ...record, measurements: record.measurements ? [...record.measurements] : [] } : { activityName: courses[0], measurements: [{ name: "Chest", value: "" }] });
+    const initialActivity = record?.activityName || courses[0];
+    const initialMeasurements = record?.measurements?.length ? [...record.measurements] : (measurementTemplates[initialActivity]?.map(name => ({ name, value: '' })) || [{ name: "", value: "" }]);
+    
+    setFormData(record 
+      ? { ...record, measurements: initialMeasurements } 
+      : { activityName: initialActivity, measurements: initialMeasurements }
+    );
     setIsDialogOpen(true);
   };
 
@@ -81,6 +87,19 @@ export default function KmdPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   
+  const handleActivityChange = (activityName: string) => {
+    const template = measurementTemplates[activityName];
+    const measurements = template 
+      ? template.map(name => ({ name, value: '' })) 
+      : [{ name: '', value: '' }];
+      
+    setFormData(prev => ({
+        ...prev,
+        activityName,
+        measurements,
+    }));
+  };
+
   const handleStudentSelect = (studentId: string) => {
     const student = students.find(s => s.id === studentId);
     if (student) {
@@ -285,7 +304,7 @@ export default function KmdPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="activity-select">Activity</Label>
-                <Select value={formData.activityName} onValueChange={(value) => handleFormChange('activityName', value)}>
+                <Select value={formData.activityName} onValueChange={handleActivityChange}>
                   <SelectTrigger id="activity-select">
                     <SelectValue placeholder="Select an activity" />
                   </SelectTrigger>

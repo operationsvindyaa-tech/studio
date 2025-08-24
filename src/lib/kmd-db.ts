@@ -17,6 +17,14 @@ export type KmdRecord = {
   lastUpdated: string; // ISO date string
 };
 
+export const measurementTemplates: { [key: string]: string[] } = {
+  "Bharatanatyam": [ "Chest", "Waist", "Hips", "Sleeve Length", "Top Length", "Bottom Length", "Gejje Size" ],
+  "Karate": [ "Height (cm)", "Weight (kg)", "Gi Size (Top)", "Gi Size (Bottom)", "Belt Size" ],
+  "Western Dance": [ "Chest", "Waist", "Hips", "Inseam", "Sleeve Length" ],
+  "Gymnastics": [ "Height (cm)", "Leotard Size", "Grip Size" ],
+};
+
+
 const initialRecords: KmdRecord[] = [
   {
     id: "KMD001",
