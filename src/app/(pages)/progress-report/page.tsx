@@ -47,7 +47,7 @@ function PaymentNotification({ studentId }: { studentId: string }) {
             <AlertTitle>Payment Reminder</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
                 <div>
-                    You have {pendingInvoices.length} pending invoice(s) totaling ₹{totalDue.toFixed(2)}. Please clear your dues.
+                    You have {pendingInvoices.length} pending invoice(s) totaling {totalDue.toFixed(2)}. Please clear your dues.
                 </div>
                 <Button asChild>
                     <Link href="/my-payments">View Invoices</Link>

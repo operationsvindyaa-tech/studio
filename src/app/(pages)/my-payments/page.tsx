@@ -114,7 +114,7 @@ export default function MyPaymentsPage() {
                         <Wallet className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">₹{totalDue.toFixed(2)}</div>}
+                        {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{totalDue.toFixed(2)}</div>}
                         <p className="text-xs text-muted-foreground">Across all pending invoices.</p>
                     </CardContent>
                 </Card>
@@ -158,7 +158,7 @@ export default function MyPaymentsPage() {
                                             <TableCell>
                                                 <Badge variant={getStatusVariant(invoice.status)}>{invoice.status}</Badge>
                                             </TableCell>
-                                            <TableCell className="text-right font-semibold">₹{calculateTotal(invoice).toFixed(2)}</TableCell>
+                                            <TableCell className="text-right font-semibold">{calculateTotal(invoice).toFixed(2)}</TableCell>
                                             <TableCell className="text-center">
                                                 {invoice.status === 'Paid' ? (
                                                      <div className="flex items-center justify-center text-sm text-green-600">
