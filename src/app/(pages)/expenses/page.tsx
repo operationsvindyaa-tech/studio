@@ -21,7 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, PlusCircle, MoreHorizontal, Edit, Trash2, ReceiptText, WalletCards, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 import { getExpenses, addExpense, updateExpense, deleteExpense, type Expense, expenseHeads, centers } from "@/lib/expenses-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -34,18 +34,25 @@ const formatCurrency = (amount: number) => {
 };
 
 export default function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [allExpenses, setAllExpenses] = useState<Expense[]>([]);
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [formData, setFormData] = useState<Partial<Omit<Expense, 'id' | 'date'>> & { date?: Date }>({});
   const { toast } = useToast();
 
+  // Filters
+  const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(new Date());
+  const [selectedHead, setSelectedHead] = useState<string>("All Heads");
+  const [selectedCenter, setSelectedCenter] = useState<string>("All Centers");
+
+
   const fetchExpenses = async () => {
     setLoading(true);
     try {
       const data = await getExpenses();
-      setExpenses(data);
+      setAllExpenses(data);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load expenses.", variant: "destructive" });
     } finally {
@@ -56,6 +63,29 @@ export default function ExpensesPage() {
   useEffect(() => {
     fetchExpenses();
   }, [toast]);
+  
+  useEffect(() => {
+    let filtered = allExpenses;
+
+    if (selectedMonth) {
+        const start = startOfMonth(selectedMonth);
+        const end = endOfMonth(selectedMonth);
+        filtered = filtered.filter(expense => {
+            const expenseDate = new Date(expense.date);
+            return isWithinInterval(expenseDate, { start, end });
+        });
+    }
+
+    if (selectedHead !== "All Heads") {
+        filtered = filtered.filter(expense => expense.head === selectedHead);
+    }
+
+    if (selectedCenter !== "All Centers") {
+        filtered = filtered.filter(expense => expense.center === selectedCenter);
+    }
+
+    setFilteredExpenses(filtered);
+  }, [selectedMonth, selectedHead, selectedCenter, allExpenses]);
 
   const handleOpenDialog = (expense: Expense | null) => {
     setEditingExpense(expense);
@@ -98,11 +128,10 @@ export default function ExpensesPage() {
       fetchExpenses();
   }
   
-  const totalExpenseThisMonth = expenses
-    .filter(e => new Date(e.date).getMonth() === new Date().getMonth() && new Date(e.date).getFullYear() === new Date().getFullYear())
+  const totalExpenseThisMonth = filteredExpenses
     .reduce((sum, e) => sum + e.amount, 0);
     
-  const totalExpenseThisYear = expenses
+  const totalExpenseThisYear = allExpenses
     .filter(e => new Date(e.date).getFullYear() === new Date().getFullYear())
     .reduce((sum, e) => sum + e.amount, 0);
 
@@ -113,12 +142,12 @@ export default function ExpensesPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Expenses (This Month)</CardTitle>
+                    <CardTitle className="text-sm font-medium">Filtered Expenses Total</CardTitle>
                     <WalletCards className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalExpenseThisMonth)}</div>}
-                    <p className="text-xs text-muted-foreground">For {format(new Date(), 'MMMM yyyy')}</p>
+                    <p className="text-xs text-muted-foreground">For selected filters</p>
                 </CardContent>
             </Card>
              <Card>
@@ -134,17 +163,43 @@ export default function ExpensesPage() {
         </div>
         <Card>
             <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center flex-wrap gap-4">
                 <div>
                 <CardTitle>Expense Tracker</CardTitle>
                 <CardDescription>
                     Log and monitor all operational expenses for your centers.
                 </CardDescription>
                 </div>
-                <Button onClick={() => handleOpenDialog(null)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Expense
-                </Button>
+                 <div className="flex gap-2 flex-wrap">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedMonth && "text-muted-foreground")}>
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {selectedMonth ? format(selectedMonth, "MMMM yyyy") : <span>Pick a month</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar mode="single" selected={selectedMonth} onSelect={setSelectedMonth} initialFocus captionLayout="dropdown-buttons" fromYear={2020} toYear={new Date().getFullYear()} />
+                        </PopoverContent>
+                    </Popover>
+                    <Select value={selectedHead} onValueChange={setSelectedHead}>
+                        <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All Heads">All Heads</SelectItem>
+                            {expenseHeads.map(head => <SelectItem key={head} value={head}>{head}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                     <Select value={selectedCenter} onValueChange={setSelectedCenter}>
+                        <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All Centers">All Centers</SelectItem>
+                            {centers.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                    <Button onClick={() => handleOpenDialog(null)}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
+                    </Button>
+                </div>
             </div>
             </CardHeader>
             <CardContent>
@@ -170,8 +225,8 @@ export default function ExpensesPage() {
                                 <TableCell><Skeleton className="h-8 w-8" /></TableCell>
                             </TableRow>
                         ))
-                    ) : expenses.length > 0 ? (
-                    expenses.map(expense => (
+                    ) : filteredExpenses.length > 0 ? (
+                    filteredExpenses.map(expense => (
                         <TableRow key={expense.id}>
                             <TableCell>{format(new Date(expense.date), "dd MMM, yyyy")}</TableCell>
                             <TableCell>
@@ -202,7 +257,7 @@ export default function ExpensesPage() {
                     ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">No expenses recorded yet.</TableCell>
+                            <TableCell colSpan={5} className="h-24 text-center">No expenses recorded for the selected filters.</TableCell>
                         </TableRow>
                     )}
                 </TableBody>
@@ -211,7 +266,7 @@ export default function ExpensesPage() {
             </CardContent>
             <CardFooter>
                 <div className="text-xs text-muted-foreground">
-                    Showing <strong>{expenses.length}</strong> expense records.
+                    Showing <strong>{filteredExpenses.length}</strong> expense records.
                 </div>
             </CardFooter>
         </Card>
