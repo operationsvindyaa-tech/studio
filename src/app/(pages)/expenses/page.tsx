@@ -21,11 +21,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, PlusCircle, MoreHorizontal, Edit, Trash2, ReceiptText, WalletCards, CalendarClock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { format, startOfMonth, endOfMonth, isWithinInterval, addDays } from "date-fns";
 import { getExpenses, addExpense, updateExpense, deleteExpense, type Expense, expenseHeads, centers } from "@/lib/expenses-db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import type { DateRange } from "react-day-picker";
+
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -43,7 +45,10 @@ export default function ExpensesPage() {
   const { toast } = useToast();
 
   // Filters
-  const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(new Date());
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: startOfMonth(new Date()),
+    to: endOfMonth(new Date()),
+  });
   const [selectedHead, setSelectedHead] = useState<string>("All Heads");
   const [selectedCenter, setSelectedCenter] = useState<string>("All Centers");
 
@@ -67,12 +72,10 @@ export default function ExpensesPage() {
   useEffect(() => {
     let filtered = allExpenses;
 
-    if (selectedMonth) {
-        const start = startOfMonth(selectedMonth);
-        const end = endOfMonth(selectedMonth);
+    if (dateRange?.from && dateRange?.to) {
         filtered = filtered.filter(expense => {
             const expenseDate = new Date(expense.date);
-            return isWithinInterval(expenseDate, { start, end });
+            return isWithinInterval(expenseDate, { start: dateRange.from!, end: dateRange.to! });
         });
     }
 
@@ -85,7 +88,7 @@ export default function ExpensesPage() {
     }
 
     setFilteredExpenses(filtered);
-  }, [selectedMonth, selectedHead, selectedCenter, allExpenses]);
+  }, [dateRange, selectedHead, selectedCenter, allExpenses]);
 
   const handleOpenDialog = (expense: Expense | null) => {
     setEditingExpense(expense);
@@ -173,13 +176,38 @@ export default function ExpensesPage() {
                  <div className="flex gap-2 flex-wrap">
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={cn("w-[240px] justify-start text-left font-normal", !selectedMonth && "text-muted-foreground")}>
+                           <Button
+                                id="date"
+                                variant={"outline"}
+                                className={cn(
+                                "w-[300px] justify-start text-left font-normal",
+                                !dateRange && "text-muted-foreground"
+                                )}
+                            >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {selectedMonth ? format(selectedMonth, "MMMM yyyy") : <span>Pick a month</span>}
+                                {dateRange?.from ? (
+                                dateRange.to ? (
+                                    <>
+                                    {format(dateRange.from, "LLL dd, y")} -{" "}
+                                    {format(dateRange.to, "LLL dd, y")}
+                                    </>
+                                ) : (
+                                    format(dateRange.from, "LLL dd, y")
+                                )
+                                ) : (
+                                <span>Pick a date range</span>
+                                )}
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar mode="single" selected={selectedMonth} onSelect={setSelectedMonth} initialFocus captionLayout="dropdown-buttons" fromYear={2020} toYear={new Date().getFullYear()} />
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                                initialFocus
+                                mode="range"
+                                defaultMonth={dateRange?.from}
+                                selected={dateRange}
+                                onSelect={setDateRange}
+                                numberOfMonths={2}
+                            />
                         </PopoverContent>
                     </Popover>
                     <Select value={selectedHead} onValueChange={setSelectedHead}>
