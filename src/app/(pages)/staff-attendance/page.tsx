@@ -1,14 +1,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Check, X, MessageSquareWarning } from "lucide-react";
+import { Calendar as CalendarIcon, Check, X, MessageSquareWarning, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { getStaff, type Staff } from "@/lib/staff-db";
@@ -25,6 +25,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import * as XLSX from "xlsx";
 
 const departments = [
   "All Departments", "Academics", "Administration", "Support Staff", "Management"
@@ -45,6 +46,7 @@ export default function StaffAttendancePage() {
     const [staffToNotify, setStaffToNotify] = useState<Staff | null>(null);
     const [isNotifyDialogOpen, setIsNotifyDialogOpen] = useState(false);
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         const fetchStaffData = async () => {
@@ -119,8 +121,65 @@ export default function StaffAttendancePage() {
         }
     }
 
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = e.target?.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+                const newAttendance: AttendanceRecord = { ...attendance };
+                let updatedCount = 0;
+
+                json.forEach(row => {
+                    const staffId = row["Staff ID"] || row.staffId || row.ID;
+                    if (staffId) {
+                        const staffMember = staff.find(s => s.id === staffId);
+                        if (staffMember) {
+                            newAttendance[staffMember.id] = "Present";
+                            updatedCount++;
+                        }
+                    }
+                });
+
+                setAttendance(newAttendance);
+                toast({
+                    title: "Import Successful",
+                    description: `Updated attendance for ${updatedCount} staff member(s).`,
+                });
+            } catch (error) {
+                console.error("Error processing file:", error);
+                toast({
+                    title: "Import Failed",
+                    description: "Could not read the file. Please ensure it's a valid Excel file.",
+                    variant: "destructive",
+                });
+            }
+        };
+        reader.readAsBinaryString(file);
+        // Reset file input to allow uploading the same file again
+        if(fileInputRef.current) fileInputRef.current.value = "";
+    };
+
     return (
         <>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".xlsx, .xls, .csv"
+            />
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -128,7 +187,11 @@ export default function StaffAttendancePage() {
                             <CardTitle>Staff Attendance</CardTitle>
                             <CardDescription>Mark staff attendance for the selected date.</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2 w-full md:w-auto">
+                        <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+                            <Button variant="outline" onClick={handleImportClick}>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Import Biometric Data
+                            </Button>
                             <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
                                 <SelectTrigger className="w-full md:w-[200px]">
                                     <SelectValue placeholder="Select a department" />
