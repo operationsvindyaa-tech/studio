@@ -1,20 +1,22 @@
 
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getMerchandise, type MerchandiseItem } from "@/lib/merchandise-db";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, DollarSign, Link as LinkIcon, Copy, Loader2, Package } from "lucide-react";
+import { ShoppingCart, DollarSign, Link as LinkIcon, Copy, Loader2, Package, Plus, Minus, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { purchaseMerchandise } from "./actions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -23,13 +25,21 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
+type CartItem = {
+    item: MerchandiseItem;
+    quantity: number;
+    size: string;
+};
+
 export default function StudentMerchandisePage() {
   const [inventory, setInventory] = useState<MerchandiseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPurchaseDialogOpen, setIsPurchaseDialogOpen] = useState(false);
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -49,57 +59,159 @@ export default function StudentMerchandisePage() {
     fetchInventory();
   }, [toast]);
 
-  const handleOpenPurchaseDialog = (item: MerchandiseItem) => {
+  const handleOpenAddItemDialog = (item: MerchandiseItem) => {
     setSelectedItem(item);
     setQuantity(1);
     setSelectedSize(item.sizes?.[0] || '');
-    setIsPurchaseDialogOpen(true);
+    setIsAddItemDialogOpen(true);
   };
   
-  const handleCloseDialog = () => {
+  const handleCloseDialogs = () => {
     setIsPurchaseDialogOpen(false);
+    setIsAddItemDialogOpen(false);
     setSelectedItem(null);
     setQuantity(1);
     setSelectedSize('');
   };
 
-  const handlePurchase = () => {
+  const handleAddToCart = () => {
     if (!selectedItem) return;
     
+    // Check if item with the same size is already in cart
+    const existingCartItemIndex = cart.findIndex(
+      cartItem => cartItem.item.id === selectedItem.id && cartItem.size === selectedSize
+    );
+
+    if (existingCartItemIndex > -1) {
+      const updatedCart = [...cart];
+      updatedCart[existingCartItemIndex].quantity += quantity;
+      setCart(updatedCart);
+    } else {
+      setCart([...cart, { item: selectedItem, quantity, size: selectedSize }]);
+    }
+    
+    toast({
+        title: "Added to Cart",
+        description: `${quantity} x ${selectedItem.name} has been added to your cart.`,
+    });
+
+    handleCloseDialogs();
+  };
+  
+  const handleUpdateCartQuantity = (itemId: string, size: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+        setCart(cart.filter(ci => !(ci.item.id === itemId && ci.size === size)));
+    } else {
+        setCart(cart.map(ci => 
+            ci.item.id === itemId && ci.size === size 
+            ? { ...ci, quantity: newQuantity } 
+            : ci
+        ));
+    }
+  };
+
+  const handlePurchaseAll = () => {
     startTransition(async () => {
-        const result = await purchaseMerchandise(selectedItem.id, quantity);
-        toast({
-            title: result.success ? "Success!" : "Error",
-            description: result.message,
-            variant: result.success ? "default" : "destructive",
-        });
-        if (result.success) {
-            fetchInventory();
-            handleCloseDialog();
+        // In a real app, this would be a single transaction.
+        // For this demo, we'll process them one by one.
+        for (const cartItem of cart) {
+            await purchaseMerchandise(cartItem.item.id, cartItem.quantity);
         }
+        
+        toast({
+            title: "Purchase Successful!",
+            description: "Your order has been recorded.",
+            variant: "default",
+        });
+        
+        fetchInventory();
+        setCart([]);
+        setIsPurchaseDialogOpen(false);
     });
   };
 
   const handleCopyLink = () => {
-    if (!selectedItem) return;
-    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${totalFee}`;
+    if (cart.length === 0) return;
+    const itemsQuery = cart.map(ci => `item[]=${ci.item.id}&qty[]=${ci.quantity}`).join('&');
+    const link = `https://your-academy.com/pay?${itemsQuery}&amount=${cartTotal}`;
     navigator.clipboard.writeText(link).then(() => {
-        toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
+        toast({ title: "Link Copied!", description: "Payment link for your cart copied to clipboard." });
     });
   }
 
-  const totalFee = (selectedItem?.sellingPrice || 0) * quantity;
+  const cartTotal = useMemo(() => cart.reduce((total, ci) => total + ci.item.sellingPrice * ci.quantity, 0), [cart]);
+  const cartItemCount = useMemo(() => cart.reduce((total, ci) => total + ci.quantity, 0), [cart]);
+
 
   return (
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <ShoppingCart className="h-6 w-6" />
-            <div>
-              <CardTitle>Merchandise Store</CardTitle>
-              <CardDescription>Browse and purchase items from our academy store.</CardDescription>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <ShoppingCart className="h-6 w-6" />
+              <div>
+                <CardTitle>Merchandise Store</CardTitle>
+                <CardDescription>Browse and purchase items from our academy store.</CardDescription>
+              </div>
             </div>
+            <Sheet>
+                <SheetTrigger asChild>
+                     <Button variant="outline" className="relative">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        My Cart
+                        {cartItemCount > 0 && (
+                            <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">{cartItemCount}</Badge>
+                        )}
+                    </Button>
+                </SheetTrigger>
+                <SheetContent>
+                    <SheetHeader>
+                        <SheetTitle>Your Shopping Cart</SheetTitle>
+                    </SheetHeader>
+                    {cart.length > 0 ? (
+                        <div className="flex flex-col h-full">
+                            <div className="flex-grow overflow-y-auto -mx-6 px-6 py-4">
+                                <div className="space-y-4">
+                                {cart.map(cartItem => (
+                                    <div key={`${cartItem.item.id}-${cartItem.size}`} className="flex items-start gap-4">
+                                        <Image src="https://placehold.co/600x400.png" alt={cartItem.item.name} width={64} height={64} className="rounded-md object-cover" data-ai-hint={cartItem.item.category.toLowerCase()} />
+                                        <div className="flex-grow">
+                                            <p className="font-semibold">{cartItem.item.name}</p>
+                                            {cartItem.size && <p className="text-sm text-muted-foreground">Size: {cartItem.size}</p>}
+                                            <p className="text-sm">{formatCurrency(cartItem.item.sellingPrice)}</p>
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => handleUpdateCartQuantity(cartItem.item.id, cartItem.size, cartItem.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                                                <span>{cartItem.quantity}</span>
+                                                <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => handleUpdateCartQuantity(cartItem.item.id, cartItem.size, cartItem.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-semibold">{formatCurrency(cartItem.item.sellingPrice * cartItem.quantity)}</p>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 mt-2 text-muted-foreground" onClick={() => handleUpdateCartQuantity(cartItem.item.id, cartItem.size, 0)}><Trash2 className="h-4 w-4" /></Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                </div>
+                            </div>
+                            <Separator />
+                            <SheetFooter className="pt-4 flex flex-col gap-4">
+                                <div className="flex justify-between font-bold text-lg">
+                                    <span>Total</span>
+                                    <span>{formatCurrency(cartTotal)}</span>
+                                </div>
+                                <Button className="w-full" onClick={() => setIsPurchaseDialogOpen(true)}>Proceed to Checkout</Button>
+                            </SheetFooter>
+                        </div>
+                    ) : (
+                         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                            <ShoppingCart className="h-16 w-16 mb-4" />
+                            <p className="font-semibold">Your cart is empty.</p>
+                            <p className="text-sm">Add items from the store to get started.</p>
+                         </div>
+                    )}
+                </SheetContent>
+            </Sheet>
           </div>
         </CardHeader>
         <CardContent>
@@ -127,9 +239,9 @@ export default function StudentMerchandisePage() {
                         )}
                     </CardContent>
                     <CardFooter className="p-2 border-t">
-                        <Button className="w-full" onClick={() => handleOpenPurchaseDialog(item)} disabled={item.stock === 0}>
+                        <Button className="w-full" onClick={() => handleOpenAddItemDialog(item)} disabled={item.stock === 0}>
                             <ShoppingCart className="mr-2 h-4 w-4" />
-                            {item.stock > 0 ? 'Buy Now' : 'Out of Stock'}
+                            {item.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                         </Button>
                     </CardFooter>
                 </Card>
@@ -144,13 +256,13 @@ export default function StudentMerchandisePage() {
         </CardContent>
       </Card>
 
-      {/* Purchase Dialog */}
-      <Dialog open={isPurchaseDialogOpen} onOpenChange={handleCloseDialog}>
+       {/* Add Item Dialog */}
+      <Dialog open={isAddItemDialogOpen} onOpenChange={handleCloseDialogs}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Purchase {selectedItem?.name}</DialogTitle>
+            <DialogTitle>Add to Cart: {selectedItem?.name}</DialogTitle>
             <DialogDescription>
-              Confirm the quantity and proceed to payment. Current stock: {selectedItem?.stock}
+              Select size and quantity. Current stock: {selectedItem?.stock}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -178,14 +290,36 @@ export default function StudentMerchandisePage() {
                     </div>
                 )}
             </div>
+            <div className="text-xl font-bold flex justify-between items-center">
+                <span>Total:</span>
+                <span>{formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+            <Button onClick={handleAddToCart}>Add to Cart</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Checkout Dialog */}
+      <Dialog open={isPurchaseDialogOpen} onOpenChange={setIsPurchaseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Your Purchase</DialogTitle>
+            <DialogDescription>
+              Review your order and generate a payment link to complete the purchase.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
             <div className="text-2xl font-bold flex justify-between items-center">
                 <span>Total:</span>
-                <span>{formatCurrency(totalFee)}</span>
+                <span>{formatCurrency(cartTotal)}</span>
             </div>
              <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="payment-link">Payment Link</Label>
                 <div className="flex gap-2">
-                    <Input id="payment-link" value={`https://your-academy.com/pay?item=${selectedItem?.id}&qty=${quantity}&amount=${totalFee}`} readOnly />
+                    <Input id="payment-link" value={`https://your-academy.com/pay?cart_id=123&amount=${cartTotal}`} readOnly />
                     <Button onClick={handleCopyLink} variant="outline" size="icon"><Copy className="h-4 w-4" /></Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -195,7 +329,7 @@ export default function StudentMerchandisePage() {
           </div>
           <DialogFooter>
             <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-            <Button onClick={handlePurchase} disabled={isPending}>
+            <Button onClick={handlePurchaseAll} disabled={isPending}>
                 {isPending ? <Loader2 className="animate-spin" /> : "Confirm Purchase"}
             </Button>
           </DialogFooter>
