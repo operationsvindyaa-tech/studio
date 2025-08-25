@@ -317,7 +317,7 @@ export default function MerchandisePage() {
                 <div className="grid gap-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="item-name">Product Name</Label>
-                        <Input id="item-name" value={editingItem?.name} onChange={(e) => setEditingItem(prev => ({...prev, name: e.target.value}))} />
+                        <Input id="item-name" value={editingItem?.name || ''} onChange={(e) => setEditingItem(prev => ({...prev, name: e.target.value}))} />
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="item-category">Category</Label>
@@ -334,16 +334,16 @@ export default function MerchandisePage() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="item-buying-price">Buying Price</Label>
-                            <Input id="item-buying-price" type="number" value={editingItem?.buyingPrice} onChange={(e) => setEditingItem(prev => ({...prev, buyingPrice: parseFloat(e.target.value) || 0}))} />
+                            <Input id="item-buying-price" type="number" value={editingItem?.buyingPrice ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, buyingPrice: parseFloat(e.target.value) || 0}))} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="item-selling-price">Selling Price</Label>
-                            <Input id="item-selling-price" type="number" value={editingItem?.sellingPrice} onChange={(e) => setEditingItem(prev => ({...prev, sellingPrice: parseFloat(e.target.value) || 0}))} />
+                            <Input id="item-selling-price" type="number" value={editingItem?.sellingPrice ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, sellingPrice: parseFloat(e.target.value) || 0}))} />
                         </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="item-stock">Initial Stock</Label>
-                        <Input id="item-stock" type="number" value={editingItem?.stock} onChange={(e) => setEditingItem(prev => ({...prev, stock: parseInt(e.target.value) || 0}))} />
+                        <Input id="item-stock" type="number" value={editingItem?.stock ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, stock: parseInt(e.target.value) || 0}))} />
                     </div>
                 </div>
                 <DialogFooter>
