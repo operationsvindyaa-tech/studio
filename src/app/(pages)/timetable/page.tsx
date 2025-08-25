@@ -220,7 +220,7 @@ export default function TimetablePage() {
                         onClick={() => handleSlotClick(day, time)}
                       >
                         {entry ? (
-                          <div className="bg-primary/20 text-primary-foreground text-xs font-semibold p-2 rounded-md w-full h-full flex items-center justify-center text-center">
+                          <div className="bg-primary/20 text-primary text-xs font-semibold p-2 rounded-md w-full h-full flex items-center justify-center text-center">
                             {entry.course}
                           </div>
                         ) : (
