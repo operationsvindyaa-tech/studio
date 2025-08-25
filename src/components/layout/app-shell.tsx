@@ -96,6 +96,7 @@ const studentPortalNavItems = [
     { href: "/notes", icon: Notebook, label: "Notes" },
     { href: "/online-class", icon: Video, label: "Online Class" },
     { href: "/my-payments", icon: Wallet, label: "My Payments" },
+    { href: "/student-merchandise", icon: ShoppingCart, label: "Merchandise" },
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
