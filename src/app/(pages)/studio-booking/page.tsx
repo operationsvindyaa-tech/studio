@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Loader2, Store, Copy } from "lucide-react";
+import { CalendarIcon, Loader2, Store, Copy, Clock, DollarSign } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -33,6 +33,7 @@ import { useFormStatus } from "react-dom";
 import { createBooking } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 const bookingFormSchema = z.object({
   center: z.string({ required_error: "Please select a center." }),
@@ -43,6 +44,14 @@ const bookingFormSchema = z.object({
   email: z.string().email("A valid email is required."),
   phone: z.string().min(10, "A valid phone number is required."),
   purpose: z.string().min(3, "Please specify the purpose of the booking."),
+}).refine(data => {
+    if (!data.startTime || !data.endTime) return true;
+    const start = timeToMinutes(data.startTime);
+    const end = timeToMinutes(data.endTime);
+    return end > start;
+}, {
+    message: "End time must be after start time.",
+    path: ["endTime"],
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -67,6 +76,15 @@ const timeSlots = Array.from({ length: 14 }, (_, i) => { // 8 AM to 9 PM
     return `${displayHour}:00 ${period}`;
 });
 
+const timeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [time, period] = timeStr.split(' ');
+    let [hours] = time.split(':').map(Number);
+    if (period === 'PM' && hours < 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60;
+};
+
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
@@ -80,7 +98,9 @@ export default function StudioBookingPage() {
     const [state, formAction] = useActionState(createBooking, initialState);
     const { toast } = useToast();
     const formRef = useRef<HTMLFormElement>(null);
-    const [rentalFee, setRentalFee] = useState("1000");
+    const [rentalFee, setRentalFee] = useState(1000);
+    const [totalHours, setTotalHours] = useState(0);
+    const [totalFee, setTotalFee] = useState(0);
 
     const form = useForm<BookingFormValues>({
         resolver: zodResolver(bookingFormSchema),
@@ -91,6 +111,27 @@ export default function StudioBookingPage() {
             purpose: "",
         },
     });
+
+    const startTime = form.watch("startTime");
+    const endTime = form.watch("endTime");
+
+    useEffect(() => {
+        if (startTime && endTime) {
+            const startMinutes = timeToMinutes(startTime);
+            const endMinutes = timeToMinutes(endTime);
+            if (endMinutes > startMinutes) {
+                const durationHours = (endMinutes - startMinutes) / 60;
+                setTotalHours(durationHours);
+                setTotalFee(durationHours * rentalFee);
+            } else {
+                setTotalHours(0);
+                setTotalFee(0);
+            }
+        } else {
+            setTotalHours(0);
+            setTotalFee(0);
+        }
+    }, [startTime, endTime, rentalFee]);
 
     useEffect(() => {
         if (state.message) {
@@ -143,7 +184,7 @@ export default function StudioBookingPage() {
                         id="rental-fee"
                         type="number"
                         value={rentalFee}
-                        onChange={(e) => setRentalFee(e.target.value)}
+                        onChange={(e) => setRentalFee(Number(e.target.value) || 0)}
                         className="max-w-xs"
                     />
                     <p className="text-xs text-muted-foreground">Set the hourly rental fee. This will be communicated to the client upon confirmation.</p>
@@ -184,6 +225,26 @@ export default function StudioBookingPage() {
                                 )} />
                              </div>
                         </div>
+
+                        <Card className="bg-muted/30">
+                            <CardContent className="p-4 grid grid-cols-2 gap-4 items-center">
+                                <div className="flex items-center gap-3">
+                                    <Clock className="h-6 w-6 text-muted-foreground" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Total Hours</p>
+                                        <p className="text-2xl font-bold">{totalHours}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <DollarSign className="h-6 w-6 text-muted-foreground" />
+                                     <div>
+                                        <p className="text-sm text-muted-foreground">Total Fee</p>
+                                        <p className="text-2xl font-bold">{totalFee.toFixed(2)}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
 
                          <div className="space-y-6">
                              <h3 className="text-xl font-semibold border-b pb-2">Your Information</h3>
