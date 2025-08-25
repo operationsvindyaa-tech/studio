@@ -46,6 +46,49 @@ CREATE TABLE students (
 );
 */
 
+const activities = [
+    "bharatanatyam", "vocal-carnatic", "guitar", "keyboard", "piano", "drums",
+    "violin", "western-dance", "zumba", "gymnastics", "yoga", "karate",
+    "kalaripayattu", "art-craft"
+];
+
+const firstNames = ["Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan", "Krishna", "Ishaan", "Saanvi", "Aanya", "Aadhya", "Aaradhya", "Anika", "Gia", "Diya", "Pari", "Kiara", "Ananya"];
+const lastNames = ["Sharma", "Verma", "Gupta", "Singh", "Kumar", "Patel", "Reddy", "Mehta", "Shah", "Jain"];
+
+const generateMockStudents = (): Student[] => {
+    const students: Student[] = [];
+    let studentIdCounter = 1;
+
+    activities.forEach(activity => {
+        for (let i = 0; i < 5; i++) {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const name = `${firstName} ${lastName}`;
+            const student: Student = {
+                id: `S${String(studentIdCounter++).padStart(3, '0')}`,
+                name: name,
+                email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+                joined: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
+                status: i % 5 === 4 ? "Inactive" : "Active",
+                courses: 1,
+                avatar: "https://placehold.co/100x100.png",
+                initials: `${firstName[0]}${lastName[0]}`,
+                classMode: i % 2 === 0 ? "Regular" : "Online",
+                enrolledCourses: [activity],
+                desiredCourse: activity,
+                whatsappNumber: `9876543${String(studentIdCounter).padStart(3, '0')}`
+            };
+            students.push(student);
+        }
+    });
+
+    return students;
+};
+
+
+const mockStudents = generateMockStudents();
+
+
 export const getStudents = async (): Promise<Student[]> => {
   // The 'any' type is used here for simplicity. In a real application, you'd
   // want to use a tool like Zod to validate the shape of the data from the DB.
@@ -54,17 +97,7 @@ export const getStudents = async (): Promise<Student[]> => {
     
     if (!students || students.length === 0) {
         // Return a default student if the database is empty for demo purposes
-        return [{
-            id: "S001",
-            name: "Sample Student",
-            email: "sample@example.com",
-            joined: new Date().toISOString(),
-            status: "Active",
-            courses: 1,
-            avatar: "https://placehold.co/100x100.png",
-            initials: "SS",
-            classMode: "Regular",
-        }];
+        return mockStudents;
     }
 
     // The database returns dates as objects, so we format them to ISO strings.
@@ -76,17 +109,7 @@ export const getStudents = async (): Promise<Student[]> => {
   } catch (error) {
     console.error("Database query failed:", error);
     // Return mock data if the database connection fails
-    return [{
-        id: "S001",
-        name: "Sample Student (DB Error)",
-        email: "sample@example.com",
-        joined: new Date().toISOString(),
-        status: "Active",
-        courses: 1,
-        avatar: "https://placehold.co/100x100.png",
-        initials: "SS",
-        classMode: "Regular",
-    }];
+    return mockStudents;
   }
 };
 
