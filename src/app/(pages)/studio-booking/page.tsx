@@ -37,7 +37,8 @@ import { Label } from "@/components/ui/label";
 const bookingFormSchema = z.object({
   center: z.string({ required_error: "Please select a center." }),
   bookingDate: z.date({ required_error: "Please select a date." }),
-  timeSlot: z.string({ required_error: "Please select a time slot." }),
+  startTime: z.string({ required_error: "Please select a start time." }),
+  endTime: z.string({ required_error: "Please select an end time." }),
   fullName: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("A valid email is required."),
   phone: z.string().min(10, "A valid phone number is required."),
@@ -62,8 +63,8 @@ const rentalCenters = [
 const timeSlots = Array.from({ length: 14 }, (_, i) => { // 8 AM to 9 PM
     const hour = i + 8;
     const period = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:00 ${period} - ${displayHour + 1}:00 ${period}`;
+    const displayHour = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+    return `${displayHour}:00 ${period}`;
 });
 
 function SubmitButton() {
@@ -156,7 +157,7 @@ export default function StudioBookingPage() {
                     >
                         <div className="space-y-6">
                              <h3 className="text-xl font-semibold border-b pb-2">Booking Details</h3>
-                             <div className="grid md:grid-cols-3 gap-6">
+                             <div className="grid md:grid-cols-2 gap-6">
                                 <FormField control={form.control} name="center" render={({ field }) => (
                                     <FormItem><FormLabel>Center</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a center" /></SelectTrigger></FormControl><SelectContent>
                                         {rentalCenters.map(center => <SelectItem key={center} value={center}>{center}</SelectItem>)}
@@ -169,8 +170,15 @@ export default function StudioBookingPage() {
                                         </PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date()} initialFocus /></PopoverContent></Popover><FormMessage />
                                     </FormItem>
                                 )} />
-                                 <FormField control={form.control} name="timeSlot" render={({ field }) => (
-                                    <FormItem><FormLabel>Time Slot</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a time" /></SelectTrigger></FormControl><SelectContent>
+                             </div>
+                             <div className="grid md:grid-cols-2 gap-6">
+                                 <FormField control={form.control} name="startTime" render={({ field }) => (
+                                    <FormItem><FormLabel>Start Time</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a start time" /></SelectTrigger></FormControl><SelectContent>
+                                        {timeSlots.map(slot => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
+                                    </SelectContent></Select><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={form.control} name="endTime" render={({ field }) => (
+                                    <FormItem><FormLabel>End Time</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select an end time" /></SelectTrigger></FormControl><SelectContent>
                                         {timeSlots.map(slot => <SelectItem key={slot} value={slot}>{slot}</SelectItem>)}
                                     </SelectContent></Select><FormMessage /></FormItem>
                                 )} />

@@ -7,7 +7,8 @@ import { revalidatePath } from "next/cache";
 const bookingFormSchema = z.object({
   center: z.string({ required_error: "Please select a center." }),
   bookingDate: z.date({ required_error: "Please select a date." }),
-  timeSlot: z.string({ required_error: "Please select a time slot." }),
+  startTime: z.string({ required_error: "Please select a start time." }),
+  endTime: z.string({ required_error: "Please select an end time." }),
   fullName: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("A valid email is required."),
   phone: z.string().min(10, "A valid phone number is required."),
