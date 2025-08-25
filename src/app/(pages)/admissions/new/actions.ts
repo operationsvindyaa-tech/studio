@@ -14,6 +14,7 @@ const admissionFormSchema = z.object({
   gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
   nationality: z.string().min(2, "Nationality is required."),
   bloodGroup: z.string().optional(),
+  satsNumber: z.string().optional(),
   
   fatherName: z.string().min(2, "Father's name is required."),
   fatherContact: z.string().min(10, "Father's contact number is required."),

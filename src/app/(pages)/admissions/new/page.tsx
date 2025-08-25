@@ -53,6 +53,7 @@ const admissionFormSchema = z.object({
   gender: z.enum(["male", "female", "other"], { required_error: "Please select a gender." }),
   nationality: z.string().min(2, "Nationality is required."),
   bloodGroup: z.string().optional(),
+  satsNumber: z.string().optional(),
   
   fatherName: z.string().min(2, "Father's name is required."),
   fatherContact: z.string().min(10, "Father's contact number is required."),
@@ -132,6 +133,7 @@ export default function NewAdmissionPage() {
       signature: "",
       officeAdmissionOfficer: "",
       officeSignature: "",
+      satsNumber: "",
     },
   });
   
@@ -252,6 +254,9 @@ export default function NewAdmissionPage() {
                               )} />
                               <FormField control={form.control} name="bloodGroup" render={({ field }) => (
                                   <FormItem><FormLabel>Blood Group (Optional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select blood group" /></SelectTrigger></FormControl><SelectContent><SelectItem value="A+">A+</SelectItem><SelectItem value="A-">A-</SelectItem><SelectItem value="B+">B+</SelectItem><SelectItem value="B-">B-</SelectItem><SelectItem value="AB+">AB+</SelectItem><SelectItem value="AB-">AB-</SelectItem><SelectItem value="O+">O+</SelectItem><SelectItem value="O-">O-</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                              )} />
+                              <FormField control={form.control} name="satsNumber" render={({ field }) => (
+                                  <FormItem><FormLabel>SATS Number (Optional)</FormLabel><FormControl><Input placeholder="Enter SATS Number" {...field} /></FormControl><FormMessage /></FormItem>
                               )} />
                           </div>
                       </div>
