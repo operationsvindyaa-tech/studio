@@ -13,8 +13,6 @@ import { TrendingUp, School, Building, Handshake, BarChart2 } from "lucide-react
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(amount / 100000) + 'L';

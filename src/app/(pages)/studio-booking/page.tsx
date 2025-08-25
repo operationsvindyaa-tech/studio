@@ -236,6 +236,7 @@ export default function StudioBookingPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
+                                     <div className="w-6 h-6"></div>
                                      <div>
                                         <p className="text-sm text-muted-foreground">Total Fee</p>
                                         <p className="text-2xl font-bold">{totalFee}</p>
