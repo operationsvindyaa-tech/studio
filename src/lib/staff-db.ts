@@ -25,6 +25,7 @@ export type Staff = {
         dateOfJoining: string; // ISO date string
         employmentType: 'Full-time' | 'Part-time' | 'Contract';
         workLocation: string;
+        branch: string;
     };
     payroll: {
         salary: number; // monthly
@@ -60,6 +61,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2018-03-01",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 75000,
@@ -87,6 +89,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2020-07-10",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 72000,
@@ -114,6 +117,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2021-01-20",
             employmentType: "Part-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 55000,
@@ -141,6 +145,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2022-05-15",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 52000,
@@ -168,6 +173,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2019-11-01",
             employmentType: "Part-time",
             workLocation: "Wellness Center",
+            branch: "Branch 2",
         },
         payroll: {
             salary: 60000,
@@ -195,6 +201,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2020-02-18",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 68000,
@@ -222,6 +229,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2015-01-15",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 85000,
@@ -249,6 +257,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2022-08-01",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 35000,
@@ -276,6 +285,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2021-10-05",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 48000,
@@ -303,6 +313,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2017-06-20",
             employmentType: "Contract",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 22000,
@@ -330,6 +341,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2023-02-15",
             employmentType: "Part-time",
             workLocation: "Branch 2 (Marathahalli)",
+            branch: "Branch 2",
         },
         payroll: {
             salary: 40000,
@@ -357,6 +369,7 @@ const initialStaff: Staff[] = [
             dateOfJoining: "2010-01-01",
             employmentType: "Full-time",
             workLocation: "Main Campus",
+            branch: "Main Campus",
         },
         payroll: {
             salary: 150000,

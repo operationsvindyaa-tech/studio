@@ -40,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getBranches, Branch } from "@/lib/branches-db";
 
 const staffFormSchema = z.object({
   photo: z.string().optional(),
@@ -58,6 +59,7 @@ const staffFormSchema = z.object({
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
   employmentType: z.enum(["Full-time", "Part-time", "Contract"], { required_error: "Employment type is required." }),
   workLocation: z.string().min(2, "Work location is required."),
+  branch: z.string({ required_error: "Branch is required." }),
   
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
@@ -88,6 +90,15 @@ export default function NewStaffPage() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+
+  useEffect(() => {
+    async function fetchBranches() {
+      const branchData = await getBranches();
+      setBranches(branchData);
+    }
+    fetchBranches();
+  }, []);
 
   const form = useForm<StaffFormValues>({
     resolver: zodResolver(staffFormSchema),
@@ -254,6 +265,26 @@ export default function NewStaffPage() {
                     )} />
                      <FormField control={form.control} name="workLocation" render={({ field }) => (
                         <FormItem><FormLabel>Work Location</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField control={form.control} name="branch" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Branch</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a branch" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {branches.map((branch) => (
+                              <SelectItem key={branch.id} value={branch.name}>
+                                {branch.name} ({branch.location})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
                     )} />
                 </div>
             </div>

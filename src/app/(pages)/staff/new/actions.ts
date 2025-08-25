@@ -22,6 +22,7 @@ const staffFormSchema = z.object({
   dateOfJoining: z.date({ required_error: "Date of joining is required." }),
   employmentType: z.enum(["Full-time", "Part-time", "Contract"], { required_error: "Employment type is required." }),
   workLocation: z.string().min(2, "Work location is required."),
+  branch: z.string({ required_error: "Branch is required." }),
   
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
@@ -67,6 +68,7 @@ export async function createStaff(prevState: State, formData: FormData): Promise
         dateOfJoining: parsedData.dateOfJoining.toISOString(),
         employmentType: parsedData.employmentType,
         workLocation: parsedData.workLocation,
+        branch: parsedData.branch,
       },
       payroll: {
           salary: parsedData.salary,

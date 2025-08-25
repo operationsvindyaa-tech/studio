@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStaffById } from "@/lib/staff-db";
-import { Building, Cake, CalendarDays, Edit, Hash, Home, Mail, MapPin, Phone, ShieldCheck, Trash2, User, UserCheck, Wallet, ChevronLeft } from "lucide-react";
+import { Building, Cake, CalendarDays, Edit, Hash, Home, Mail, MapPin, Phone, ShieldCheck, Trash2, User, UserCheck, Wallet, ChevronLeft, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -95,6 +95,7 @@ export default async function StaffProfilePage({ params }: { params: { id: strin
                                     <InfoField icon={UserCheck} label="Reporting Manager" value={jobDetails.reportingManager} />
                                     <InfoField icon={CalendarDays} label="Date of Joining" value={new Date(jobDetails.dateOfJoining).toLocaleDateString()} />
                                     <InfoField icon={MapPin} label="Work Location" value={jobDetails.workLocation} />
+                                    <InfoField icon={Briefcase} label="Branch" value={jobDetails.branch} />
                                 </div>
                             </div>
                             <div>
