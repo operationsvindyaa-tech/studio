@@ -8,6 +8,7 @@ export type MerchandiseItem = {
   sellingPrice: number;
   buyingPrice: number;
   stock: number;
+  sizes?: string[];
 };
 
 export type MerchandiseSale = {
@@ -28,12 +29,12 @@ export type StockTransaction = {
 };
 
 const initialMerchandise: MerchandiseItem[] = [
-  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50 },
+  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50, sizes: ["S", "M", "L", "XL"] },
   { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", sellingPrice: 1200, buyingPrice: 700, stock: 25 },
   { id: "M003", name: "Beginner's Guide to Carnatic Music", category: "Books", sellingPrice: 350, buyingPrice: 180, stock: 40 },
   { id: "M004", name: "Guitar Picks (Set of 5)", category: "Accessories", sellingPrice: 150, buyingPrice: 50, stock: 100 },
   { id: "M005", name: "Yoga Mat", category: "Accessories", sellingPrice: 800, buyingPrice: 450, stock: 30 },
-  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", sellingPrice: 1800, buyingPrice: 1100, stock: 20 },
+  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", sellingPrice: 1800, buyingPrice: 1100, stock: 20, sizes: ["120cm", "130cm", "140cm", "150cm"] },
   { id: "M007", name: "Sketchbook & Pencils Set", category: "Books", sellingPrice: 450, buyingPrice: 220, stock: 35 },
   { id: "M008", name: "Ankle Bells (Salangai)", category: "Accessories", sellingPrice: 600, buyingPrice: 350, stock: 15 },
 ];

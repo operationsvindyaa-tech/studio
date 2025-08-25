@@ -31,7 +31,7 @@ export default function MerchandisePage() {
   const [isAddEditDialogOpen, setIsAddEditDialogOpen] = useState(false);
   const [isPaymentLinkDialogOpen, setIsPaymentLinkDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
-  const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> | null>(null);
+  const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> & { sizesInput?: string } | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [currentBuyingPrice, setCurrentBuyingPrice] = useState(0);
   const { toast } = useToast();
@@ -64,7 +64,10 @@ export default function MerchandisePage() {
   };
   
   const handleOpenAddEditDialog = (item: MerchandiseItem | null) => {
-    setEditingItem(item ? { ...item } : { name: '', category: 'Apparel', sellingPrice: 0, buyingPrice: 0, stock: 0 });
+    const initialItem = item 
+        ? { ...item, sizesInput: item.sizes?.join(', ') || '' } 
+        : { name: '', category: 'Apparel', sellingPrice: 0, buyingPrice: 0, stock: 0, sizesInput: '' };
+    setEditingItem(initialItem);
     setIsAddEditDialogOpen(true);
   };
 
@@ -114,12 +117,17 @@ export default function MerchandisePage() {
         toast({ title: "Invalid Data", description: "Please fill all fields with valid data.", variant: "destructive" });
         return;
     }
+    
+    const sizes = editingItem.sizesInput ? editingItem.sizesInput.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const itemToSave = { ...editingItem, sizes };
+    delete (itemToSave as any).sizesInput;
+
 
     if (editingItem.id) {
-        await updateMerchandiseItem(editingItem.id, editingItem);
+        await updateMerchandiseItem(editingItem.id, itemToSave);
         toast({ title: "Item Updated", description: `${editingItem.name} has been updated.` });
     } else {
-        await addMerchandiseItem(editingItem as Omit<MerchandiseItem, 'id'>);
+        await addMerchandiseItem(itemToSave as Omit<MerchandiseItem, 'id'>);
         toast({ title: "Item Added", description: `${editingItem.name} has been added to inventory.` });
     }
     fetchInventory();
@@ -212,6 +220,12 @@ export default function MerchandisePage() {
                         <p className="text-xs text-muted-foreground">{item.category}</p>
                         <h3 className="font-semibold text-lg truncate">{item.name}</h3>
                         <p className="text-2xl font-bold">{formatCurrency(item.sellingPrice)}</p>
+                        {item.sizes && item.sizes.length > 0 && (
+                            <div className="mt-2">
+                                <span className="text-xs text-muted-foreground">Sizes: </span>
+                                {item.sizes.map(size => <Badge key={size} variant="outline" className="mr-1">{size}</Badge>)}
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter className="p-2 border-t flex flex-col gap-2">
                         <div className="grid grid-cols-2 gap-2 w-full">
@@ -331,6 +345,12 @@ export default function MerchandisePage() {
                             </SelectContent>
                         </Select>
                     </div>
+                    {editingItem?.category === 'Apparel' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="item-sizes">Sizes (comma-separated)</Label>
+                            <Input id="item-sizes" value={editingItem?.sizesInput || ''} onChange={(e) => setEditingItem(prev => ({...prev, sizesInput: e.target.value}))} placeholder="e.g., S, M, L, XL" />
+                        </div>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="item-buying-price">Buying Price</Label>

@@ -14,10 +14,12 @@ import { ShoppingCart, DollarSign, Link as LinkIcon, Copy, Loader2, Package } fr
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { purchaseMerchandise } from "./actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        minimumFractionDigits: 2,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -27,6 +29,7 @@ export default function StudentMerchandisePage() {
   const [isPurchaseDialogOpen, setIsPurchaseDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MerchandiseItem | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -49,6 +52,7 @@ export default function StudentMerchandisePage() {
   const handleOpenPurchaseDialog = (item: MerchandiseItem) => {
     setSelectedItem(item);
     setQuantity(1);
+    setSelectedSize(item.sizes?.[0] || '');
     setIsPurchaseDialogOpen(true);
   };
   
@@ -56,6 +60,7 @@ export default function StudentMerchandisePage() {
     setIsPurchaseDialogOpen(false);
     setSelectedItem(null);
     setQuantity(1);
+    setSelectedSize('');
   };
 
   const handlePurchase = () => {
@@ -77,7 +82,7 @@ export default function StudentMerchandisePage() {
 
   const handleCopyLink = () => {
     if (!selectedItem) return;
-    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${selectedItem.sellingPrice * quantity}`;
+    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${totalFee}`;
     navigator.clipboard.writeText(link).then(() => {
         toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
     });
@@ -114,6 +119,12 @@ export default function StudentMerchandisePage() {
                         <p className="text-xs text-muted-foreground">{item.category}</p>
                         <h3 className="font-semibold text-lg truncate">{item.name}</h3>
                         <p className="text-2xl font-bold">{formatCurrency(item.sellingPrice)}</p>
+                        {item.sizes && item.sizes.length > 0 && (
+                            <div className="mt-2">
+                                <span className="text-xs text-muted-foreground">Sizes: </span>
+                                {item.sizes.map(size => <Badge key={size} variant="outline" className="mr-1">{size}</Badge>)}
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter className="p-2 border-t">
                         <Button className="w-full" onClick={() => handleOpenPurchaseDialog(item)} disabled={item.stock === 0}>
@@ -143,16 +154,29 @@ export default function StudentMerchandisePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="purchase-quantity">Quantity</Label>
-              <Input
-                id="purchase-quantity"
-                type="number"
-                value={quantity}
-                onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                min="1"
-                max={selectedItem?.stock}
-              />
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="purchase-quantity">Quantity</Label>
+                  <Input
+                    id="purchase-quantity"
+                    type="number"
+                    value={quantity}
+                    onChange={e => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    min="1"
+                    max={selectedItem?.stock}
+                  />
+                </div>
+                {selectedItem?.sizes && selectedItem.sizes.length > 0 && (
+                     <div className="space-y-2">
+                        <Label htmlFor="item-size">Size</Label>
+                        <Select value={selectedSize} onValueChange={setSelectedSize}>
+                            <SelectTrigger id="item-size"><SelectValue placeholder="Select size" /></SelectTrigger>
+                            <SelectContent>
+                                {selectedItem.sizes.map(size => <SelectItem key={size} value={size}>{size}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
             <div className="text-2xl font-bold flex justify-between items-center">
                 <span>Total:</span>
