@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -35,7 +34,7 @@ const initialImages: GalleryImage[] = [
     { id: "6", src: "https://placehold.co/600x400.png", name: "Karate Grading.png", dataAiHint: "karate children" },
 ];
 
-export default function PhotoGalleryPage() {
+export default function BannerBrochurePage() {
   const [images, setImages] = useState<GalleryImage[]>(initialImages);
   const [imageToDelete, setImageToDelete] = useState<GalleryImage | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,7 +65,7 @@ export default function PhotoGalleryPage() {
           setImages(prevImages => [...prevImages, ...newImages]);
           toast({
             title: "Upload Successful",
-            description: `${files.length} image(s) have been added to the gallery.`,
+            description: `${files.length} image(s) have been added.`,
           });
         }
       };
@@ -87,7 +86,7 @@ export default function PhotoGalleryPage() {
       setImages(images.filter(img => img.id !== imageToDelete.id));
       toast({
         title: "Image Deleted",
-        description: `${imageToDelete.name} has been removed from the gallery.`,
+        description: `${imageToDelete.name} has been removed.`,
       });
       setImageToDelete(null);
     }
@@ -99,21 +98,21 @@ export default function PhotoGalleryPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Photo Gallery</CardTitle>
+              <CardTitle>Banners & Brochures</CardTitle>
               <CardDescription>
-                View, upload, and manage your academy's photos.
+                View, upload, and manage your academy's promotional materials.
               </CardDescription>
             </div>
             <Button onClick={handleUploadClick}>
               <Upload className="mr-2 h-4 w-4" />
-              Upload Photos
+              Upload Files
             </Button>
             <Input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
-              accept="image/*"
+              accept="image/*,application/pdf"
               multiple
             />
           </div>
@@ -152,13 +151,13 @@ export default function PhotoGalleryPage() {
           ) : (
             <div className="flex flex-col items-center justify-center text-center p-10 border-2 border-dashed rounded-lg">
                 <ImageIcon className="h-16 w-16 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">No Photos Yet</h3>
+                <h3 className="mt-4 text-lg font-semibold">No Files Yet</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                Upload your first photo to start building your gallery.
+                Upload your first banner or brochure to get started.
                 </p>
                 <Button className="mt-6" onClick={handleUploadClick}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload Photos
+                    Upload Files
                 </Button>
             </div>
           )}
@@ -170,7 +169,7 @@ export default function PhotoGalleryPage() {
             <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the photo
+                This action cannot be undone. This will permanently delete the file
                 "{imageToDelete?.name}".
             </AlertDialogDescription>
             </AlertDialogHeader>

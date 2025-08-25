@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -139,7 +138,7 @@ const financeNavItems = [
 
 const communicationsNavItems = [
     { href: "/announcements-hub", icon: MessageSquare, label: "Announcements Hub"},
-    { href: "/photogallery", icon: Camera, label: "Photo Gallery" },
+    { href: "/banner-brochure", icon: Camera, label: "Banner and Brochure" },
 ];
 
 const otherNavItems = [
