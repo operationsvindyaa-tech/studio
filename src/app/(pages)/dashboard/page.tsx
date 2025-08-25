@@ -1,18 +1,13 @@
-import { Pie, PieChart, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, UserCheck, Circle, BookOpen, ClipboardList, Building2, CalendarDays } from "lucide-react"
-import { getStudents, Student } from "@/lib/db"
-import { getStaff, Staff } from "@/lib/staff-db"
-import { getCourses, Course } from "@/lib/courses-db"
-import { getEnquiries, Enquiry } from "@/lib/enquiries-db"
-import { getEvents, Event } from "@/lib/schedule-db"
+import { Users, UserCheck, BookOpen, ClipboardList, Building2, CalendarDays } from "lucide-react"
+import { getStudents } from "@/lib/db"
+import { getStaff } from "@/lib/staff-db"
+import { getCourses } from "@/lib/courses-db"
+import { getEnquiries } from "@/lib/enquiries-db"
+import { getEvents } from "@/lib/schedule-db"
 import { isThisWeek, format } from 'date-fns'
-
-type StudentStatusData = {
-  name: string;
-  value: number;
-  fill: string;
-};
+import { StudentStatusChart } from "./student-status-chart"
+import { Badge } from "@/components/ui/badge"
 
 const COLORS = {
     Active: 'hsl(var(--chart-1))',
@@ -34,7 +29,7 @@ async function getDashboardData() {
 export default async function DashboardPage() {
   const { students, staff, courses, enquiries, events } = await getDashboardData();
   
-  const studentStatusData: StudentStatusData[] = Object.entries(
+  const studentStatusData = Object.entries(
     students.reduce((acc, student) => {
         acc[student.status] = (acc[student.status] || 0) + 1;
         return acc;
@@ -108,44 +103,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Student Status</CardTitle>
-            <CardDescription>Distribution of active, inactive, and suspended students.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <div className="w-full h-64 flex items-center justify-center relative">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Tooltip
-                            contentStyle={{
-                                background: "hsl(var(--background))",
-                                borderColor: "hsl(var(--border))",
-                                borderRadius: "var(--radius)"
-                            }}
-                        />
-                        <Pie data={studentStatusData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label>
-                            {studentStatusData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-2xl font-bold">{students.length}</span>
-                    <span className="text-sm text-muted-foreground">Total Students</span>
-                </div>
-            </div>
-          </CardContent>
-            <CardContent className="flex justify-center gap-4 text-sm">
-                {studentStatusData.map(entry => (
-                    <div key={entry.name} className="flex items-center gap-2">
-                        <Circle className="h-3 w-3" style={{ fill: entry.fill, color: entry.fill }}/>
-                        <span>{entry.name}</span>
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
+        <StudentStatusChart data={studentStatusData} totalStudents={students.length} />
         <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>Upcoming Events</CardTitle>
