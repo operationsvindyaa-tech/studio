@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone, CheckCircle, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, FileText, Printer, GraduationCap, Download, Edit, Trash2, PlusCircle, Phone, CheckCircle, AlertTriangle, Calendar as CalendarIcon, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import {
@@ -28,9 +28,12 @@ import { getStudents, type Student } from "@/lib/db";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { format } from 'date-fns';
+import { format, isWithinInterval, parse } from 'date-fns';
 import { getBillingData, StudentBillingInfo, Activity, courseFees, calculateTotal, activityHeads } from "@/lib/billing-db";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import type { DateRange } from "react-day-picker";
 
 
 const formatAmount = (amount: number) => {
@@ -46,6 +49,9 @@ type NewInvoice = {
     discount: number;
     tax: number;
 }
+
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 
 const InvoiceTable = ({ invoices, onStatusChange, onView, onEdit, onDelete }: { invoices: StudentBillingInfo[], onStatusChange: (id: string, status: BillingStatus) => void, onView: (invoice: StudentBillingInfo) => void, onEdit: (invoice: StudentBillingInfo) => void, onDelete: (invoice: StudentBillingInfo) => void }) => {
     return (
@@ -134,7 +140,7 @@ const InvoiceTable = ({ invoices, onStatusChange, onView, onEdit, onDelete }: { 
 
 export default function BillingPage() {
   const [billingData, setBillingData] = useState<StudentBillingInfo[]>([]);
-  const [pendingInvoices, setPendingInvoices] = useState<StudentBillingInfo[]>([]);
+  const [filteredInvoices, setFilteredInvoices] = useState<StudentBillingInfo[]>([]);
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
@@ -148,6 +154,11 @@ export default function BillingPage() {
   const invoiceRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [monthFilter, setMonthFilter] = useState<string>("All");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
   useEffect(() => {
     const fetchData = async () => {
         setLoading(true);
@@ -156,7 +167,7 @@ export default function BillingPage() {
             setAllStudents(students);
             const billingRecords = await getBillingData();
             setBillingData(billingRecords);
-            setPendingInvoices(billingRecords.filter(b => b.status === 'Due' || b.status === 'Overdue'));
+            setFilteredInvoices(billingRecords); // Initially show all
         } catch (error) {
             toast({
                 title: "Error",
@@ -170,6 +181,27 @@ export default function BillingPage() {
 
     fetchData();
   }, [toast]);
+
+  useEffect(() => {
+      let filtered = billingData;
+
+      if (statusFilter !== "All") {
+          filtered = filtered.filter(invoice => invoice.status === statusFilter);
+      }
+      
+      if (monthFilter !== "All") {
+          filtered = filtered.filter(invoice => invoice.months.includes(monthFilter));
+      }
+      
+      if (dateRange?.from && dateRange?.to) {
+          filtered = filtered.filter(invoice => {
+              const invoiceDate = parse(invoice.dueDate, 'yyyy-MM-dd', new Date());
+              return isWithinInterval(invoiceDate, { start: dateRange.from!, end: dateRange.to! });
+          });
+      }
+
+      setFilteredInvoices(filtered);
+  }, [statusFilter, monthFilter, dateRange, billingData]);
 
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
@@ -241,7 +273,6 @@ export default function BillingPage() {
     if (invoiceToDelete) {
         const updatedBillingData = billingData.filter(item => item.id !== invoiceToDelete.id)
         setBillingData(updatedBillingData);
-        setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
         toast({
             title: "Invoice Deleted",
             description: `Invoice for ${invoiceToDelete.name} has been successfully deleted.`
@@ -258,7 +289,6 @@ export default function BillingPage() {
                     : invoice
             )
         setBillingData(updatedBillingData);
-        setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
         
         const studentName = billingData.find(inv => inv.id === invoiceId)?.name;
         toast({
@@ -312,7 +342,6 @@ export default function BillingPage() {
       
       const updatedBillingData = [newBillingRecord, ...billingData];
       setBillingData(updatedBillingData);
-      setPendingInvoices(updatedBillingData.filter(b => b.status === 'Due' || b.status === 'Overdue'));
       toast({ title: "Success", description: `Invoice created for ${student.name}.` });
       setIsCreateInvoiceOpen(false);
       setNewInvoice({ studentId: '', activities: [{ name: 'Tuition Fee', fee: 2500, description: '' }], months: '', discount: 0, tax: 0 });
@@ -381,83 +410,95 @@ export default function BillingPage() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <CardTitle>Student Billing</CardTitle>
               <CardDescription>
                 Manage student fee payments and generate invoices for activities.
               </CardDescription>
             </div>
-            <Button onClick={() => setIsCreateInvoiceOpen(true)}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Create Invoice
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-full sm:w-[150px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Paid">Paid</SelectItem>
+                        <SelectItem value="Due">Due</SelectItem>
+                        <SelectItem value="Overdue">Overdue</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={monthFilter} onValueChange={setMonthFilter}>
+                    <SelectTrigger className="w-full sm:w-[150px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Months</SelectItem>
+                        {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant={"outline"}
+                            className={cn("w-full sm:w-[240px] justify-start text-left font-normal", !dateRange && "text-muted-foreground")}
+                        >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (
+                                dateRange.to ? (
+                                    <>
+                                        {format(dateRange.from, "LLL dd, y")} - {format(dateRange.to, "LLL dd, y")}
+                                    </>
+                                ) : (
+                                    format(dateRange.from, "LLL dd, y")
+                                )
+                            ) : (
+                                <span>Filter by due date</span>
+                            )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                        <Calendar
+                            initialFocus
+                            mode="range"
+                            defaultMonth={dateRange?.from}
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={2}
+                        />
+                    </PopoverContent>
+                </Popover>
+                 <Button onClick={() => setIsCreateInvoiceOpen(true)} className="w-full sm:w-auto">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Create Invoice
+                </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-            <Tabs defaultValue="all">
-                <TabsList>
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="pending" className="flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        Pending
-                        {pendingInvoices.length > 0 && <Badge>{pendingInvoices.length}</Badge>}
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="all" className="pt-4">
-                    {loading ? (
-                       <Table>
-                            <TableBody>
-                                {Array.from({ length: 5 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    ) : (
-                        <InvoiceTable
-                            invoices={billingData}
-                            onStatusChange={handleStatusChange}
-                            onView={handleViewInvoice}
-                            onEdit={handleEditInvoice}
-                            onDelete={handleDeleteInvoice}
-                        />
-                    )}
-                </TabsContent>
-                 <TabsContent value="pending" className="pt-4">
-                    {loading ? (
-                         <Table>
-                            <TableBody>
-                                {Array.from({ length: 3 }).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
-                                        <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-16" /></TableCell>
-                                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    ) : (
-                        <InvoiceTable
-                            invoices={pendingInvoices}
-                            onStatusChange={handleStatusChange}
-                            onView={handleViewInvoice}
-                            onEdit={handleEditInvoice}
-                            onDelete={handleDeleteInvoice}
-                        />
-                    )}
-                </TabsContent>
-            </Tabs>
+             {loading ? (
+                <Table>
+                     <TableBody>
+                         {Array.from({ length: 5 }).map((_, i) => (
+                             <TableRow key={i}>
+                                 <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                 <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                                 <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+                                 <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                                 <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                             </TableRow>
+                         ))}
+                     </TableBody>
+                 </Table>
+             ) : (
+                 <InvoiceTable
+                     invoices={filteredInvoices}
+                     onStatusChange={handleStatusChange}
+                     onView={handleViewInvoice}
+                     onEdit={handleEditInvoice}
+                     onDelete={handleDeleteInvoice}
+                 />
+             )}
         </CardContent>
         <CardFooter>
             <div className="text-xs text-muted-foreground">
-                Showing <strong>{billingData.length}</strong> total records.
+                Showing <strong>{filteredInvoices.length}</strong> of <strong>{billingData.length}</strong> total records.
             </div>
         </CardFooter>
       </Card>
@@ -745,3 +786,5 @@ export default function BillingPage() {
     </>
   );
 }
+
+    
