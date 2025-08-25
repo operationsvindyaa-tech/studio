@@ -90,7 +90,8 @@ const navItems = [
 const studentPortalNavItems = [
     { href: "/student-attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/progress-report", icon: TrendingUp, label: "Progress" },
-    { href: "/activities-and-exams", icon: Calendar, label: "Activities & Exams" },
+    { href: "/upcoming-events", icon: Calendar, label: "Upcoming Events and Activities" },
+    { href: "/exam-updates", icon: ListOrdered, label: "Exams Updates" },
     { href: "/syllabus", icon: BookOpen, label: "Syllabus" },
     { href: "/notes", icon: Notebook, label: "Notes" },
     { href: "/online-class", icon: Video, label: "Online Class" },
