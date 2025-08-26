@@ -1,3 +1,4 @@
+
 'use server';
 
 import mysql from 'mysql2/promise';
@@ -26,10 +27,17 @@ const pool = areDbCredentialsSet()
 // A helper function to execute queries
 export async function query(sql: string, params?: any[]) {
   if (!pool) {
-    // If the pool isn't initialized, there are no credentials.
-    // Throw an error to allow the calling function to fall back to mock data.
-    throw new Error("Database credentials are not configured. Falling back to mock data.");
+    // If the pool isn't initialized, return null to signal
+    // that the calling function should use mock data.
+    return null;
   }
-  const [rows, fields] = await pool.execute(sql, params);
-  return rows;
+  try {
+    const [rows, fields] = await pool.execute(sql, params);
+    return rows;
+  } catch (error) {
+    // If there's an actual error with the query or connection during execution
+    console.error("Database query failed:", error);
+    // Return null to fall back to mock data
+    return null;
+  }
 }

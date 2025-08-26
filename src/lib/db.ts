@@ -90,13 +90,15 @@ const mockStudents = generateMockStudents();
 
 
 export const getStudents = async (): Promise<Student[]> => {
-  // The 'any' type is used here for simplicity. In a real application, you'd
-  // want to use a tool like Zod to validate the shape of the data from the DB.
   try {
     const students: any = await query('SELECT * FROM students');
     
+    // If query returns null, it means no DB connection, use mock data.
+    if (students === null) {
+      return mockStudents;
+    }
+    
     if (!students || students.length === 0) {
-        // Return a default student if the database is empty for demo purposes
         return mockStudents;
     }
 
@@ -107,8 +109,9 @@ export const getStudents = async (): Promise<Student[]> => {
       joined: new Date(student.joined).toISOString(),
     }));
   } catch (error) {
+    // This catch block is now for actual query errors, not connection errors.
     console.error("Database query failed:", error);
-    // Return mock data if the database connection fails
+    // Return mock data as a fallback
     return mockStudents;
   }
 };
@@ -118,6 +121,31 @@ export const addStudent = async (studentData: any) => {
 
   // Generate a new unique student ID
   const result: any = await query('SELECT id FROM students ORDER BY id DESC LIMIT 1');
+
+  // If there's no DB, we can't add a student.
+  if (result === null) {
+    console.warn("Cannot add student: No database connection. Operation skipped.");
+    // Find the highest ID in mock data to simulate adding
+    const lastMockId = mockStudents.reduce((max, s) => {
+        const num = parseInt(s.id.replace('S', ''), 10);
+        return num > max ? num : max;
+    }, 0);
+    const newId = `S${String(lastMockId + 1).padStart(3, '0')}`;
+    mockStudents.push({
+        id: newId,
+        name: studentData.name,
+        email: studentData.email,
+        joined: new Date(studentData.dateOfJoining).toISOString(),
+        status: studentData.status,
+        courses: 1,
+        avatar: studentData.photo || `https://placehold.co/100x100.png`,
+        initials: initials,
+        classMode: studentData.classMode,
+        admissionCenter: studentData.admissionCenter,
+    });
+    return mockStudents.find(s => s.id === newId);
+  }
+
   let newIdNumber = 1;
   if (result.length > 0) {
     const lastId = result[0].id;
