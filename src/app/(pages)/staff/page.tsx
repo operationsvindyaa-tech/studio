@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -22,12 +24,29 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getStaff, type Staff } from "@/lib/staff-db";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default async function StaffPage() {
-  const staff = await getStaff();
+export default function StaffPage() {
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+        setLoading(true);
+        try {
+            const data = await getStaff();
+            setStaff(data);
+        } catch (error) {
+            console.error("Failed to fetch staff", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchStaff();
+  }, []);
   
   const handleExport = () => {
-    "use client";
     if (!staff.length) return;
     
     const headers = ["ID", "Name", "Role", "Department", "Email", "Phone", "Status"];
@@ -84,7 +103,25 @@ export default async function StaffPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {staff.length > 0 ? (
+                {loading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell>
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="h-9 w-9 rounded-full" />
+                                    <div className="space-y-1">
+                                        <Skeleton className="h-4 w-24" />
+                                        <Skeleton className="h-3 w-32" />
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                            <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))
+                ) : staff.length > 0 ? (
                   staff.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell>
