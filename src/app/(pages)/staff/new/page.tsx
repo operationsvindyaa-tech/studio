@@ -62,7 +62,8 @@ const staffFormSchema = z.object({
   workLocation: z.string().min(2, "Work location is required."),
   branch: z.string({ required_error: "Branch is required." }),
   workingDays: z.array(z.string()).optional().default([]),
-  
+  noOfWorkingDays: z.coerce.number().optional(),
+
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
   ifscCode: z.string().min(5, "A valid IFSC code is required."),
@@ -121,8 +122,17 @@ export default function NewStaffPage() {
       ifscCode: "",
       benefitsNumber: "",
       workingDays: [],
+      noOfWorkingDays: 0,
     },
   });
+  
+  const workingDaysWatch = form.watch('workingDays');
+
+  useEffect(() => {
+    if (Array.isArray(workingDaysWatch)) {
+      form.setValue('noOfWorkingDays', workingDaysWatch.length);
+    }
+  }, [workingDaysWatch, form]);
 
   useEffect(() => {
     if (state.message) {
@@ -292,6 +302,9 @@ export default function NewStaffPage() {
                         </Select>
                         <FormMessage />
                       </FormItem>
+                    )} />
+                     <FormField control={form.control} name="noOfWorkingDays" render={({ field }) => (
+                        <FormItem><FormLabel>No. of Working Days</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-muted"/></FormControl><FormMessage /></FormItem>
                     )} />
                 </div>
                  <FormField

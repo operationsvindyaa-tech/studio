@@ -24,7 +24,8 @@ const staffFormSchema = z.object({
   workLocation: z.string().min(2, "Work location is required."),
   branch: z.string({ required_error: "Branch is required." }),
   workingDays: z.array(z.string()).optional(),
-  
+  noOfWorkingDays: z.coerce.number().optional(),
+
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
   ifscCode: z.string().min(5, "A valid IFSC code is required."),
