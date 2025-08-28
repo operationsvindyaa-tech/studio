@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,9 +47,12 @@ import { getTeachers, addTeacher, updateTeacher, deleteTeacher, type Teacher, ty
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
-import { Form, FormDescription } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { Form, FormDescription, FormControl, FormField } from "@/components/ui/form";
+import { useForm, Controller } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
+const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -63,6 +65,15 @@ export default function TeachersPage() {
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const form = useForm();
+  
+  const workingDaysWatch = form.watch('workingDays');
+
+  useEffect(() => {
+    if (Array.isArray(workingDaysWatch)) {
+      form.setValue('noOfWorkingDays', workingDaysWatch.length);
+    }
+  }, [workingDaysWatch, form]);
+
 
   const fetchTeachers = async () => {
     setLoading(true);
@@ -79,8 +90,30 @@ export default function TeachersPage() {
     setEditingTeacher(teacher);
     if (teacher) {
         setPhotoPreview(teacher.avatar);
+        form.reset({
+            name: teacher.name,
+            designation: teacher.designation,
+            department: teacher.department,
+            phone: teacher.phone,
+            classCenter: teacher.classCenter,
+            noOfBatches: teacher.noOfBatches,
+            totalStudents: teacher.totalStudents,
+            noOfWorkingDays: teacher.noOfWorkingDays,
+            workingDays: teacher.workingDays || [],
+        });
     } else {
         setPhotoPreview(null);
+        form.reset({
+            name: '',
+            designation: '',
+            department: '',
+            phone: '',
+            classCenter: '',
+            noOfBatches: 0,
+            totalStudents: 0,
+            noOfWorkingDays: 0,
+            workingDays: [],
+        });
     }
     setPhotoDataUrl(null);
     setIsDialogOpen(true);
@@ -91,6 +124,7 @@ export default function TeachersPage() {
     setEditingTeacher(null);
     setPhotoPreview(null);
     setPhotoDataUrl(null);
+    form.reset();
   };
 
   const handleDelete = (teacher: Teacher) => {
@@ -124,30 +158,18 @@ export default function TeachersPage() {
     }
   };
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const name = formData.get("name") as string;
-    const designation = formData.get("designation") as string;
-    const department = formData.get("department") as string;
-    const phone = formData.get("phone") as string;
-    const classCenter = formData.get("classCenter") as string;
-    const noOfBatches = parseInt(formData.get("noOfBatches") as string, 10);
-    const totalStudents = parseInt(formData.get("totalStudents") as string, 10);
-    const noOfWorkingDays = parseInt(formData.get("noOfWorkingDays") as string, 10);
-    const weekOff = formData.get("weekOff") as string;
-
+  const handleFormSubmit = async (data: any) => {
     const teacherData: AddTeacherData = {
-        name,
-        designation,
-        department,
-        phone,
-        classCenter,
-        noOfBatches,
-        totalStudents,
-        noOfWorkingDays,
-        weekOff,
-        email: editingTeacher?.email || `${name.split(' ').join('.').toLowerCase()}@vindyaa.com`,
+        name: data.name,
+        designation: data.designation,
+        department: data.department,
+        phone: data.phone,
+        classCenter: data.classCenter,
+        noOfBatches: Number(data.noOfBatches),
+        totalStudents: Number(data.totalStudents),
+        noOfWorkingDays: data.workingDays.length,
+        workingDays: data.workingDays,
+        email: editingTeacher?.email || `${data.name.split(' ').join('.').toLowerCase()}@vindyaa.com`,
         photo: photoDataUrl || (editingTeacher ? editingTeacher.avatar : null),
     };
 
@@ -184,11 +206,12 @@ export default function TeachersPage() {
     const headers = ["ID", "Name", "Designation", "Department", "Phone", "Class Center", "Batches", "Students", "Working Days", "Week Off"];
     const csvContent = [
       headers.join(','),
-      ...teachers.map(t => [t.id, `"${t.name}"`, t.designation, t.department, t.phone, t.classCenter, t.noOfBatches, t.totalStudents, t.noOfWorkingDays, t.weekOff].join(','))
+      ...teachers.map(t => [t.id, `"${t.name}"`, t.designation, t.department, t.phone, t.classCenter, t.noOfBatches, t.totalStudents, t.noOfWorkingDays, t.workingDays].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', 'teachers.csv');
     document.body.appendChild(link);
@@ -226,7 +249,7 @@ export default function TeachersPage() {
                     </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
-                        <form id="teacher-form" onSubmit={handleFormSubmit} className="space-y-6">
+                        <form id="teacher-form" onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
                             <div className="flex flex-col items-center text-center">
                                 <Input
                                     type="file"
@@ -247,53 +270,61 @@ export default function TeachersPage() {
                                 <FormDescription className="mt-2">Click above to upload a photo.</FormDescription>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input id="name" name="name" defaultValue={editingTeacher?.name} placeholder="e.g., Jane Smith" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="designation">Designation</Label>
-                                    <Input id="designation" name="designation" defaultValue={editingTeacher?.designation} placeholder="e.g., Senior Instructor" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="department">Department</Label>
-                                    <Input id="department" name="department" defaultValue={editingTeacher?.department} placeholder="e.g., Academics" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Contact Number</Label>
-                                    <Input id="phone" name="phone" type="tel" defaultValue={editingTeacher?.phone} placeholder="e.g., (555) 123-4567" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="classCenter">Class Center</Label>
-                                    <Input id="classCenter" name="classCenter" defaultValue={editingTeacher?.classCenter} placeholder="e.g., Main Campus" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="noOfBatches">No of Batches</Label>
-                                    <Input id="noOfBatches" name="noOfBatches" type="number" defaultValue={editingTeacher?.noOfBatches} placeholder="e.g., 5" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="totalStudents">Total Students</Label>
-                                    <Input id="totalStudents" name="totalStudents" type="number" defaultValue={editingTeacher?.totalStudents} placeholder="e.g., 50" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="noOfWorkingDays">No of Working Days</Label>
-                                    <Input id="noOfWorkingDays" name="noOfWorkingDays" type="number" defaultValue={editingTeacher?.noOfWorkingDays} placeholder="e.g., 22" required/>
-                                </div>
-                                <div className="space-y-2 col-span-2">
-                                    <Label htmlFor="weekOff">Week Off</Label>
-                                    <Select name="weekOff" defaultValue={editingTeacher?.weekOff}>
-                                        <SelectTrigger id="weekOff"><SelectValue placeholder="Select a day" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Sunday">Sunday</SelectItem>
-                                            <SelectItem value="Monday">Monday</SelectItem>
-                                            <SelectItem value="Tuesday">Tuesday</SelectItem>
-                                            <SelectItem value="Wednesday">Wednesday</SelectItem>
-                                            <SelectItem value="Thursday">Thursday</SelectItem>
-                                            <SelectItem value="Friday">Friday</SelectItem>
-                                            <SelectItem value="Saturday">Saturday</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                <Controller control={form.control} name="name" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="name">Name</Label><Input id="name" {...field} placeholder="e.g., Jane Smith" required/></div>
+                                )} />
+                                <Controller control={form.control} name="designation" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="designation">Designation</Label><Input id="designation" {...field} placeholder="e.g., Senior Instructor" required/></div>
+                                )} />
+                                <Controller control={form.control} name="department" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="department">Department</Label><Input id="department" {...field} placeholder="e.g., Academics" required/></div>
+                                )} />
+                                <Controller control={form.control} name="phone" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="phone">Contact Number</Label><Input id="phone" type="tel" {...field} placeholder="e.g., (555) 123-4567" required/></div>
+                                )} />
+                                <Controller control={form.control} name="classCenter" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="classCenter">Class Center</Label><Input id="classCenter" {...field} placeholder="e.g., Main Campus" required/></div>
+                                )} />
+                                <Controller control={form.control} name="noOfBatches" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="noOfBatches">No of Batches</Label><Input id="noOfBatches" type="number" {...field} placeholder="e.g., 5" required/></div>
+                                )} />
+                                <Controller control={form.control} name="totalStudents" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="totalStudents">Total Students</Label><Input id="totalStudents" type="number" {...field} placeholder="e.g., 50" required/></div>
+                                )} />
+                                 <Controller control={form.control} name="noOfWorkingDays" render={({ field }) => (
+                                    <div className="space-y-2"><Label htmlFor="noOfWorkingDays">No of Working Days</Label><Input id="noOfWorkingDays" type="number" {...field} readOnly className="bg-muted" /></div>
+                                )} />
+                            </div>
+                             <div className="space-y-2 col-span-2">
+                                <Label>Working Days</Label>
+                                <Controller
+                                    name="workingDays"
+                                    control={form.control}
+                                    render={() => (
+                                        <div className="flex flex-wrap gap-4">
+                                            {daysOfWeek.map((day) => (
+                                                <FormField
+                                                    key={day}
+                                                    control={form.control}
+                                                    name="workingDays"
+                                                    render={({ field }) => (
+                                                        <div className="flex items-center space-x-2">
+                                                            <Checkbox
+                                                                checked={field.value?.includes(day)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...(field.value || []), day])
+                                                                        : field.onChange((field.value || []).filter((value: string) => value !== day));
+                                                                }}
+                                                            />
+                                                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{day}</label>
+                                                        </div>
+                                                    )}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                />
                             </div>
                         </form>
                     </Form>
