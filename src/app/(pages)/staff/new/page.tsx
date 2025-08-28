@@ -41,6 +41,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getBranches, Branch } from "@/lib/branches-db";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const staffFormSchema = z.object({
   photo: z.string().optional(),
@@ -60,6 +61,7 @@ const staffFormSchema = z.object({
   employmentType: z.enum(["Full-time", "Part-time", "Contract"], { required_error: "Employment type is required." }),
   workLocation: z.string().min(2, "Work location is required."),
   branch: z.string({ required_error: "Branch is required." }),
+  workingDays: z.array(z.string()).optional().default([]),
   
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
@@ -83,6 +85,8 @@ function SubmitButton() {
         </Button>
     );
 }
+
+const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function NewStaffPage() {
   const [state, formAction] = useActionState(createStaff, initialState);
@@ -116,6 +120,7 @@ export default function NewStaffPage() {
       accountNumber: "",
       ifscCode: "",
       benefitsNumber: "",
+      workingDays: [],
     },
   });
 
@@ -172,6 +177,8 @@ export default function NewStaffPage() {
                 Object.entries(data).forEach(([key, value]) => {
                     if (value instanceof Date) {
                         formData.append(key, value.toISOString());
+                    } else if (Array.isArray(value)) {
+                        value.forEach(item => formData.append(key, item));
                     } else if (value !== undefined && value !== null) {
                         formData.append(key, String(value));
                     }
@@ -287,6 +294,44 @@ export default function NewStaffPage() {
                       </FormItem>
                     )} />
                 </div>
+                 <FormField
+                    control={form.control}
+                    name="workingDays"
+                    render={() => (
+                        <FormItem>
+                            <FormLabel>Working Days</FormLabel>
+                            <div className="flex flex-wrap gap-4">
+                                {daysOfWeek.map((day) => (
+                                    <FormField
+                                        key={day}
+                                        control={form.control}
+                                        name="workingDays"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                                <FormControl>
+                                                    <Checkbox
+                                                        checked={field.value?.includes(day)}
+                                                        onCheckedChange={(checked) => {
+                                                            return checked
+                                                                ? field.onChange([...(field.value || []), day])
+                                                                : field.onChange(
+                                                                    (field.value || []).filter(
+                                                                        (value) => value !== day
+                                                                    )
+                                                                )
+                                                        }}
+                                                    />
+                                                </FormControl>
+                                                <FormLabel className="font-normal">{day}</FormLabel>
+                                            </FormItem>
+                                        )}
+                                    />
+                                ))}
+                            </div>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </div>
             
              {/* Payroll Information */}

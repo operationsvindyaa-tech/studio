@@ -26,6 +26,7 @@ export type Staff = {
         employmentType: 'Full-time' | 'Part-time' | 'Contract';
         workLocation: string;
         branch: string;
+        workingDays?: string[];
     };
     payroll: {
         salary: number; // monthly
@@ -62,6 +63,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         },
         payroll: {
             salary: 75000,
@@ -90,6 +92,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         },
         payroll: {
             salary: 72000,
@@ -118,6 +121,7 @@ const initialStaff: Staff[] = [
             employmentType: "Part-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Tuesday", "Thursday", "Saturday"],
         },
         payroll: {
             salary: 55000,
@@ -146,6 +150,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Wednesday", "Friday", "Saturday"],
         },
         payroll: {
             salary: 52000,
@@ -174,6 +179,7 @@ const initialStaff: Staff[] = [
             employmentType: "Part-time",
             workLocation: "Wellness Center",
             branch: "Branch 2",
+            workingDays: ["Monday", "Wednesday", "Friday"],
         },
         payroll: {
             salary: 60000,
@@ -202,6 +208,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Tuesday", "Thursday", "Saturday", "Sunday"],
         },
         payroll: {
             salary: 68000,
@@ -230,6 +237,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         },
         payroll: {
             salary: 85000,
@@ -258,6 +266,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         },
         payroll: {
             salary: 35000,
@@ -286,6 +295,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
         },
         payroll: {
             salary: 48000,
@@ -314,6 +324,7 @@ const initialStaff: Staff[] = [
             employmentType: "Contract",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         },
         payroll: {
             salary: 22000,
@@ -342,6 +353,7 @@ const initialStaff: Staff[] = [
             employmentType: "Part-time",
             workLocation: "Branch 2 (Marathahalli)",
             branch: "Branch 2",
+            workingDays: ["Tuesday", "Thursday", "Saturday"],
         },
         payroll: {
             salary: 40000,
@@ -370,6 +382,7 @@ const initialStaff: Staff[] = [
             employmentType: "Full-time",
             workLocation: "Main Campus",
             branch: "Main Campus",
+            workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         },
         payroll: {
             salary: 150000,

@@ -23,6 +23,7 @@ const staffFormSchema = z.object({
   employmentType: z.enum(["Full-time", "Part-time", "Contract"], { required_error: "Employment type is required." }),
   workLocation: z.string().min(2, "Work location is required."),
   branch: z.string({ required_error: "Branch is required." }),
+  workingDays: z.array(z.string()).optional(),
   
   salary: z.coerce.number().min(0, "Salary must be a positive number."),
   accountNumber: z.string().min(5, "A valid bank account number is required."),
@@ -40,8 +41,12 @@ type State = {
 export async function createStaff(prevState: State, formData: FormData): Promise<State> {
   try {
     const data = Object.fromEntries(formData);
+    // Handle array from FormData
+    const workingDays = formData.getAll("workingDays");
+    
     const parsedData = staffFormSchema.parse({
         ...data,
+        workingDays: workingDays,
         dob: new Date(data.dob as string),
         dateOfJoining: new Date(data.dateOfJoining as string),
         salary: Number(data.salary)
@@ -69,6 +74,7 @@ export async function createStaff(prevState: State, formData: FormData): Promise
         employmentType: parsedData.employmentType,
         workLocation: parsedData.workLocation,
         branch: parsedData.branch,
+        workingDays: parsedData.workingDays,
       },
       payroll: {
           salary: parsedData.salary,
