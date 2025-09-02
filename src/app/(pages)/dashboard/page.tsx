@@ -27,7 +27,11 @@ async function getDashboardData() {
     return { students: studentData, staff: staffData, courses: courseData, enquiries: enquiryData, events: eventData };
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const { students, staff, courses, enquiries, events } = await getDashboardData();
   
   const studentStatusData = Object.entries(

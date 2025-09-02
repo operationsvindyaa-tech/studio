@@ -7,7 +7,11 @@ import { Users, Clock, PlusCircle, Wallet, CalendarDays, Edit } from "lucide-rea
 import { getCourses, type Course } from "@/lib/courses-db";
 import Link from "next/link"
 
-export default async function CoursesPage() {
+export default async function CoursesPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const courses = await getCourses();
 
   return (
