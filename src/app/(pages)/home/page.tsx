@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,9 +19,9 @@ type GalleryImage = {
 export default function HomePage() {
   const [logoSrc, setLogoSrc] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([
-    { id: 1, src: "https://picsum.photos/600/400", alt: "Dance", hint: "dance class" },
-    { id: 2, src: "https://picsum.photos/600/400", alt: "Music", hint: "music lesson" },
-    { id: 3, src: "https://picsum.photos/600/400", alt: "Art", hint: "art craft" },
+    { id: 1, src: "https://placehold.co/600x400/EFEFEF/333333?text=Dance", alt: "Dance", hint: "dance class" },
+    { id: 2, src: "https://placehold.co/600x400/EFEFEF/333333?text=Music", alt: "Music", hint: "music lesson" },
+    { id: 3, src: "https://placehold.co/600x400/EFEFEF/333333?text=Art", alt: "Art", hint: "art craft" },
   ]);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -82,8 +83,8 @@ export default function HomePage() {
         accept="image/*"
       />
       <div className="flex flex-col items-center justify-center text-center p-8 bg-muted/50 rounded-lg">
-        <div className="mb-4 flex items-center gap-4">
-          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer flex items-center justify-center h-32 max-w-96 w-64">
+        <div className="mb-4">
+          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer flex items-center justify-center h-32 w-96">
             {logoSrc ? (
               <Image src={logoSrc} alt="Company Logo" layout="fill" className="rounded-lg object-contain p-2" />
             ) : (
