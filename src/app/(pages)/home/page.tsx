@@ -2,8 +2,10 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { GraduationCap, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { GraduationCap, Upload, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useRef } from "react";
 
 type GalleryImage = {
@@ -98,6 +100,12 @@ export default function HomePage() {
         <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
           Welcome to your central hub for managing every aspect of the academy. From student enrollment to financial reporting, everything you need is right here.
         </p>
+         <Button asChild className="mt-6">
+          <Link href="/dashboard">
+            <LayoutDashboard className="mr-2 h-5 w-5" />
+            Go to Dashboard
+          </Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

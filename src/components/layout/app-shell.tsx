@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -84,7 +85,7 @@ import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/home", icon: Home, label: "Home" },
+  { href: "/home", icon: Home, label: "Welcome" },
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 ];
 
@@ -304,6 +305,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
+                    pathname.startsWith('/home') ? "Welcome Screen" :
                     [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
