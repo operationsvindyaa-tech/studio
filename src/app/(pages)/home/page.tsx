@@ -84,11 +84,13 @@ export default function HomePage() {
       />
       <div className="flex flex-col items-center justify-center text-center p-8 bg-muted/50 rounded-lg">
         <div className="mb-4 flex items-center gap-4">
-          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer flex items-center justify-center max-h-24 max-w-48">
+          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer flex items-center justify-center max-h-48 max-w-96">
             {logoSrc ? (
               <Image src={logoSrc} alt="Company Logo" layout="fill" className="rounded-lg object-contain p-2" />
             ) : (
-              <GraduationCap className="h-12 w-12" />
+              <div className="w-64 h-32 flex items-center justify-center">
+                <GraduationCap className="h-16 w-16" />
+              </div>
             )}
             <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Upload className="h-8 w-8 text-white" />
