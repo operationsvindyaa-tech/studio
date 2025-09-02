@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,14 +81,14 @@ export default function HomePage() {
       />
       <div className="flex flex-col items-center justify-center text-center p-8 bg-muted/50 rounded-lg">
         <div className="mb-4 flex items-center gap-4">
-          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-4 rounded-full text-primary-foreground cursor-pointer">
+          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-6 rounded-xl text-primary-foreground cursor-pointer h-32 w-32 flex items-center justify-center">
             {logoSrc ? (
-              <Image src={logoSrc} alt="Company Logo" width={48} height={48} className="rounded-full object-cover" />
+              <Image src={logoSrc} alt="Company Logo" width={128} height={128} className="rounded-lg object-cover h-full w-full" />
             ) : (
-              <GraduationCap className="h-12 w-12" />
+              <GraduationCap className="h-16 w-16" />
             )}
-            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Upload className="h-6 w-6 text-white" />
+            <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Upload className="h-8 w-8 text-white" />
             </div>
           </button>
         </div>
