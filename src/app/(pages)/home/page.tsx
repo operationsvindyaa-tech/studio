@@ -98,9 +98,6 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold font-headline text-primary">
           VINDYAA - The Altitude of Art
         </h1>
-        <div className="mt-2">
-            <SidebarTrigger />
-        </div>
         <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
           Welcome to your central hub for managing every aspect of the academy. From student enrollment to financial reporting, everything you need is right here.
         </p>
