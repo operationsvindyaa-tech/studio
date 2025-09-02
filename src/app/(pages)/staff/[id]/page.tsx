@@ -21,8 +21,8 @@ function InfoField({ icon: Icon, label, value }: { icon: React.ElementType, labe
     )
 }
 
-export default async function StaffProfilePage({ params }: { params: { id: string } }) {
-    const staffMember = await getStaffById(params.id);
+export default async function StaffProfilePage({ params: { id } }: { params: { id: string } }) {
+    const staffMember = await getStaffById(id);
 
     if (!staffMember) {
         notFound();
