@@ -68,6 +68,7 @@ import {
   ChevronRight,
   Notebook,
   Ruler,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,6 +84,7 @@ import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 
 const navItems = [
+  { href: "/home", icon: Home, label: "Home" },
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 ];
 
@@ -229,7 +231,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} passHref>
                   <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={pathname === item.href || (pathname === "/" && item.href === "/home")}
                     asChild
                   >
                     <span>
