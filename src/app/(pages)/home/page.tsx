@@ -7,6 +7,7 @@ import { GraduationCap, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef } from "react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 type GalleryImage = {
   id: number;
@@ -83,7 +84,7 @@ export default function HomePage() {
       />
       <div className="flex flex-col items-center justify-center text-center p-8 bg-muted/50 rounded-lg">
         <div className="mb-4 flex items-center gap-4">
-          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer h-24 max-h-24 w-48 flex items-center justify-center">
+          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer flex items-center justify-center max-h-24 max-w-48">
             {logoSrc ? (
               <Image src={logoSrc} alt="Company Logo" layout="fill" className="rounded-lg object-contain p-2" />
             ) : (
@@ -97,6 +98,9 @@ export default function HomePage() {
         <h1 className="text-4xl font-bold font-headline text-primary">
           VINDYAA - The Altitude of Art
         </h1>
+        <div className="mt-2">
+            <SidebarTrigger />
+        </div>
         <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
           Welcome to your central hub for managing every aspect of the academy. From student enrollment to financial reporting, everything you need is right here.
         </p>
