@@ -225,7 +225,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <h2 className="text-lg font-headline font-semibold">VINDYAA</h2>
                 </div>
             </div>
-            <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -304,6 +303,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-4">
                 <SidebarTrigger className="md:hidden" />
+                <SidebarTrigger className="hidden md:flex" />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
                     [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
