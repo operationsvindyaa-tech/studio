@@ -3,7 +3,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Upload, LayoutDashboard } from "lucide-react";
+import { GraduationCap, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useRef } from "react";
@@ -83,9 +83,9 @@ export default function HomePage() {
       />
       <div className="flex flex-col items-center justify-center text-center p-8 bg-muted/50 rounded-lg">
         <div className="mb-4 flex items-center gap-4">
-          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-6 rounded-xl text-primary-foreground cursor-pointer h-24 w-48 flex items-center justify-center">
+          <button onClick={handleLogoUploadClick} className="relative group bg-primary p-2 rounded-xl text-primary-foreground cursor-pointer h-24 max-h-24 w-48 flex items-center justify-center">
             {logoSrc ? (
-              <Image src={logoSrc} alt="Company Logo" width={192} height={96} className="rounded-lg object-contain h-full w-full" />
+              <Image src={logoSrc} alt="Company Logo" layout="fill" className="rounded-lg object-contain p-2" />
             ) : (
               <GraduationCap className="h-12 w-12" />
             )}
@@ -100,12 +100,6 @@ export default function HomePage() {
         <p className="mt-2 text-lg text-muted-foreground max-w-2xl">
           Welcome to your central hub for managing every aspect of the academy. From student enrollment to financial reporting, everything you need is right here.
         </p>
-         <Button asChild className="mt-6">
-          <Link href="/dashboard">
-            <LayoutDashboard className="mr-2 h-5 w-5" />
-            Go to Dashboard
-          </Link>
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
