@@ -215,8 +215,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
+      <Sidebar collapsible="icon">
+        <SidebarHeader className="flex items-center justify-between">
             <div className="flex items-center gap-2">
                 <div className="bg-primary p-2 rounded-lg text-primary-foreground">
                     <GraduationCap className="h-6 w-6" />
@@ -225,6 +225,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <h2 className="text-lg font-headline font-semibold">VINDYAA</h2>
                 </div>
             </div>
+            <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
