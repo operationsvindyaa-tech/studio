@@ -1,4 +1,3 @@
-
 // This is a simple in-memory "database" for demonstration purposes.
 
 export type MerchandiseItem = {
@@ -9,6 +8,7 @@ export type MerchandiseItem = {
   buyingPrice: number;
   stock: number;
   sizes?: string[];
+  taxRate?: number; // Tax rate in percentage
 };
 
 export type MerchandiseSale = {
@@ -29,14 +29,14 @@ export type StockTransaction = {
 };
 
 const initialMerchandise: MerchandiseItem[] = [
-  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50, sizes: ["S", "M", "L", "XL"] },
-  { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", sellingPrice: 1200, buyingPrice: 700, stock: 25 },
-  { id: "M003", name: "Beginner's Guide to Carnatic Music", category: "Books", sellingPrice: 350, buyingPrice: 180, stock: 40 },
-  { id: "M004", name: "Guitar Picks (Set of 5)", category: "Accessories", sellingPrice: 150, buyingPrice: 50, stock: 100 },
-  { id: "M005", name: "Yoga Mat", category: "Accessories", sellingPrice: 800, buyingPrice: 450, stock: 30 },
-  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", sellingPrice: 1800, buyingPrice: 1100, stock: 20, sizes: ["120cm", "130cm", "140cm", "150cm"] },
-  { id: "M007", name: "Sketchbook & Pencils Set", category: "Books", sellingPrice: 450, buyingPrice: 220, stock: 35 },
-  { id: "M008", name: "Ankle Bells (Salangai)", category: "Accessories", sellingPrice: 600, buyingPrice: 350, stock: 15 },
+  { id: "M001", name: "VINDYAA Logo T-Shirt (Black)", category: "Apparel", sellingPrice: 499, buyingPrice: 250, stock: 50, sizes: ["S", "M", "L", "XL"], taxRate: 12 },
+  { id: "M002", name: "Bharatanatyam Practice Saree", category: "Costumes", sellingPrice: 1200, buyingPrice: 700, stock: 25, taxRate: 5 },
+  { id: "M003", name: "Beginner's Guide to Carnatic Music", category: "Books", sellingPrice: 350, buyingPrice: 180, stock: 40, taxRate: 0 },
+  { id: "M004", name: "Guitar Picks (Set of 5)", category: "Accessories", sellingPrice: 150, buyingPrice: 50, stock: 100, taxRate: 18 },
+  { id: "M005", name: "Yoga Mat", category: "Accessories", sellingPrice: 800, buyingPrice: 450, stock: 30, taxRate: 18 },
+  { id: "M006", name: "Karate Gi (Uniform)", category: "Costumes", sellingPrice: 1800, buyingPrice: 1100, stock: 20, sizes: ["120cm", "130cm", "140cm", "150cm"], taxRate: 5 },
+  { id: "M007", name: "Sketchbook & Pencils Set", category: "Books", sellingPrice: 450, buyingPrice: 220, stock: 35, taxRate: 5 },
+  { id: "M008", name: "Ankle Bells (Salangai)", category: "Accessories", sellingPrice: 600, buyingPrice: 350, stock: 15, taxRate: 12 },
 ];
 
 let merchandise: MerchandiseItem[] = [...initialMerchandise];
@@ -107,12 +107,16 @@ export const recordMerchandiseSale = async (itemId: string, quantity: number): P
     }
 
     item.stock -= quantity;
+    
+    const subtotal = item.sellingPrice * quantity;
+    const tax = subtotal * ((item.taxRate || 0) / 100);
+    const totalAmount = subtotal + tax;
 
     const newSale: MerchandiseSale = {
         saleId: `SALE${String(nextSaleId++).padStart(4, '0')}`,
         itemId,
         quantity,
-        totalAmount: item.sellingPrice * quantity,
+        totalAmount: totalAmount,
         saleDate: new Date().toISOString(),
     };
     merchandiseSales.push(newSale);

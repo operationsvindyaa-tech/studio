@@ -35,7 +35,6 @@ export default function MerchandisePage() {
   const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> & { sizesInput?: string } | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [currentBuyingPrice, setCurrentBuyingPrice] = useState(0);
-  const [taxRate, setTaxRate] = useState(10); // Default tax rate of 10%
   const { toast } = useToast();
 
   const fetchInventory = async () => {
@@ -68,7 +67,7 @@ export default function MerchandisePage() {
   const handleOpenAddEditDialog = (item: MerchandiseItem | null) => {
     const initialItem = item 
         ? { ...item, sizesInput: item.sizes?.join(', ') || '' } 
-        : { name: '', category: 'Apparel', sellingPrice: 0, buyingPrice: 0, stock: 0, sizesInput: '' };
+        : { name: '', category: 'Apparel', sellingPrice: 0, buyingPrice: 0, stock: 0, sizesInput: '', taxRate: 0 };
     setEditingItem(initialItem);
     setIsAddEditDialogOpen(true);
   };
@@ -139,7 +138,7 @@ export default function MerchandisePage() {
   const handleCopyLink = () => {
     if (!selectedItem) return;
     const subtotal = selectedItem.sellingPrice * quantity;
-    const taxAmount = subtotal * (taxRate / 100);
+    const taxAmount = subtotal * ((selectedItem.taxRate || 0) / 100);
     const total = subtotal + taxAmount;
     const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${total}`;
     navigator.clipboard.writeText(link).then(() => {
@@ -172,7 +171,7 @@ export default function MerchandisePage() {
   const totalStockItems = inventory.reduce((sum, item) => sum + item.stock, 0);
 
   const saleSubtotal = selectedItem ? selectedItem.sellingPrice * quantity : 0;
-  const saleTax = saleSubtotal * (taxRate / 100);
+  const saleTax = saleSubtotal * ((selectedItem?.taxRate || 0) / 100);
   const saleTotal = saleSubtotal + saleTax;
 
   return (
@@ -184,16 +183,6 @@ export default function MerchandisePage() {
                 <p className="text-muted-foreground">Manage your academy's products and inventory.</p>
             </div>
             <div className="flex gap-2 flex-wrap items-center">
-                <div className="space-y-1">
-                    <Label htmlFor="tax-rate">Tax Rate (%)</Label>
-                    <Input 
-                        id="tax-rate"
-                        type="number"
-                        value={taxRate}
-                        onChange={(e) => setTaxRate(Number(e.target.value))}
-                        className="w-24"
-                    />
-                </div>
                 <Button variant="outline" onClick={() => handleExport('in')}><Download className="mr-2 h-4 w-4" /> Export Stock In</Button>
                 <Button variant="outline" onClick={() => handleExport('out')}><Download className="mr-2 h-4 w-4" /> Export Stock Out</Button>
                 <Button onClick={() => handleOpenAddEditDialog(null)}>
@@ -334,7 +323,7 @@ export default function MerchandisePage() {
                     <span>{formatCurrency(saleSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                    <span className="text-muted-foreground">Tax ({selectedItem?.taxRate || 0}%)</span>
                     <span>{formatCurrency(saleTax)}</span>
                 </div>
                  <div className="flex justify-between font-bold text-base">
@@ -392,9 +381,15 @@ export default function MerchandisePage() {
                             <Input id="item-selling-price" type="number" value={editingItem?.sellingPrice ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, sellingPrice: parseFloat(e.target.value) || 0}))} />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="item-stock">Initial Stock</Label>
-                        <Input id="item-stock" type="number" value={editingItem?.stock ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, stock: parseInt(e.target.value) || 0}))} />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="item-stock">Initial Stock</Label>
+                            <Input id="item-stock" type="number" value={editingItem?.stock ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, stock: parseInt(e.target.value) || 0}))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="item-tax-rate">Tax Rate (%)</Label>
+                            <Input id="item-tax-rate" type="number" value={editingItem?.taxRate ?? 0} onChange={(e) => setEditingItem(prev => ({...prev, taxRate: parseFloat(e.target.value) || 0}))} />
+                        </div>
                     </div>
                 </div>
                 <DialogFooter>
@@ -431,7 +426,7 @@ export default function MerchandisePage() {
                             <span>{formatCurrency(saleSubtotal)}</span>
                         </div>
                         <div className="flex justify-between">
-                            <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                            <span className="text-muted-foreground">Tax ({selectedItem?.taxRate || 0}%)</span>
                             <span>{formatCurrency(saleTax)}</span>
                         </div>
                          <div className="flex justify-between font-bold text-base">

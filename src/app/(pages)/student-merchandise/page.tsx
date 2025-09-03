@@ -31,8 +31,6 @@ type CartItem = {
     size: string;
 };
 
-const TAX_RATE = 10; // 10% tax rate
-
 export default function StudentMerchandisePage() {
   const [inventory, setInventory] = useState<MerchandiseItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,22 +130,13 @@ export default function StudentMerchandisePage() {
     });
   };
 
-  const handleCopyLink = () => {
-    if (cart.length === 0) return;
-    const itemsQuery = cart.map(ci => `item[]=${ci.item.id}&qty[]=${ci.quantity}`).join('&');
-    const link = `https://your-academy.com/pay?${itemsQuery}&amount=${cartTotalWithTax}`;
-    navigator.clipboard.writeText(link).then(() => {
-        toast({ title: "Link Copied!", description: "Payment link for your cart copied to clipboard." });
-    });
-  }
-
   const cartSubtotal = useMemo(() => cart.reduce((total, ci) => total + ci.item.sellingPrice * ci.quantity, 0), [cart]);
-  const cartTax = useMemo(() => cartSubtotal * (TAX_RATE / 100), [cartSubtotal]);
+  const cartTax = useMemo(() => cart.reduce((total, ci) => total + (ci.item.sellingPrice * ci.quantity * ((ci.item.taxRate || 0) / 100)), 0), [cart]);
   const cartTotalWithTax = useMemo(() => cartSubtotal + cartTax, [cartSubtotal, cartTax]);
   const cartItemCount = useMemo(() => cart.reduce((total, ci) => total + ci.quantity, 0), [cart]);
 
   const selectedItemSubtotal = selectedItem ? selectedItem.sellingPrice * quantity : 0;
-  const selectedItemTax = selectedItemSubtotal * (TAX_RATE / 100);
+  const selectedItemTax = selectedItemSubtotal * ((selectedItem?.taxRate || 0) / 100);
   const selectedItemTotal = selectedItemSubtotal + selectedItemTax;
 
 
@@ -210,7 +199,7 @@ export default function StudentMerchandisePage() {
                                         <span>{formatCurrency(cartSubtotal)}</span>
                                     </div>
                                     <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                                        <span className="text-muted-foreground">Tax</span>
                                         <span>{formatCurrency(cartTax)}</span>
                                     </div>
                                     <div className="flex justify-between font-bold text-lg">
@@ -315,7 +304,7 @@ export default function StudentMerchandisePage() {
                     <span>{formatCurrency(selectedItemSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                    <span className="text-muted-foreground">Tax ({selectedItem?.taxRate || 0}%)</span>
                     <span>{formatCurrency(selectedItemTax)}</span>
                 </div>
                  <div className="flex justify-between font-bold text-base">
@@ -347,7 +336,7 @@ export default function StudentMerchandisePage() {
                     <span>{formatCurrency(cartSubtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                    <span className="text-muted-foreground">Tax</span>
                     <span>{formatCurrency(cartTax)}</span>
                 </div>
                  <div className="flex justify-between font-bold text-base">
@@ -359,7 +348,11 @@ export default function StudentMerchandisePage() {
                 <Label htmlFor="payment-link">Payment Link</Label>
                 <div className="flex gap-2">
                     <Input id="payment-link" value={`https://your-academy.com/pay?cart_id=123&amount=${cartTotalWithTax}`} readOnly />
-                    <Button onClick={handleCopyLink} variant="outline" size="icon"><Copy className="h-4 w-4" /></Button>
+                    <Button variant="outline" size="icon" onClick={() => {
+                        const link = `https://your-academy.com/pay?cart_id=123&amount=${cartTotalWithTax}`;
+                        navigator.clipboard.writeText(link);
+                        toast({ title: "Link Copied!" });
+                    }}><Copy className="h-4 w-4" /></Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
                     This is a simulated payment link. Click "Confirm Purchase" to complete the transaction.
