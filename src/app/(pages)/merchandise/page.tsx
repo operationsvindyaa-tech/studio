@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import * as XLSX from "xlsx";
+import { Separator } from "@/components/ui/separator";
 
 
 const formatCurrency = (amount: number) => {
@@ -34,6 +35,7 @@ export default function MerchandisePage() {
   const [editingItem, setEditingItem] = useState<Partial<MerchandiseItem> & { sizesInput?: string } | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [currentBuyingPrice, setCurrentBuyingPrice] = useState(0);
+  const [taxRate, setTaxRate] = useState(10); // Default tax rate of 10%
   const { toast } = useToast();
 
   const fetchInventory = async () => {
@@ -136,7 +138,10 @@ export default function MerchandisePage() {
 
   const handleCopyLink = () => {
     if (!selectedItem) return;
-    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${selectedItem.sellingPrice * quantity}`;
+    const subtotal = selectedItem.sellingPrice * quantity;
+    const taxAmount = subtotal * (taxRate / 100);
+    const total = subtotal + taxAmount;
+    const link = `https://your-academy.com/pay?item=${selectedItem.id}&qty=${quantity}&amount=${total}`;
     navigator.clipboard.writeText(link).then(() => {
         toast({ title: "Link Copied!", description: "Payment link copied to clipboard." });
     });
@@ -166,6 +171,10 @@ export default function MerchandisePage() {
   const totalStockValue = inventory.reduce((sum, item) => sum + (item.sellingPrice * item.stock), 0);
   const totalStockItems = inventory.reduce((sum, item) => sum + item.stock, 0);
 
+  const saleSubtotal = selectedItem ? selectedItem.sellingPrice * quantity : 0;
+  const saleTax = saleSubtotal * (taxRate / 100);
+  const saleTotal = saleSubtotal + saleTax;
+
   return (
     <>
       <div className="space-y-6">
@@ -174,7 +183,17 @@ export default function MerchandisePage() {
                 <h1 className="text-2xl font-bold">Merchandise Catalog</h1>
                 <p className="text-muted-foreground">Manage your academy's products and inventory.</p>
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 flex-wrap items-center">
+                <div className="space-y-1">
+                    <Label htmlFor="tax-rate">Tax Rate (%)</Label>
+                    <Input 
+                        id="tax-rate"
+                        type="number"
+                        value={taxRate}
+                        onChange={(e) => setTaxRate(Number(e.target.value))}
+                        className="w-24"
+                    />
+                </div>
                 <Button variant="outline" onClick={() => handleExport('in')}><Download className="mr-2 h-4 w-4" /> Export Stock In</Button>
                 <Button variant="outline" onClick={() => handleExport('out')}><Download className="mr-2 h-4 w-4" /> Export Stock Out</Button>
                 <Button onClick={() => handleOpenAddEditDialog(null)}>
@@ -308,8 +327,20 @@ export default function MerchandisePage() {
                 max={selectedItem?.stock}
               />
             </div>
-            <div className="text-lg font-bold">
-                Total: {formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}
+            <Separator />
+            <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatCurrency(saleSubtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                    <span>{formatCurrency(saleTax)}</span>
+                </div>
+                 <div className="flex justify-between font-bold text-base">
+                    <span>Total</span>
+                    <span>{formatCurrency(saleTotal)}</span>
+                </div>
             </div>
           </div>
           <DialogFooter>
@@ -394,13 +425,24 @@ export default function MerchandisePage() {
                             max={selectedItem?.stock}
                         />
                     </div>
-                    <div className="text-lg font-bold">
-                        Total: {formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}
+                     <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Subtotal</span>
+                            <span>{formatCurrency(saleSubtotal)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Tax ({taxRate}%)</span>
+                            <span>{formatCurrency(saleTax)}</span>
+                        </div>
+                         <div className="flex justify-between font-bold text-base">
+                            <span>Total</span>
+                            <span>{formatCurrency(saleTotal)}</span>
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="payment-link">Payment Link</Label>
                         <div className="flex gap-2">
-                            <Input id="payment-link" value={`https://your-academy.com/pay?item=${selectedItem?.id}&qty=${quantity}`} readOnly />
+                            <Input id="payment-link" value={`https://your-academy.com/pay?item=${selectedItem?.id}&qty=${quantity}&amount=${saleTotal}`} readOnly />
                             <Button onClick={handleCopyLink} variant="outline" size="icon"><LinkIcon /></Button>
                         </div>
                     </div>

@@ -31,6 +31,8 @@ type CartItem = {
     size: string;
 };
 
+const TAX_RATE = 10; // 10% tax rate
+
 export default function StudentMerchandisePage() {
   const [inventory, setInventory] = useState<MerchandiseItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,14 +135,20 @@ export default function StudentMerchandisePage() {
   const handleCopyLink = () => {
     if (cart.length === 0) return;
     const itemsQuery = cart.map(ci => `item[]=${ci.item.id}&qty[]=${ci.quantity}`).join('&');
-    const link = `https://your-academy.com/pay?${itemsQuery}&amount=${cartTotal}`;
+    const link = `https://your-academy.com/pay?${itemsQuery}&amount=${cartTotalWithTax}`;
     navigator.clipboard.writeText(link).then(() => {
         toast({ title: "Link Copied!", description: "Payment link for your cart copied to clipboard." });
     });
   }
 
-  const cartTotal = useMemo(() => cart.reduce((total, ci) => total + ci.item.sellingPrice * ci.quantity, 0), [cart]);
+  const cartSubtotal = useMemo(() => cart.reduce((total, ci) => total + ci.item.sellingPrice * ci.quantity, 0), [cart]);
+  const cartTax = useMemo(() => cartSubtotal * (TAX_RATE / 100), [cartSubtotal]);
+  const cartTotalWithTax = useMemo(() => cartSubtotal + cartTax, [cartSubtotal, cartTax]);
   const cartItemCount = useMemo(() => cart.reduce((total, ci) => total + ci.quantity, 0), [cart]);
+
+  const selectedItemSubtotal = selectedItem ? selectedItem.sellingPrice * quantity : 0;
+  const selectedItemTax = selectedItemSubtotal * (TAX_RATE / 100);
+  const selectedItemTotal = selectedItemSubtotal + selectedItemTax;
 
 
   return (
@@ -196,9 +204,19 @@ export default function StudentMerchandisePage() {
                             </div>
                             <Separator />
                             <SheetFooter className="pt-4 flex flex-col gap-4">
-                                <div className="flex justify-between font-bold text-lg">
-                                    <span>Total</span>
-                                    <span>{formatCurrency(cartTotal)}</span>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Subtotal</span>
+                                        <span>{formatCurrency(cartSubtotal)}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                                        <span>{formatCurrency(cartTax)}</span>
+                                    </div>
+                                    <div className="flex justify-between font-bold text-lg">
+                                        <span>Total</span>
+                                        <span>{formatCurrency(cartTotalWithTax)}</span>
+                                    </div>
                                 </div>
                                 <Button className="w-full" onClick={() => setIsPurchaseDialogOpen(true)}>Proceed to Checkout</Button>
                             </SheetFooter>
@@ -290,9 +308,20 @@ export default function StudentMerchandisePage() {
                     </div>
                 )}
             </div>
-            <div className="text-xl font-bold flex justify-between items-center">
-                <span>Total:</span>
-                <span>{formatCurrency((selectedItem?.sellingPrice || 0) * quantity)}</span>
+             <Separator />
+            <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatCurrency(selectedItemSubtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                    <span>{formatCurrency(selectedItemTax)}</span>
+                </div>
+                 <div className="flex justify-between font-bold text-base">
+                    <span>Total</span>
+                    <span>{formatCurrency(selectedItemTotal)}</span>
+                </div>
             </div>
           </div>
           <DialogFooter>
@@ -312,14 +341,24 @@ export default function StudentMerchandisePage() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="text-2xl font-bold flex justify-between items-center">
-                <span>Total:</span>
-                <span>{formatCurrency(cartTotal)}</span>
+             <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatCurrency(cartSubtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-muted-foreground">Tax ({TAX_RATE}%)</span>
+                    <span>{formatCurrency(cartTax)}</span>
+                </div>
+                 <div className="flex justify-between font-bold text-base">
+                    <span>Total</span>
+                    <span>{formatCurrency(cartTotalWithTax)}</span>
+                </div>
             </div>
              <div className="space-y-2 pt-4 border-t">
                 <Label htmlFor="payment-link">Payment Link</Label>
                 <div className="flex gap-2">
-                    <Input id="payment-link" value={`https://your-academy.com/pay?cart_id=123&amount=${cartTotal}`} readOnly />
+                    <Input id="payment-link" value={`https://your-academy.com/pay?cart_id=123&amount=${cartTotalWithTax}`} readOnly />
                     <Button onClick={handleCopyLink} variant="outline" size="icon"><Copy className="h-4 w-4" /></Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
