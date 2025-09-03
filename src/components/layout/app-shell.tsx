@@ -111,12 +111,12 @@ const operationsNavItems = [
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/tasks", icon: ClipboardList, label: "Tasks" },
+    { href: "/schedule", icon: Calendar, label: "Schedule" },
 ]
 
 const academicsNavItems = [
     { href: "/courses", icon: BookOpen, label: "Courses" },
     { href: "/syllabus", icon: FilePenLine, label: "Syllabus" },
-    { href: "/schedule", icon: Calendar, label: "Schedule" },
     { href: "/timetable", icon: CalendarClock, label: "Timetable" },
     { href: "/exam-students-list", icon: ListOrdered, label: "Exam List" },
     { href: "/certificates", icon: Award, label: "Certificates" },
@@ -323,5 +323,3 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
