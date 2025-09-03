@@ -26,3 +26,5 @@ export const getEvents = async (): Promise<Event[]> => {
 export const updateEvents = (newEvents: Event[]) => {
     events = newEvents;
 };
+
+    

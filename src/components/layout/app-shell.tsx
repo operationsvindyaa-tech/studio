@@ -145,7 +145,7 @@ const communicationsNavItems = [
     { href: "/banner-brochure", icon: Camera, label: "Banner and Brochure" },
 ];
 
-const otherNavItems = [
+const supportNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
@@ -265,7 +265,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
             <NavGroup label="Communications" items={communicationsNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <NavGroup label="Support" items={otherNavItems} pathname={pathname} />
+            <NavGroup label="Support" items={supportNavItems} pathname={pathname} />
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
@@ -307,7 +307,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...otherNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...supportNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
@@ -323,3 +323,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
