@@ -225,6 +225,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <h2 className="text-lg font-headline font-semibold">VINDYAA</h2>
                 </div>
             </div>
+          <SidebarTrigger className="hidden md:flex" />
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
@@ -263,7 +264,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
             <NavGroup label="Communications" items={communicationsNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <NavGroup label="More" items={otherNavItems} pathname={pathname} />
+            <NavGroup label="Support" items={otherNavItems} pathname={pathname} />
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
