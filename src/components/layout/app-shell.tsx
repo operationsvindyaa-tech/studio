@@ -226,7 +226,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     <h2 className="text-lg font-headline font-semibold">VINDYAA</h2>
                 </div>
             </div>
-          <SidebarTrigger className="hidden md:flex" />
+          
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
