@@ -128,7 +128,6 @@ const hrNavItems = [
     { href: "/staff", icon: Building2, label: "Staff" },
     { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
-    { href: "/letters", icon: Mail, label: "Letters" },
     { href: "/staff-login", icon: LogIn, label: "Staff Login" },
 ];
 
@@ -138,6 +137,7 @@ const financeNavItems = [
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
     { href: "/accounts", icon: BookText, label: "Accounts" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
+    { href: "/letters", icon: Mail, label: "Letters" },
 ]
 
 const communicationsNavItems = [
@@ -302,7 +302,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b">
+        <header className="flex items-center justify-between p-4 border-b sticky top-0 bg-background/95 backdrop-blur-sm z-20">
             <div className="flex items-center gap-4">
                 <SidebarTrigger />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
