@@ -127,7 +127,7 @@ export default function OfficeInventoryPage() {
                     <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">₹{formatNumber(totalValue)}</div>}
+                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatNumber(totalValue)}</div>}
                     <p className="text-xs text-muted-foreground">Based on purchase cost</p>
                 </CardContent>
             </Card>
