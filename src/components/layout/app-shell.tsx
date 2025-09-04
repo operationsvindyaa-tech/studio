@@ -110,6 +110,7 @@ const operationsNavItems = [
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/kmd", icon: Ruler, label: "KMD" },
 ]
 
 const academicsNavItems = [
@@ -128,6 +129,7 @@ const hrNavItems = [
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
     { href: "/tasks", icon: ClipboardList, label: "Tasks" },
     { href: "/schedule", icon: Calendar, label: "Schedule" },
+    { href: "/letters", icon: Mail, label: "Letters" },
     { href: "/staff-login", icon: LogIn, label: "Staff Login" },
 ];
 
@@ -137,7 +139,6 @@ const financeNavItems = [
     { href: "/payment-status", icon: CalendarCheck, label: "Fee Management Tracker" },
     { href: "/accounts", icon: BookText, label: "Financial Reports" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
-    { href: "/letters", icon: Mail, label: "Letters" },
 ]
 
 const communicationsNavItems = [
@@ -149,7 +150,7 @@ const communicationsNavItems = [
 const supportNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
-    { href: "/kmd", icon: Ruler, label: "KMD" },
+    { href: "/events-workshops", icon: HeartHandshake, label: "Events/Workshops" },
 ];
 
 const managementNavItems = [
