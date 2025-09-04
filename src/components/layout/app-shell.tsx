@@ -132,7 +132,7 @@ const hrNavItems = [
 ];
 
 const financeNavItems = [
-    { href: "/billing", icon: Banknote, label: "Billing" },
+    { href: "/billing", icon: Banknote, label: "Payments & Invoices" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
     { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
     { href: "/accounts", icon: BookText, label: "Accounts" },
