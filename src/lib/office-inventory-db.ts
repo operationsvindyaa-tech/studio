@@ -1,5 +1,6 @@
 
 // In-memory "database" for office inventory.
+import { centers } from "./expenses-db";
 
 export const categories = [
     "Stationery",
@@ -20,14 +21,15 @@ export type InventoryItem = {
   vendor?: string;
   lastStockInDate?: string;
   lowStockThreshold: number;
+  branch: string;
 };
 
 const initialInventory: InventoryItem[] = [
-  { id: "INV001", name: "A4 Paper Ream (500 sheets)", category: "Stationery", stock: 20, purchaseCost: 350, vendor: "Local Paper Mill", lowStockThreshold: 10 },
-  { id: "INV002", name: "Black Whiteboard Markers (Box of 10)", category: "Stationery", stock: 15, purchaseCost: 200, vendor: "Office Supplies Co.", lowStockThreshold: 5 },
-  { id: "INV003", name: "HP 803 Black Ink Cartridge", category: "Office Supplies", stock: 8, purchaseCost: 700, vendor: "HP World", lowStockThreshold: 5 },
-  { id: "INV004", name: "Floor Cleaner (5L)", category: "Daily Use Items", stock: 5, purchaseCost: 800, vendor: "SuperMart", lowStockThreshold: 2 },
-  { id: "INV005", name: "Yamaha F310 Acoustic Guitar", category: "Instruments & Equipment", stock: 3, purchaseCost: 8000, vendor: "Music Instruments Inc.", lowStockThreshold: 1 },
+  { id: "INV001", name: "A4 Paper Ream (500 sheets)", category: "Stationery", stock: 20, purchaseCost: 350, vendor: "Local Paper Mill", lowStockThreshold: 10, branch: "Main Campus (Basavanapura)" },
+  { id: "INV002", name: "Black Whiteboard Markers (Box of 10)", category: "Stationery", stock: 15, purchaseCost: 200, vendor: "Office Supplies Co.", lowStockThreshold: 5, branch: "Branch 2 (Marathahalli)" },
+  { id: "INV003", name: "HP 803 Black Ink Cartridge", category: "Office Supplies", stock: 8, purchaseCost: 700, vendor: "HP World", lowStockThreshold: 5, branch: "Main Campus (Basavanapura)" },
+  { id: "INV004", name: "Floor Cleaner (5L)", category: "Daily Use Items", stock: 5, purchaseCost: 800, vendor: "SuperMart", lowStockThreshold: 2, branch: "Branch 3 (Koramangala)" },
+  { id: "INV005", name: "Yamaha F310 Acoustic Guitar", category: "Instruments & Equipment", stock: 3, purchaseCost: 8000, vendor: "Music Instruments Inc.", lowStockThreshold: 1, branch: "Main Campus (Basavanapura)" },
 ];
 
 let inventory: InventoryItem[] = [...initialInventory];
@@ -81,4 +83,3 @@ export const updateStock = async (id: string, type: 'in' | 'out', quantity: numb
     }
     return Promise.resolve(inventory[itemIndex]);
 };
-

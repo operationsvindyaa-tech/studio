@@ -11,11 +11,13 @@ import {
     type InventoryItem,
     categories
 } from "@/lib/office-inventory-db";
+import { centers } from "@/lib/expenses-db";
 
 const itemSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(2, "Item name is required."),
   category: z.enum(categories as [string, ...string[]]),
+  branch: z.string({ required_error: "Branch is required." }),
   vendor: z.string().optional(),
   purchaseCost: z.coerce.number().min(0, "Purchase cost must be a positive number."),
   stock: z.coerce.number().min(0, "Stock must be a positive number.").optional(),

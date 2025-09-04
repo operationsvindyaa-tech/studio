@@ -24,12 +24,13 @@ import { Progress } from "@/components/ui/progress";
 import { useActionState, useTransition } from "react";
 import { addItem, updateItem, deleteItem, updateStock } from "./actions";
 import { getInventory, type InventoryItem, categories } from "@/lib/office-inventory-db";
+import { centers } from "@/lib/expenses-db";
 import { cn } from "@/lib/utils";
 
-const formatCurrency = (amount: number) => {
+const formatNumber = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -49,6 +50,7 @@ export default function OfficeInventoryPage() {
   const [stockUpdate, setStockUpdate] = useState<{ item: InventoryItem | null; type: 'in' | 'out' }>({ item: null, type: 'in' });
   const [stockQuantity, setStockQuantity] = useState(1);
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [branchFilter, setBranchFilter] = useState("All Branches");
   const { toast } = useToast();
 
   const [formState, formAction] = useActionState(editingItem ? updateItem : addItem, initialFormState);
@@ -70,12 +72,18 @@ export default function OfficeInventoryPage() {
   }, []);
 
   useEffect(() => {
-      if (categoryFilter === "All Categories") {
-          setFilteredInventory(inventory);
-      } else {
-          setFilteredInventory(inventory.filter(item => item.category === categoryFilter));
+      let filtered = inventory;
+      
+      if (categoryFilter !== "All Categories") {
+          filtered = filtered.filter(item => item.category === categoryFilter);
       }
-  }, [categoryFilter, inventory]);
+      
+      if (branchFilter !== "All Branches") {
+          filtered = filtered.filter(item => item.branch === branchFilter);
+      }
+
+      setFilteredInventory(filtered);
+  }, [categoryFilter, branchFilter, inventory]);
 
   useEffect(() => {
       if (formState.message) {
@@ -136,7 +144,7 @@ export default function OfficeInventoryPage() {
                     <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatCurrency(totalValue)}</div>}
+                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatNumber(totalValue)}</div>}
                     <p className="text-xs text-muted-foreground">Based on purchase cost</p>
                 </CardContent>
             </Card>
@@ -161,6 +169,13 @@ export default function OfficeInventoryPage() {
                         </CardDescription>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                        <Select value={branchFilter} onValueChange={setBranchFilter}>
+                            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="All Branches">All Branches</SelectItem>
+                                {centers.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                             <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -181,6 +196,7 @@ export default function OfficeInventoryPage() {
                             <TableRow>
                                 <TableHead>Item</TableHead>
                                 <TableHead>Category</TableHead>
+                                <TableHead>Branch</TableHead>
                                 <TableHead className="text-right">Cost</TableHead>
                                 <TableHead>Stock Level</TableHead>
                                 <TableHead>Actions</TableHead>
@@ -192,6 +208,7 @@ export default function OfficeInventoryPage() {
                                     <TableRow key={i}>
                                         <TableCell><Skeleton className="h-4 w-40" /></TableCell>
                                         <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
                                         <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
                                         <TableCell><Skeleton className="h-6 w-32" /></TableCell>
                                         <TableCell><Skeleton className="h-8 w-8" /></TableCell>
@@ -205,7 +222,8 @@ export default function OfficeInventoryPage() {
                                         <div className="text-xs text-muted-foreground">{item.vendor}</div>
                                     </TableCell>
                                     <TableCell>{item.category}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(item.purchaseCost)}</TableCell>
+                                    <TableCell>{item.branch}</TableCell>
+                                    <TableCell className="text-right">{formatNumber(item.purchaseCost)}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             <Progress value={(item.stock / (item.lowStockThreshold * 2 || 20)) * 100} className={cn("w-24", item.stock <= item.lowStockThreshold && "bg-red-500/20 [&>*]:bg-red-500")}/>
@@ -229,7 +247,7 @@ export default function OfficeInventoryPage() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">No inventory items found.</TableCell>
+                                    <TableCell colSpan={6} className="h-24 text-center">No inventory items found.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
@@ -244,7 +262,7 @@ export default function OfficeInventoryPage() {
         </Card>
       </div>
 
-      <Dialog open={isItemDialogOpen} onOpenChange={(open) => !open && handleOpenItemDialog(null)}>
+      <Dialog open={isItemDialogOpen} onOpenChange={(open) => { if (!open) handleOpenItemDialog(null); else setIsItemDialogOpen(true); }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingItem ? 'Edit' : 'Add New'} Inventory Item</DialogTitle>
@@ -270,14 +288,29 @@ export default function OfficeInventoryPage() {
                             </Select>
                         </div>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                              <Label htmlFor="vendor">Vendor/Supplier</Label>
                              <Input id="vendor" name="vendor" defaultValue={editingItem?.vendor} />
                          </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="branch">Branch</Label>
+                            <Select name="branch" defaultValue={editingItem?.branch || centers[0]}>
+                                <SelectTrigger id="branch"><SelectValue placeholder="Select Branch" /></SelectTrigger>
+                                <SelectContent>
+                                    {centers.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                     </div>
+                     <div className="grid grid-cols-2 gap-4">
                          <div className="space-y-2">
                              <Label htmlFor="purchaseCost">Purchase Cost</Label>
                              <Input id="purchaseCost" name="purchaseCost" type="number" defaultValue={editingItem?.purchaseCost} required />
+                         </div>
+                         <div className="space-y-2">
+                             <Label htmlFor="lowStockThreshold">Low Stock Threshold</Label>
+                             <Input id="lowStockThreshold" name="lowStockThreshold" type="number" defaultValue={editingItem?.lowStockThreshold} />
                          </div>
                      </div>
                      <div className="grid grid-cols-2 gap-4">
@@ -285,21 +318,17 @@ export default function OfficeInventoryPage() {
                              <Label htmlFor="stock">Initial Stock</Label>
                              <Input id="stock" name="stock" type="number" defaultValue={editingItem?.stock} disabled={!!editingItem} />
                          </div>
-                          <div className="space-y-2">
-                             <Label htmlFor="lowStockThreshold">Low Stock Threshold</Label>
-                             <Input id="lowStockThreshold" name="lowStockThreshold" type="number" defaultValue={editingItem?.lowStockThreshold} />
-                         </div>
                      </div>
                  </div>
                  <DialogFooter>
-                     <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                     <DialogClose asChild><Button type="button" variant="outline" onClick={() => setIsItemDialogOpen(false)}>Cancel</Button></DialogClose>
                      <Button type="submit">Save Item</Button>
                  </DialogFooter>
             </form>
           </DialogContent>
       </Dialog>
       
-      <Dialog open={isStockDialogOpen} onOpenChange={(open) => !open && setStockUpdate({item: null, type: 'in'})}>
+      <Dialog open={isStockDialogOpen} onOpenChange={(open) => { if (!open) setStockUpdate({item: null, type: 'in'}); else setIsStockDialogOpen(true); }}>
           <DialogContent>
               <DialogHeader>
                   <DialogTitle>Update Stock for {stockUpdate.item?.name}</DialogTitle>
