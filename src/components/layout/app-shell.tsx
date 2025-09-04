@@ -260,7 +260,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {userIsSeniorManagement && (
             <>
                 <SidebarSeparator />
-                <NavGroup label="Management" items={managementNavItems} pathname={pathname} />
+                <NavGroup label="Executive Insights" items={managementNavItems} pathname={pathname} />
             </>
           )}
           <SidebarSeparator />
