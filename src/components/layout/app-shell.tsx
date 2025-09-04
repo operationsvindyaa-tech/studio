@@ -110,8 +110,6 @@ const operationsNavItems = [
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
-    { href: "/tasks", icon: ClipboardList, label: "Tasks" },
-    { href: "/schedule", icon: Calendar, label: "Schedule" },
 ]
 
 const academicsNavItems = [
@@ -128,6 +126,8 @@ const hrNavItems = [
     { href: "/staff", icon: Building2, label: "Staff" },
     { href: "/teacher-attendance", icon: UserCheckIcon, label: "Teacher Attendance" },
     { href: "/staff-attendance", icon: UserCheckIcon, label: "Staff Attendance" },
+    { href: "/tasks", icon: ClipboardList, label: "Tasks" },
+    { href: "/schedule", icon: Calendar, label: "Schedule" },
     { href: "/staff-login", icon: LogIn, label: "Staff Login" },
 ];
 
