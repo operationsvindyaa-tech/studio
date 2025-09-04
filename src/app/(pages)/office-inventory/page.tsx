@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { MoreHorizontal, PlusCircle, Edit, Trash2, Package, ArrowUp, ArrowDown, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,6 +24,7 @@ import { Progress } from "@/components/ui/progress";
 import { useActionState, useTransition } from "react";
 import { addItem, updateItem, deleteItem, updateStock } from "./actions";
 import { getInventory, type InventoryItem, categories } from "@/lib/office-inventory-db";
+import { cn } from "@/lib/utils";
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
