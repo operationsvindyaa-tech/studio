@@ -50,9 +50,6 @@ type NewInvoice = {
     tax: number;
 }
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-
 const InvoiceTable = ({ invoices, onStatusChange, onView, onEdit, onDelete }: { invoices: StudentBillingInfo[], onStatusChange: (id: string, status: BillingStatus) => void, onView: (invoice: StudentBillingInfo) => void, onEdit: (invoice: StudentBillingInfo) => void, onDelete: (invoice: StudentBillingInfo) => void }) => {
     return (
         <div className="border rounded-lg">
@@ -156,7 +153,6 @@ export default function BillingPage() {
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [monthFilter, setMonthFilter] = useState<string>("All");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
@@ -190,10 +186,6 @@ export default function BillingPage() {
           filtered = filtered.filter(invoice => invoice.status === statusFilter);
       }
       
-      if (monthFilter !== "All") {
-          filtered = filtered.filter(invoice => invoice.months.includes(monthFilter));
-      }
-      
       if (dateRange?.from && dateRange?.to) {
           filtered = filtered.filter(invoice => {
               const invoiceDate = parse(invoice.dueDate, 'yyyy-MM-dd', new Date());
@@ -202,7 +194,7 @@ export default function BillingPage() {
       }
 
       setFilteredInvoices(filtered);
-  }, [statusFilter, monthFilter, dateRange, billingData]);
+  }, [statusFilter, dateRange, billingData]);
 
   const handlePrint = useReactToPrint({
     content: () => invoiceRef.current,
@@ -426,13 +418,6 @@ export default function BillingPage() {
                         <SelectItem value="Paid">Paid</SelectItem>
                         <SelectItem value="Due">Due</SelectItem>
                         <SelectItem value="Overdue">Overdue</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={monthFilter} onValueChange={setMonthFilter}>
-                    <SelectTrigger className="w-full sm:w-[150px]"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Months</SelectItem>
-                        {months.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <Popover>
