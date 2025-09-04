@@ -144,7 +144,7 @@ export default function OfficeInventoryPage() {
                     <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">{formatNumber(totalValue)}</div>}
+                    {loading ? <Skeleton className="h-8 w-32" /> : <div className="text-2xl font-bold">₹{formatNumber(totalValue)}</div>}
                     <p className="text-xs text-muted-foreground">Based on purchase cost</p>
                 </CardContent>
             </Card>
@@ -223,7 +223,7 @@ export default function OfficeInventoryPage() {
                                     </TableCell>
                                     <TableCell>{item.category}</TableCell>
                                     <TableCell>{item.branch}</TableCell>
-                                    <TableCell className="text-right">{formatNumber(item.purchaseCost)}</TableCell>
+                                    <TableCell className="text-right">₹{formatNumber(item.purchaseCost)}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             <Progress value={(item.stock / (item.lowStockThreshold * 2 || 20)) * 100} className={cn("w-24", item.stock <= item.lowStockThreshold && "bg-red-500/20 [&>*]:bg-red-500")}/>
