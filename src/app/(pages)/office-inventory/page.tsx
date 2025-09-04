@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Package, ArrowUp, ArrowDown, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Package, ArrowUp, ArrowDown, AlertTriangle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,8 @@ import { addItem, updateItem, deleteItem, updateStock } from "./actions";
 import { getInventory, type InventoryItem, categories } from "@/lib/office-inventory-db";
 import { centers } from "@/lib/expenses-db";
 import { cn } from "@/lib/utils";
+import { useFormStatus } from "react-dom";
+import { useActionState } from "react";
 
 const formatNumber = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -35,7 +37,6 @@ const formatNumber = (amount: number) => {
 
 export default function OfficeInventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [filteredInventory, setFilteredInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isItemDialogOpen, setIsItemDialogOpen] = useState(false);
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
@@ -63,18 +64,18 @@ export default function OfficeInventoryPage() {
     fetchInventory();
   }, []);
 
-  useEffect(() => {
-      let filtered = inventory;
-      
-      if (categoryFilter !== "All Categories") {
-          filtered = filtered.filter(item => item.category === categoryFilter);
-      }
-      
-      if (branchFilter !== "All Branches") {
-          filtered = filtered.filter(item => item.branch === branchFilter);
-      }
+  const filteredInventory = useMemo(() => {
+    let filtered = inventory;
+    
+    if (categoryFilter !== "All Categories") {
+        filtered = filtered.filter(item => item.category === categoryFilter);
+    }
+    
+    if (branchFilter !== "All Branches") {
+        filtered = filtered.filter(item => item.branch === branchFilter);
+    }
 
-      setFilteredInventory(filtered);
+    return filtered;
   }, [categoryFilter, branchFilter, inventory]);
 
   const handleOpenItemDialog = (item: InventoryItem | null) => {
@@ -110,24 +111,6 @@ export default function OfficeInventoryPage() {
         if (result.success) {
           fetchInventory();
         }
-    });
-  };
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startTransition(async () => {
-      const action = editingItem ? updateItem : addItem;
-      const result = await action({ success: false, message: '' }, formData);
-       toast({
-          title: result.success ? "Success" : "Error",
-          description: result.message,
-          variant: result.success ? "default" : "destructive",
-      });
-      if (result.success) {
-          fetchInventory();
-          setIsItemDialogOpen(false);
-      }
     });
   };
   
@@ -223,7 +206,7 @@ export default function OfficeInventoryPage() {
                                     </TableCell>
                                     <TableCell>{item.category}</TableCell>
                                     <TableCell>{item.branch}</TableCell>
-                                    <TableCell className="text-right">₹{formatNumber(item.purchaseCost)}</TableCell>
+                                    <TableCell className="text-right">{formatNumber(item.purchaseCost)}</TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-2">
                                             <Progress value={(item.stock / (item.lowStockThreshold * 2 || 20)) * 100} className={cn("w-24", item.stock <= item.lowStockThreshold && "bg-red-500/20 [&>*]:bg-red-500")}/>
@@ -262,7 +245,69 @@ export default function OfficeInventoryPage() {
         </Card>
       </div>
 
-      <Dialog open={isItemDialogOpen} onOpenChange={(open) => { if (!open) handleOpenItemDialog(null); setIsItemDialogOpen(open); }}>
+      <ItemDialog 
+        isOpen={isItemDialogOpen} 
+        setIsOpen={setIsItemDialogOpen} 
+        editingItem={editingItem} 
+        onFormSubmit={() => {
+            fetchInventory();
+            setIsItemDialogOpen(false);
+        }}
+        toast={toast}
+      />
+      
+      <Dialog open={isStockDialogOpen} onOpenChange={(open) => { if (!open) setStockUpdate({item: null, type: 'in'}); setIsStockDialogOpen(open); }}>
+          <DialogContent>
+              <DialogHeader>
+                  <DialogTitle>Update Stock for {stockUpdate.item?.name}</DialogTitle>
+                  <DialogDescription>
+                      Record items being added to or removed from inventory. Current stock: {stockUpdate.item?.stock}.
+                  </DialogDescription>
+              </DialogHeader>
+               <div className="py-4 space-y-2">
+                    <Label htmlFor="quantity">Quantity to {stockUpdate.type === 'in' ? 'Add' : 'Remove'}</Label>
+                    <Input id="quantity" type="number" value={stockQuantity} onChange={(e) => setStockQuantity(Number(e.target.value) || 1)} min="1" max={stockUpdate.type === 'out' ? stockUpdate.item?.stock : undefined}/>
+                </div>
+              <DialogFooter>
+                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                  <Button onClick={handleStockUpdate} disabled={isPending}>
+                    {isPending ? <Loader2 className="animate-spin" /> : 'Confirm Update'}
+                  </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function SubmitButton({ isEditing }: { isEditing: boolean }) {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending}>
+            {pending ? <Loader2 className="animate-spin" /> : isEditing ? 'Save Changes' : 'Add Item'}
+        </Button>
+    );
+}
+
+function ItemDialog({ isOpen, setIsOpen, editingItem, onFormSubmit, toast }: { isOpen: boolean; setIsOpen: (open: boolean) => void; editingItem: InventoryItem | null; onFormSubmit: () => void; toast: any; }) {
+    const action = editingItem ? updateItem : addItem;
+    const [state, formAction] = useActionState(action, { success: false, message: "" });
+
+    useEffect(() => {
+        if (state.message) {
+            toast({
+                title: state.success ? "Success" : "Error",
+                description: state.message,
+                variant: state.success ? "default" : "destructive",
+            });
+            if (state.success) {
+                onFormSubmit();
+            }
+        }
+    }, [state, toast, onFormSubmit]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingItem ? 'Edit' : 'Add New'} Inventory Item</DialogTitle>
@@ -270,7 +315,7 @@ export default function OfficeInventoryPage() {
                 {editingItem ? 'Update the details for this item.' : 'Enter details for a new inventory item.'}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleFormSubmit}>
+            <form action={formAction}>
                  <input type="hidden" name="id" value={editingItem?.id || ''} />
                  <div className="grid gap-4 py-4">
                      <div className="grid grid-cols-2 gap-4">
@@ -313,43 +358,19 @@ export default function OfficeInventoryPage() {
                              <Input id="lowStockThreshold" name="lowStockThreshold" type="number" defaultValue={editingItem?.lowStockThreshold} />
                          </div>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     {!editingItem && (
                          <div className="space-y-2">
                              <Label htmlFor="stock">Initial Stock</Label>
-                             <Input id="stock" name="stock" type="number" defaultValue={editingItem?.stock} disabled={!!editingItem} />
+                             <Input id="stock" name="stock" type="number" defaultValue={editingItem?.stock} />
                          </div>
-                     </div>
+                     )}
                  </div>
                  <DialogFooter>
-                     <DialogClose asChild><Button type="button" variant="outline" onClick={() => setIsItemDialogOpen(false)}>Cancel</Button></DialogClose>
-                     <Button type="submit" disabled={isPending}>
-                        {isPending ? 'Saving...' : 'Save Item'}
-                     </Button>
+                     <DialogClose asChild><Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button></DialogClose>
+                     <SubmitButton isEditing={!!editingItem} />
                  </DialogFooter>
             </form>
           </DialogContent>
       </Dialog>
-      
-      <Dialog open={isStockDialogOpen} onOpenChange={(open) => { if (!open) setStockUpdate({item: null, type: 'in'}); setIsStockDialogOpen(open); }}>
-          <DialogContent>
-              <DialogHeader>
-                  <DialogTitle>Update Stock for {stockUpdate.item?.name}</DialogTitle>
-                  <DialogDescription>
-                      Record items being added to or removed from inventory. Current stock: {stockUpdate.item?.stock}.
-                  </DialogDescription>
-              </DialogHeader>
-               <div className="py-4 space-y-2">
-                    <Label htmlFor="quantity">Quantity to {stockUpdate.type === 'in' ? 'Add' : 'Remove'}</Label>
-                    <Input id="quantity" type="number" value={stockQuantity} onChange={(e) => setStockQuantity(Number(e.target.value) || 1)} min="1" max={stockUpdate.type === 'out' ? stockUpdate.item?.stock : undefined}/>
-                </div>
-              <DialogFooter>
-                  <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                  <Button onClick={handleStockUpdate} disabled={isPending}>
-                    {isPending ? 'Updating...' : 'Confirm Update'}
-                  </Button>
-              </DialogFooter>
-          </DialogContent>
-      </Dialog>
-    </>
-  );
+    );
 }
