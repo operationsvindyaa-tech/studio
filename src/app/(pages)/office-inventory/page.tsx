@@ -170,14 +170,14 @@ export default function OfficeInventoryPage() {
                     </div>
                     <div className="flex gap-2 flex-wrap">
                         <Select value={branchFilter} onValueChange={setBranchFilter}>
-                            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Filter by Branch" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="All Branches">All Branches</SelectItem>
                                 {centers.map(branch => <SelectItem key={branch} value={branch}>{branch}</SelectItem>)}
                             </SelectContent>
                         </Select>
                         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                            <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Filter by Category" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="All Categories">All Categories</SelectItem>
                                 {categories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
@@ -262,7 +262,7 @@ export default function OfficeInventoryPage() {
         </Card>
       </div>
 
-      <Dialog open={isItemDialogOpen} onOpenChange={(open) => { if (!open) handleOpenItemDialog(null); else setIsItemDialogOpen(true); }}>
+      <Dialog open={isItemDialogOpen} onOpenChange={(open) => { if (!open) handleOpenItemDialog(null); setIsItemDialogOpen(open); }}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingItem ? 'Edit' : 'Add New'} Inventory Item</DialogTitle>
@@ -328,7 +328,7 @@ export default function OfficeInventoryPage() {
           </DialogContent>
       </Dialog>
       
-      <Dialog open={isStockDialogOpen} onOpenChange={(open) => { if (!open) setStockUpdate({item: null, type: 'in'}); else setIsStockDialogOpen(true); }}>
+      <Dialog open={isStockDialogOpen} onOpenChange={(open) => { if (!open) setStockUpdate({item: null, type: 'in'}); setIsStockDialogOpen(open); }}>
           <DialogContent>
               <DialogHeader>
                   <DialogTitle>Update Stock for {stockUpdate.item?.name}</DialogTitle>
