@@ -89,7 +89,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
 ];
 
-const studentPortalNavItems = [
+const studentLifecycleNavItems = [
     { href: "/student-attendance", icon: CalendarCheck, label: "Attendance" },
     { href: "/progress-report", icon: TrendingUp, label: "Progress" },
     { href: "/upcoming-events", icon: Calendar, label: "Upcoming Events and Activities" },
@@ -134,8 +134,8 @@ const hrNavItems = [
 const financeNavItems = [
     { href: "/billing", icon: Banknote, label: "Payments & Invoices" },
     { href: "/payroll", icon: Wallet, label: "Payroll" },
-    { href: "/payment-status", icon: CalendarCheck, label: "Payment Tracker" },
-    { href: "/accounts", icon: BookText, label: "Accounts" },
+    { href: "/payment-status", icon: CalendarCheck, label: "Fee Management Tracker" },
+    { href: "/accounts", icon: BookText, label: "Financial Reports" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
     { href: "/letters", icon: Mail, label: "Letters" },
 ]
@@ -247,7 +247,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </SidebarMenu>
           <SidebarSeparator />
-            <NavGroup label="Student Lifecycle" items={studentPortalNavItems} pathname={pathname} />
+            <NavGroup label="Student Lifecycle" items={studentLifecycleNavItems} pathname={pathname} />
           <SidebarSeparator />
             <NavGroup label="Operations" items={operationsNavItems} pathname={pathname} />
           <SidebarSeparator />
@@ -307,7 +307,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...studentPortalNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...supportNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentLifecycleNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...supportNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
