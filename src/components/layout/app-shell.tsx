@@ -249,7 +249,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
             <NavGroup label="Student Lifecycle" items={studentLifecycleNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <NavGroup label="Operations" items={operationsNavItems} pathname={pathname} />
+            <NavGroup label="Administration" items={operationsNavItems} pathname={pathname} />
           <SidebarSeparator />
             <NavGroup label="Academics" items={academicsNavItems} pathname={pathname} />
           <SidebarSeparator />
