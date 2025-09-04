@@ -163,11 +163,12 @@ export default function BillingPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const students = await getStudents();
+            const [students, billingRecords] = await Promise.all([
+                getStudents(),
+                getBillingData()
+            ]);
             setAllStudents(students);
-            const billingRecords = await getBillingData();
             setBillingData(billingRecords);
-            setFilteredInvoices(billingRecords); // Initially show all
         } catch (error) {
             toast({
                 title: "Error",
