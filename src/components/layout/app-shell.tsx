@@ -71,6 +71,7 @@ import {
   Ruler,
   Home,
   Package,
+  BookMarked,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -121,6 +122,7 @@ const academicsNavItems = [
     { href: "/exam-students-list", icon: ListOrdered, label: "Exam List" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
+    { href: "/content-library", icon: BookMarked, label: "Content Library" },
 ];
 
 const hrNavItems = [
