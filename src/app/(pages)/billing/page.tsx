@@ -444,6 +444,9 @@ export default function BillingPage() {
                         <Calendar
                             initialFocus
                             mode="range"
+                            captionLayout="dropdown-buttons"
+                            fromYear={new Date().getFullYear() - 10}
+                            toYear={new Date().getFullYear() + 10}
                             defaultMonth={dateRange?.from}
                             selected={dateRange}
                             onSelect={setDateRange}
