@@ -150,7 +150,6 @@ const communicationsNavItems = [
 const supportNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
-    { href: "/events-workshops", icon: HeartHandshake, label: "Events/Workshops" },
 ];
 
 const managementNavItems = [
