@@ -1,4 +1,3 @@
-
 // This is a simple in-memory "database" for demonstration purposes.
 import { addDays, set } from "date-fns";
 
@@ -8,6 +7,9 @@ export type Event = {
   date: Date;
   time: string;
   type: "meeting" | "exam" | "event" | "lecture" | "holiday" | "competition" | "workshop" | "celebration" | "reminder" | "other";
+  activity?: string; // New field for activity
+  posterUrl?: string; // New field for image URL
+  videoUrl?: string; // New field for video URL
 };
 
 export type ExamEvent = {
@@ -21,10 +23,10 @@ export type ExamEvent = {
 }
 
 const initialEvents: Event[] = [
-  { id: "1", title: "Parent-Teacher Meetings", date: new Date("2024-08-15"), time: "9:00 AM - 4:00 PM", type: "meeting" },
-  { id: "2", title: "Mid-term Exams Start", date: new Date("2024-08-19"), time: "All Day", type: "exam" },
-  { id: "3", title: "Science Fair", date: new Date("2024-08-22"), time: "10:00 AM - 2:00 PM", type: "event" },
-  { id: "4", title: "Guest Lecture: AI in Education", date: new Date("2024-08-25"), time: "3:00 PM", type: "lecture" },
+  { id: "1", title: "Parent-Teacher Meetings", date: new Date("2024-08-15"), time: "9:00 AM - 4:00 PM", type: "meeting", activity: "General" },
+  { id: "2", title: "Mid-term Exams Start", date: new Date("2024-08-19"), time: "All Day", type: "exam", activity: "All Courses" },
+  { id: "3", title: "Annual Day Rehearsals", date: new Date("2024-08-22"), time: "10:00 AM - 2:00 PM", type: "event", activity: "Bharatanatyam", posterUrl: "https://picsum.photos/seed/dance/600/400" },
+  { id: "4", title: "Guest Lecture: AI in Education", date: new Date("2024-08-25"), time: "3:00 PM", type: "lecture", activity: "General" },
 ];
 
 const initialExamEvents: ExamEvent[] = [
