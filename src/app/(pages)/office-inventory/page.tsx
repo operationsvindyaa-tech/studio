@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,7 +21,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-import { useActionState, useTransition } from "react";
 import { addItem, updateItem, deleteItem, updateStock } from "./actions";
 import { getInventory, type InventoryItem, categories } from "@/lib/office-inventory-db";
 import { centers } from "@/lib/expenses-db";
@@ -32,12 +31,6 @@ const formatNumber = (amount: number) => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     }).format(amount);
-};
-
-const initialFormState = {
-    message: "",
-    success: false,
-    error: null,
 };
 
 export default function OfficeInventoryPage() {
@@ -52,8 +45,7 @@ export default function OfficeInventoryPage() {
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [branchFilter, setBranchFilter] = useState("All Branches");
   const { toast } = useToast();
-
-  const [formState, formAction] = useActionState(editingItem ? updateItem : addItem, initialFormState);
+  const [isPending, startTransition] = useTransition();
 
   const fetchInventory = async () => {
       setLoading(true);
@@ -85,20 +77,6 @@ export default function OfficeInventoryPage() {
       setFilteredInventory(filtered);
   }, [categoryFilter, branchFilter, inventory]);
 
-  useEffect(() => {
-      if (formState.message) {
-          toast({
-              title: formState.success ? "Success" : "Error",
-              description: formState.message,
-              variant: formState.success ? "default" : "destructive",
-          });
-          if (formState.success) {
-              fetchInventory();
-              setIsItemDialogOpen(false);
-          }
-      }
-  }, [formState, toast]);
-
   const handleOpenItemDialog = (item: InventoryItem | null) => {
     setEditingItem(item);
     setIsItemDialogOpen(true);
@@ -110,25 +88,47 @@ export default function OfficeInventoryPage() {
       setIsStockDialogOpen(true);
   }
   
-  const handleStockUpdate = async () => {
+  const handleStockUpdate = () => {
     if (!stockUpdate.item || stockQuantity <= 0) {
       toast({ title: "Invalid Quantity", variant: "destructive" });
       return;
     }
-    const result = await updateStock(stockUpdate.item.id, stockUpdate.type, stockQuantity);
-    toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "default" : "destructive" });
-    if (result.success) {
-      fetchInventory();
-      setIsStockDialogOpen(false);
-    }
+    startTransition(async () => {
+        const result = await updateStock(stockUpdate.item!.id, stockUpdate.type, stockQuantity);
+        toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "default" : "destructive" });
+        if (result.success) {
+          fetchInventory();
+          setIsStockDialogOpen(false);
+        }
+    });
   };
 
-  const handleDelete = async (itemId: string) => {
-    const result = await deleteItem(itemId);
-    toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "default" : "destructive" });
-    if (result.success) {
-      fetchInventory();
-    }
+  const handleDelete = (itemId: string) => {
+     startTransition(async () => {
+        const result = await deleteItem(itemId);
+        toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "default" : "destructive" });
+        if (result.success) {
+          fetchInventory();
+        }
+    });
+  };
+
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
+      const action = editingItem ? updateItem : addItem;
+      const result = await action({ success: false, message: '' }, formData);
+       toast({
+          title: result.success ? "Success" : "Error",
+          description: result.message,
+          variant: result.success ? "default" : "destructive",
+      });
+      if (result.success) {
+          fetchInventory();
+          setIsItemDialogOpen(false);
+      }
+    });
   };
   
   const totalValue = useMemo(() => inventory.reduce((sum, item) => sum + item.purchaseCost * item.stock, 0), [inventory]);
@@ -270,7 +270,7 @@ export default function OfficeInventoryPage() {
                 {editingItem ? 'Update the details for this item.' : 'Enter details for a new inventory item.'}
               </DialogDescription>
             </DialogHeader>
-            <form action={formAction}>
+            <form onSubmit={handleFormSubmit}>
                  <input type="hidden" name="id" value={editingItem?.id || ''} />
                  <div className="grid gap-4 py-4">
                      <div className="grid grid-cols-2 gap-4">
@@ -322,7 +322,9 @@ export default function OfficeInventoryPage() {
                  </div>
                  <DialogFooter>
                      <DialogClose asChild><Button type="button" variant="outline" onClick={() => setIsItemDialogOpen(false)}>Cancel</Button></DialogClose>
-                     <Button type="submit">Save Item</Button>
+                     <Button type="submit" disabled={isPending}>
+                        {isPending ? 'Saving...' : 'Save Item'}
+                     </Button>
                  </DialogFooter>
             </form>
           </DialogContent>
@@ -342,7 +344,9 @@ export default function OfficeInventoryPage() {
                 </div>
               <DialogFooter>
                   <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                  <Button onClick={handleStockUpdate}>Confirm Update</Button>
+                  <Button onClick={handleStockUpdate} disabled={isPending}>
+                    {isPending ? 'Updating...' : 'Confirm Update'}
+                  </Button>
               </DialogFooter>
           </DialogContent>
       </Dialog>
