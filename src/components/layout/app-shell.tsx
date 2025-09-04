@@ -143,10 +143,10 @@ const financeNavItems = [
 const communicationsNavItems = [
     { href: "/announcements-hub", icon: MessageSquare, label: "Announcements Hub"},
     { href: "/banner-brochure", icon: Camera, label: "Banner and Brochure" },
+    { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback & Surveys" },
 ];
 
 const supportNavItems = [
-    { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback" },
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
     { href: "/kmd", icon: Ruler, label: "KMD" },
