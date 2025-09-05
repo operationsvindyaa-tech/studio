@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -70,6 +69,8 @@ import {
   Notebook,
   Ruler,
   Home,
+  Package,
+  BookMarked,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -102,14 +103,16 @@ const studentLifecycleNavItems = [
     { href: "/login", icon: LogIn, label: "Student Login" },
 ]
 
-const operationsNavItems = [
+const administrationNavItems = [
     { href: "/enquiries", icon: ClipboardList, label: "Enquiries" },
     { href: "/activity-demo", icon: ClipboardCheck, label: "Demos" },
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
+    { href: "/alumni", icon: UsersRound, label: "Alumni" },
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
+    { href: "/kmd", icon: Ruler, label: "KMD" },
 ]
 
 const academicsNavItems = [
@@ -119,6 +122,7 @@ const academicsNavItems = [
     { href: "/exam-students-list", icon: ListOrdered, label: "Exam List" },
     { href: "/certificates", icon: Award, label: "Certificates" },
     { href: "/ptm", icon: School, label: "PTM" },
+    { href: "/content-library", icon: BookMarked, label: "Content Library" },
 ];
 
 const hrNavItems = [
@@ -138,6 +142,7 @@ const financeNavItems = [
     { href: "/payment-status", icon: CalendarCheck, label: "Fee Management Tracker" },
     { href: "/accounts", icon: BookText, label: "Financial Reports" },
     { href: "/expenses", icon: ReceiptText, label: "Expenses" },
+    { href: "/office-inventory", icon: Package, label: "Office Inventory" },
 ]
 
 const communicationsNavItems = [
@@ -146,14 +151,12 @@ const communicationsNavItems = [
     { href: "/feedback", icon: MessageCircleQuestion, label: "Feedback & Surveys" },
 ];
 
-const supportNavItems = [
+const inventoryStoreNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
-    { href: "/kmd", icon: Ruler, label: "KMD" },
-    { href: "/events-workshops", icon: HeartHandshake, label: "Events/Workshops" },
 ];
 
-const managementNavItems = [
+const executiveInsightsNavItems = [
     { href: "/reports", icon: AreaChart, label: "Financial" },
     { href: "/student-enrollment-report", icon: UsersRound, label: "Student" },
     { href: "/instructor-staff-report", icon: UserCheckIcon, label: "Instructor" },
@@ -250,7 +253,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarSeparator />
             <NavGroup label="Student Lifecycle" items={studentLifecycleNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <NavGroup label="Operations" items={operationsNavItems} pathname={pathname} />
+            <NavGroup label="Administration" items={administrationNavItems} pathname={pathname} />
           <SidebarSeparator />
             <NavGroup label="Academics" items={academicsNavItems} pathname={pathname} />
           <SidebarSeparator />
@@ -260,13 +263,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {userIsSeniorManagement && (
             <>
                 <SidebarSeparator />
-                <NavGroup label="Management" items={managementNavItems} pathname={pathname} />
+                <NavGroup label="Executive Insights" items={executiveInsightsNavItems} pathname={pathname} />
             </>
           )}
           <SidebarSeparator />
             <NavGroup label="Communications" items={communicationsNavItems} pathname={pathname} />
           <SidebarSeparator />
-            <NavGroup label="Inventory / Store Management" items={supportNavItems} pathname={pathname} />
+            <NavGroup label="Inventory / Store Management" items={inventoryStoreNavItems} pathname={pathname} />
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
@@ -308,7 +311,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...studentLifecycleNavItems, ...operationsNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...supportNavItems, ...managementNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentLifecycleNavItems, ...administrationNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...inventoryStoreNavItems, ...executiveInsightsNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
