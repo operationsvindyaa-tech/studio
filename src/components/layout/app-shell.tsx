@@ -109,6 +109,7 @@ const administrationNavItems = [
     { href: "/activity-demo", icon: ClipboardCheck, label: "Demos" },
     { href: "/admissions", icon: BookUser, label: "Admissions" },
     { href: "/students", icon: Users, label: "Students" },
+    { href: "/alumni", icon: UsersRound, label: "Alumni" },
     { href: "/branches", icon: Building, label: "Branches" },
     { href: "/batches", icon: Users2, label: "Batches" },
     { href: "/attendance", icon: CalendarCheck, label: "Attendance" },
