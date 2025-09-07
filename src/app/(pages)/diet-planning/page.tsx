@@ -23,9 +23,6 @@ import { getDietPlan, DietPlan } from "@/ai/flows/diet-plan-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Progress } from "@/components/ui/progress";
 
 const activities = [
   "Yoga",
@@ -35,6 +32,12 @@ const activities = [
   "Gymnastics",
   "Kalaripayattu",
   "Western Dance",
+  "Vocal Carnatic Musician",
+  "Keyboard/Piano Musician",
+];
+
+const dietaryPreferences = [
+    "Balanced", "Vegetarian", "Vegan", "High-Protein", "Satvik (No onion/garlic)"
 ];
 
 const mealIcons = {
@@ -47,6 +50,7 @@ const mealIcons = {
 
 function AiDietPlanner() {
     const [selectedActivity, setSelectedActivity] = useState<string>("");
+    const [dietaryPreference, setDietaryPreference] = useState<string>(dietaryPreferences[0]);
     const [dietPlan, setDietPlan] = useState<DietPlan | null>(null);
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
@@ -63,7 +67,7 @@ function AiDietPlanner() {
 
         startTransition(async () => {
         setDietPlan(null);
-        const result = await getDietPlan({ activityName: selectedActivity });
+        const result = await getDietPlan({ activityName: selectedActivity, dietaryPreference: dietaryPreference });
         if (result) {
             setDietPlan(result);
             toast({
@@ -84,26 +88,45 @@ function AiDietPlanner() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><BrainCircuit /> AI-Powered Diet Plan Generator</CardTitle>
-                <CardDescription>Get a personalized diet plan suggestion based on your chosen activity.</CardDescription>
+                <CardDescription>Get a personalized diet plan suggestion based on your chosen activity and dietary preference.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-muted/50">
-                    <div className="flex-grow w-full">
-                        <Label htmlFor="activity-select" className="text-sm font-medium">
-                        Select Activity
-                        </Label>
-                        <Select value={selectedActivity} onValueChange={setSelectedActivity}>
-                        <SelectTrigger id="activity-select">
-                            <SelectValue placeholder="Choose an activity..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {activities.map((activity) => (
-                            <SelectItem key={activity} value={activity}>
-                                {activity}
-                            </SelectItem>
-                            ))}
-                        </SelectContent>
-                        </Select>
+                    <div className="grid grid-cols-2 gap-4 flex-grow w-full">
+                        <div className="space-y-2">
+                            <Label htmlFor="activity-select" className="text-sm font-medium">
+                                Select Activity
+                            </Label>
+                            <Select value={selectedActivity} onValueChange={setSelectedActivity}>
+                            <SelectTrigger id="activity-select">
+                                <SelectValue placeholder="Choose an activity..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {activities.map((activity) => (
+                                <SelectItem key={activity} value={activity}>
+                                    {activity}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="diet-select" className="text-sm font-medium">
+                                Dietary Preference
+                            </Label>
+                            <Select value={dietaryPreference} onValueChange={setDietaryPreference}>
+                            <SelectTrigger id="diet-select">
+                                <SelectValue placeholder="Choose a diet type..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {dietaryPreferences.map((preference) => (
+                                <SelectItem key={preference} value={preference}>
+                                    {preference}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <Button onClick={handleGeneratePlan} disabled={isPending} className="w-full sm:w-auto mt-4 sm:mt-0 self-end">
                         {isPending ? (
@@ -129,7 +152,7 @@ function AiDietPlanner() {
                 {dietPlan && (
                     <div>
                         <h2 className="text-2xl font-bold text-center mb-4">
-                        Sample One-Day Diet Plan for {selectedActivity}
+                        Sample {dietaryPreference} Diet for {selectedActivity}
                         </h2>
                         <div className="grid md:grid-cols-2 gap-6">
                         {Object.entries(dietPlan.meals).map(([mealName, mealDetails]) => (

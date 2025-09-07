@@ -1,7 +1,7 @@
 
 'use server';
 /**
- * @fileOverview Generates a diet plan based on a physical activity.
+ * @fileOverview Generates a diet plan based on a physical activity and dietary preference.
  *
  * - getDietPlan - A function that generates a diet plan.
  * - DietPlanInput - The input type for the getDietPlan function.
@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 const DietPlanInputSchema = z.object({
   activityName: z.string().describe('The name of the physical activity, e.g., Yoga, Bharatanatyam.'),
+  dietaryPreference: z.string().describe("The user's dietary preference, e.g., Vegetarian, Vegan, High-Protein."),
 });
 export type DietPlanInput = z.infer<typeof DietPlanInputSchema>;
 
@@ -53,6 +54,8 @@ const dietPlanPrompt = ai.definePrompt({
   prompt: `You are a professional nutritionist specializing in diet plans for athletes and artists in India.
   
   Generate a simple, balanced, one-day sample diet plan for a person who actively practices {{activityName}}.
+  
+  The diet plan must follow a strict {{dietaryPreference}} preference.
   
   The diet should be healthy, providing sustained energy. Focus on whole foods commonly available in India.
   
