@@ -18,11 +18,15 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Salad, Utensils, Wheat, Beef, Soup, Loader2, BookCopy, BrainCircuit, Droplets, TrendingUp, CalendarDays, Lightbulb, Bell, CheckCircle } from "lucide-react";
+import { Salad, Utensils, Wheat, Beef, Soup, Loader2, BookCopy, BrainCircuit, Droplets, TrendingUp, CalendarDays, Lightbulb, Bell, CheckCircle, Flame, Droplet, Zap, Search, Minus, Plus } from "lucide-react";
 import { getDietPlan, DietPlan } from "@/ai/flows/diet-plan-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+
 
 const activities = [
   "Yoga",
@@ -221,28 +225,147 @@ function PlanTab() {
                     </div>
                 </CardContent>
             </Card>
-
             <AiDietPlanner />
         </div>
     )
 }
 
-function PlaceholderTab({ title, description, icon: Icon }: { title: string, description: string, icon: React.ElementType }) {
+const allRecipes = [
+    { title: "High-Energy Banana Smoothie", category: "Pre-class", description: "A quick and easy smoothie to fuel your workout.", tags: ["Yoga", "Zumba", "Dance"] },
+    { title: "Protein-Packed Paneer Salad", category: "Post-class", description: "Helps muscle recovery after an intense session.", tags: ["Zumba", "Karate", "Gymnastics"] },
+    { title: "Satvik Moong Dal Khichdi", category: "Main Course", description: "Light, digestible, and perfect for a yogi's diet.", tags: ["Yoga", "Musician"] },
+    { title: "Brain-Boosting Almond Mix", category: "Snack", description: "A handful of nuts to improve focus for musicians.", tags: ["Musician"] },
+];
+
+function RecipesTab() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const filteredRecipes = allRecipes.filter(recipe => 
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        recipe.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+                <CardTitle>Recipe Library</CardTitle>
+                <CardDescription>Browse healthy and delicious recipes tailored for your activity.</CardDescription>
+                <div className="relative mt-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Search recipes..." 
+                        className="pl-9"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
             </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg text-center">
-                    <Icon className="h-16 w-16 text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground font-semibold">Coming Soon!</p>
-                    <p className="text-sm text-muted-foreground mt-1">This feature is under development.</p>
+            <CardContent className="space-y-4">
+                {filteredRecipes.map((recipe, index) => (
+                    <Card key={index}>
+                        <CardHeader>
+                            <CardTitle>{recipe.title}</CardTitle>
+                            <CardDescription>{recipe.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex gap-2">
+                                {recipe.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </CardContent>
+        </Card>
+    );
+}
+
+function HydrationTab() {
+    const dailyGoal = 3000; // 3 Liters
+    const [intake, setIntake] = useState(1250); // in ml
+
+    const addIntake = (amount: number) => {
+        setIntake(prev => Math.min(prev + amount, dailyGoal * 1.5));
+    }
+    const subtractIntake = (amount: number) => {
+        setIntake(prev => Math.max(0, prev - amount));
+    }
+
+    const progress = (intake / dailyGoal) * 100;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Hydration Tracker</CardTitle>
+                <CardDescription>Log your daily water intake to stay hydrated and perform your best.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-6">
+                <div className="relative">
+                    <Progress value={progress} className="w-64 h-6" />
+                    <Droplet className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary h-8 w-8" style={{ opacity: Math.min(progress / 100, 1) }} />
+                </div>
+                <div className="text-center">
+                    <p className="text-3xl font-bold">{intake} <span className="text-lg text-muted-foreground">/ {dailyGoal} ml</span></p>
+                    <p className="text-sm text-muted-foreground">Today's Goal</p>
+                </div>
+                <div className="flex gap-4 items-center">
+                    <Button variant="outline" size="icon" onClick={() => subtractIntake(250)}><Minus /></Button>
+                    <div className="space-x-2">
+                        <Button onClick={() => addIntake(250)}>+250ml Glass</Button>
+                        <Button onClick={() => addIntake(500)}>+500ml Bottle</Button>
+                    </div>
+                    <Button variant="outline" size="icon" onClick={() => addIntake(250)}><Plus /></Button>
                 </div>
             </CardContent>
         </Card>
-    )
+    );
+}
+
+const progressData = [
+  { day: "Mon", logged: 3, goal: 3 },
+  { day: "Tue", logged: 2, goal: 3 },
+  { day: "Wed", logged: 3, goal: 3 },
+  { day: "Thu", logged: 3, goal: 3 },
+  { day: "Fri", logged: 1, goal: 3 },
+  { day: "Sat", logged: 2, goal: 3 },
+  { day: "Sun", logged: 3, goal: 3 },
+];
+
+function ProgressTab() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Progress Tracking</CardTitle>
+                <CardDescription>Monitor your goals, log your meals, and track your nutritional journey.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                 <div className="grid sm:grid-cols-2 gap-4">
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>This Week's Compliance</CardTitle>
+                            <CardDescription>Meals logged vs. goal.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <BarChart data={progressData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="day" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="logged" fill="hsl(var(--primary))" name="Logged Meals" />
+                                    <Bar dataKey="goal" fill="hsl(var(--muted))" name="Goal" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                     </Card>
+                     <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg text-center">
+                        <h3 className="text-lg font-semibold">Meal Logging</h3>
+                        <p className="text-sm text-muted-foreground mb-4">The ability to log meals is coming soon!</p>
+                        <Button disabled>Log Today's Meal</Button>
+                     </div>
+                 </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 
@@ -263,34 +386,22 @@ export default function DietPlanningPage() {
       <CardContent>
         <Tabs defaultValue="plan">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="plan"><CalendarDays className="mr-2" />Plan</TabsTrigger>
-            <TabsTrigger value="recipes"><BookCopy className="mr-2" />Recipes</TabsTrigger>
-            <TabsTrigger value="hydration"><Droplets className="mr-2" />Hydration</TabsTrigger>
-            <TabsTrigger value="progress"><TrendingUp className="mr-2" />Progress</TabsTrigger>
+            <TabsTrigger value="plan"><CalendarDays className="mr-2 h-4 w-4" />Plan</TabsTrigger>
+            <TabsTrigger value="recipes"><BookCopy className="mr-2 h-4 w-4" />Recipes</TabsTrigger>
+            <TabsTrigger value="hydration"><Droplets className="mr-2 h-4 w-4" />Hydration</TabsTrigger>
+            <TabsTrigger value="progress"><TrendingUp className="mr-2 h-4 w-4" />Progress</TabsTrigger>
           </TabsList>
           <TabsContent value="plan" className="pt-6">
             <PlanTab />
           </TabsContent>
           <TabsContent value="recipes" className="pt-6">
-             <PlaceholderTab 
-                title="Recipe Library" 
-                description="Browse healthy and delicious recipes tailored for your activity." 
-                icon={BookCopy} 
-            />
+             <RecipesTab />
           </TabsContent>
           <TabsContent value="hydration" className="pt-6">
-             <PlaceholderTab 
-                title="Hydration Tracker" 
-                description="Log your daily water intake to stay hydrated and perform your best." 
-                icon={Droplets} 
-            />
+             <HydrationTab />
           </TabsContent>
           <TabsContent value="progress" className="pt-6">
-             <PlaceholderTab 
-                title="Progress Tracking" 
-                description="Monitor your goals, log your meals, and track your nutritional journey." 
-                icon={TrendingUp} 
-            />
+             <ProgressTab />
           </TabsContent>
         </Tabs>
       </CardContent>
