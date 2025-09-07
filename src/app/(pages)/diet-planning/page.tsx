@@ -45,6 +45,8 @@ const dietaryPreferences = [
     "Balanced", "Vegetarian", "Vegan", "High-Protein", "Satvik (No onion/garlic)"
 ];
 
+const goals = ["Weight balance", "Energy boost", "Stress reduction", "Muscle gain", "Endurance"];
+
 const mealIcons = {
     Breakfast: <Utensils className="h-6 w-6 text-yellow-500" />,
     Lunch: <Wheat className="h-6 w-6 text-orange-500" />,
@@ -60,6 +62,13 @@ function AiDietPlanner() {
     const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
 
+    // States for new personal details
+    const [age, setAge] = useState('');
+    const [gender, setGender] = useState('');
+    const [weight, setWeight] = useState('');
+    const [height, setHeight] = useState('');
+    const [goal, setGoal] = useState('');
+
     const handleGeneratePlan = () => {
         if (!selectedActivity) {
         toast({
@@ -71,21 +80,29 @@ function AiDietPlanner() {
         }
 
         startTransition(async () => {
-        setDietPlan(null);
-        const result = await getDietPlan({ activityName: selectedActivity, dietaryPreference: dietaryPreference });
-        if (result) {
-            setDietPlan(result);
-            toast({
-            title: "Diet Plan Generated!",
-            description: `Here is a sample diet plan for ${selectedActivity}.`,
+            setDietPlan(null);
+            const result = await getDietPlan({ 
+                activityName: selectedActivity, 
+                dietaryPreference: dietaryPreference,
+                age: age ? parseInt(age) : undefined,
+                gender: gender || undefined,
+                weight: weight ? parseInt(weight) : undefined,
+                height: height ? parseInt(height) : undefined,
+                goal: goal || undefined
             });
-        } else {
-            toast({
-            title: "Error",
-            description: "Could not generate a diet plan. Please try again.",
-            variant: "destructive",
-            });
-        }
+            if (result) {
+                setDietPlan(result);
+                toast({
+                title: "Diet Plan Generated!",
+                description: `Here is a sample diet plan for ${selectedActivity}.`,
+                });
+            } else {
+                toast({
+                title: "Error",
+                description: "Could not generate a diet plan. Please try again.",
+                variant: "destructive",
+                });
+            }
         });
     };
 
@@ -96,52 +113,53 @@ function AiDietPlanner() {
                 <CardDescription>Get a personalized diet plan suggestion based on your chosen activity and dietary preference.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-muted/50">
-                    <div className="grid grid-cols-2 gap-4 flex-grow w-full">
+                <div className="space-y-6 p-4 border rounded-lg bg-muted/50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="activity-select" className="text-sm font-medium">
-                                Select Activity
-                            </Label>
+                            <Label htmlFor="activity-select">Select Activity</Label>
                             <Select value={selectedActivity} onValueChange={setSelectedActivity}>
-                            <SelectTrigger id="activity-select">
-                                <SelectValue placeholder="Choose an activity..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {activities.map((activity) => (
-                                <SelectItem key={activity} value={activity}>
-                                    {activity}
-                                </SelectItem>
-                                ))}
-                            </SelectContent>
+                            <SelectTrigger id="activity-select"><SelectValue placeholder="Choose an activity..." /></SelectTrigger>
+                            <SelectContent>{activities.map((activity) => (<SelectItem key={activity} value={activity}>{activity}</SelectItem>))}</SelectContent>
                             </Select>
                         </div>
                          <div className="space-y-2">
-                            <Label htmlFor="diet-select" className="text-sm font-medium">
-                                Dietary Preference
-                            </Label>
+                            <Label htmlFor="diet-select">Dietary Preference</Label>
                             <Select value={dietaryPreference} onValueChange={setDietaryPreference}>
-                            <SelectTrigger id="diet-select">
-                                <SelectValue placeholder="Choose a diet type..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {dietaryPreferences.map((preference) => (
-                                <SelectItem key={preference} value={preference}>
-                                    {preference}
-                                </SelectItem>
-                                ))}
-                            </SelectContent>
+                            <SelectTrigger id="diet-select"><SelectValue placeholder="Choose a diet type..." /></SelectTrigger>
+                            <SelectContent>{dietaryPreferences.map((preference) => (<SelectItem key={preference} value={preference}>{preference}</SelectItem>))}</SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="goal-select">Primary Goal</Label>
+                            <Select value={goal} onValueChange={setGoal}>
+                                <SelectTrigger id="goal-select"><SelectValue placeholder="Select your goal" /></SelectTrigger>
+                                <SelectContent>{goals.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                     </div>
-                    <Button onClick={handleGeneratePlan} disabled={isPending} className="w-full sm:w-auto mt-4 sm:mt-0 self-end">
-                        {isPending ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Generating...
-                        </>
-                        ) : (
-                        "Generate Diet Plan"
-                        )}
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="age">Age</Label>
+                            <Input id="age" type="number" placeholder="e.g., 25" value={age} onChange={(e) => setAge(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="gender">Gender</Label>
+                            <Select value={gender} onValueChange={setGender}>
+                                <SelectTrigger id="gender"><SelectValue placeholder="Select gender" /></SelectTrigger>
+                                <SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="weight">Weight (kg)</Label>
+                            <Input id="weight" type="number" placeholder="e.g., 60" value={weight} onChange={(e) => setWeight(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="height">Height (cm)</Label>
+                            <Input id="height" type="number" placeholder="e.g., 170" value={height} onChange={(e) => setHeight(e.target.value)} />
+                        </div>
+                    </div>
+                    <Button onClick={handleGeneratePlan} disabled={isPending} className="w-full sm:w-auto">
+                        {isPending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" />Generating...</>) : ("Generate Diet Plan")}
                     </Button>
                 </div>
 

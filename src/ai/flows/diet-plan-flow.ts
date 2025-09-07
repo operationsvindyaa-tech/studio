@@ -14,6 +14,11 @@ import { z } from 'zod';
 const DietPlanInputSchema = z.object({
   activityName: z.string().describe('The name of the physical activity, e.g., Yoga, Bharatanatyam.'),
   dietaryPreference: z.string().describe("The user's dietary preference, e.g., Vegetarian, Vegan, High-Protein."),
+  age: z.coerce.number().optional().describe("The user's age in years."),
+  gender: z.string().optional().describe("The user's gender (e.g., Male, Female)."),
+  weight: z.coerce.number().optional().describe("The user's weight in kilograms."),
+  height: z.coerce.number().optional().describe("The user's height in centimeters."),
+  goal: z.string().optional().describe("The user's primary fitness goal (e.g., Weight balance, Energy boost, Muscle gain)."),
 });
 export type DietPlanInput = z.infer<typeof DietPlanInputSchema>;
 
@@ -55,13 +60,20 @@ const dietPlanPrompt = ai.definePrompt({
   
   Generate a simple, balanced, one-day sample diet plan for a person who actively practices {{activityName}}.
   
+  The user has provided the following personal details:
+  {{#if age}} - Age: {{age}} years {{/if}}
+  {{#if gender}} - Gender: {{gender}} {{/if}}
+  {{#if weight}} - Weight: {{weight}} kg {{/if}}
+  {{#if height}} - Height: {{height}} cm {{/if}}
+  {{#if goal}} - Primary Goal: {{goal}} {{/if}}
+
   The diet plan must follow a strict {{dietaryPreference}} preference.
   
   The diet should be healthy, providing sustained energy. Focus on whole foods commonly available in India.
   
-  For each meal (Breakfast, Lunch, Snacks, Dinner), provide 2-3 food item suggestions and a short, simple reasoning (1-2 sentences) explaining how it helps the practitioner of {{activityName}}.
+  For each meal (Breakfast, Lunch, Snacks, Dinner), provide 2-3 food item suggestions and a short, simple reasoning (1-2 sentences) explaining how it helps the practitioner of {{activityName}} with their specific goals.
   
-  For example, for a Yoga practitioner, you might suggest light, easily digestible foods. For a Kalaripayattu martial artist, you might suggest foods for muscle recovery and stamina.`,
+  For example, for a Yoga practitioner, you might suggest light, easily digestible foods. For a Kalaripayattu martial artist, you might suggest foods for muscle recovery and stamina. Tailor the plan based on the user's provided details.`,
 });
 
 const generateDietPlanFlow = ai.defineFlow(
