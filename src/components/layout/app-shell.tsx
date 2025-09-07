@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -71,6 +72,7 @@ import {
   Home,
   Package,
   BookMarked,
+  Salad,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -154,6 +156,7 @@ const communicationsNavItems = [
 const inventoryStoreNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
+    { href: "/diet-planning", icon: Salad, label: "Diet Planning" },
 ];
 
 const executiveInsightsNavItems = [
