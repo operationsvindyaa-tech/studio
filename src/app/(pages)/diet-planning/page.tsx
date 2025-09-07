@@ -18,13 +18,14 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Salad, Utensils, Wheat, Beef, Soup, Loader2, PlusCircle, BookCopy, BrainCircuit } from "lucide-react";
+import { Salad, Utensils, Wheat, Beef, Soup, Loader2, BookCopy, BrainCircuit, Droplets, TrendingUp, CalendarDays, Lightbulb, Bell, CheckCircle } from "lucide-react";
 import { getDietPlan, DietPlan } from "@/ai/flows/diet-plan-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 
 const activities = [
   "Yoga",
@@ -43,16 +44,6 @@ const mealIcons = {
     Dinner: <Soup className="h-6 w-6 text-blue-500" />,
 };
 
-type ManualDietPlan = {
-  id: string;
-  activityName: string;
-  meals: {
-    Breakfast: { time: string; items: string[]; reasoning: string };
-    Lunch: { time: string; items: string[]; reasoning: string };
-    Snacks: { time: string; items: string[]; reasoning: string };
-    Dinner: { time: string; items: string[]; reasoning: string };
-  };
-};
 
 function AiDietPlanner() {
     const [selectedActivity, setSelectedActivity] = useState<string>("");
@@ -90,278 +81,196 @@ function AiDietPlanner() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-muted/50">
-                <div className="flex-grow w-full">
-                    <label htmlFor="activity-select" className="text-sm font-medium">
-                    Select Activity
-                    </label>
-                    <Select value={selectedActivity} onValueChange={setSelectedActivity}>
-                    <SelectTrigger id="activity-select">
-                        <SelectValue placeholder="Choose an activity..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {activities.map((activity) => (
-                        <SelectItem key={activity} value={activity}>
-                            {activity}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                    </Select>
-                </div>
-                <Button onClick={handleGeneratePlan} disabled={isPending} className="w-full sm:w-auto mt-4 sm:mt-0">
-                    {isPending ? (
-                    <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating...
-                    </>
-                    ) : (
-                    "Generate Diet Plan"
-                    )}
-                </Button>
-            </div>
-
-            {isPending && (
-                <div className="grid md:grid-cols-2 gap-6">
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                </div>
-            )}
-
-            {dietPlan && (
-                <div>
-                    <h2 className="text-2xl font-bold text-center mb-4">
-                    Sample One-Day Diet Plan for {selectedActivity}
-                    </h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                    {Object.entries(dietPlan.meals).map(([mealName, mealDetails]) => (
-                        <Card key={mealName}>
-                        <CardHeader className="flex flex-row items-center gap-4">
-                            {mealIcons[mealName as keyof typeof mealIcons]}
-                            <div>
-                            <CardTitle>{mealName}</CardTitle>
-                            <CardDescription>
-                                {mealDetails.time}
-                            </CardDescription>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <h4 className="font-semibold">Suggested Items</h4>
-                                <ul className="list-disc list-inside text-muted-foreground">
-                                    {mealDetails.items.map((item, index) => (
-                                        <li key={index}>{item}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 className="font-semibold">Reasoning</h4>
-                                <p className="text-sm text-muted-foreground">{mealDetails.reasoning}</p>
-                            </div>
-                        </CardContent>
-                        </Card>
-                    ))}
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><BrainCircuit /> AI-Powered Diet Plan Generator</CardTitle>
+                <CardDescription>Get a personalized diet plan suggestion based on your chosen activity.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-4 border rounded-lg bg-muted/50">
+                    <div className="flex-grow w-full">
+                        <Label htmlFor="activity-select" className="text-sm font-medium">
+                        Select Activity
+                        </Label>
+                        <Select value={selectedActivity} onValueChange={setSelectedActivity}>
+                        <SelectTrigger id="activity-select">
+                            <SelectValue placeholder="Choose an activity..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {activities.map((activity) => (
+                            <SelectItem key={activity} value={activity}>
+                                {activity}
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
                     </div>
+                    <Button onClick={handleGeneratePlan} disabled={isPending} className="w-full sm:w-auto mt-4 sm:mt-0 self-end">
+                        {isPending ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Generating...
+                        </>
+                        ) : (
+                        "Generate Diet Plan"
+                        )}
+                    </Button>
                 </div>
-            )}
 
-             {!isPending && !dietPlan && (
-                <div className="text-center py-16 text-muted-foreground">
-                    <p>Select an activity and click "Generate" to see a diet plan.</p>
-                </div>
-            )}
-        </div>
-    );
-}
+                {isPending && (
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-48 w-full" />
+                    </div>
+                )}
 
-function ManualDietPlanner() {
-    const [manualPlans, setManualPlans] = useState<ManualDietPlan[]>([]);
-    const [filter, setFilter] = useState("All Activities");
-    const [isFormVisible, setIsFormVisible] = useState(false);
-    const { toast } = useToast();
-
-    const [activityName, setActivityName] = useState("");
-    const [breakfastTime, setBreakfastTime] = useState("08:00 AM");
-    const [breakfastItems, setBreakfastItems] = useState("");
-    const [breakfastReason, setBreakfastReason] = useState("");
-    // ... other meal states
-    const [lunchTime, setLunchTime] = useState("01:00 PM");
-    const [lunchItems, setLunchItems] = useState("");
-    const [lunchReason, setLunchReason] = useState("");
-    const [snacksTime, setSnacksTime] = useState("04:30 PM");
-    const [snacksItems, setSnacksItems] = useState("");
-    const [snacksReason, setSnacksReason] = useState("");
-    const [dinnerTime, setDinnerTime] = useState("07:30 PM");
-    const [dinnerItems, setDinnerItems] = useState("");
-    const [dinnerReason, setDinnerReason] = useState("");
-
-    const filteredPlans = manualPlans.filter(plan => filter === "All Activities" || plan.activityName === filter);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if(!activityName) {
-            toast({ title: "Error", description: "Please select an activity.", variant: "destructive"});
-            return;
-        }
-        
-        const newPlan: ManualDietPlan = {
-            id: crypto.randomUUID(),
-            activityName,
-            meals: {
-                Breakfast: { time: breakfastTime, items: breakfastItems.split(',').map(i => i.trim()), reasoning: breakfastReason },
-                Lunch: { time: lunchTime, items: lunchItems.split(',').map(i => i.trim()), reasoning: lunchReason },
-                Snacks: { time: snacksTime, items: snacksItems.split(',').map(i => i.trim()), reasoning: snacksReason },
-                Dinner: { time: dinnerTime, items: dinnerItems.split(',').map(i => i.trim()), reasoning: dinnerReason },
-            }
-        };
-        setManualPlans([...manualPlans, newPlan]);
-        toast({ title: "Plan Saved", description: `Diet plan for ${activityName} has been saved.`});
-        setIsFormVisible(false);
-        // Reset form
-        setActivityName("");
-        setBreakfastItems(""); setBreakfastReason("");
-        setLunchItems(""); setLunchReason("");
-        setSnacksItems(""); setSnacksReason("");
-        setDinnerItems(""); setDinnerReason("");
-    };
-
-    return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <Select value={filter} onValueChange={setFilter}>
-                    <SelectTrigger className="w-[280px]">
-                        <SelectValue placeholder="Filter by activity..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All Activities">All Activities</SelectItem>
-                        {activities.map((activity) => (
-                        <SelectItem key={activity} value={activity}>
-                            {activity}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                 <Button onClick={() => setIsFormVisible(!isFormVisible)}>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    {isFormVisible ? 'Cancel' : 'Add New Plan'}
-                </Button>
-            </div>
-            
-            {isFormVisible && (
-                <Card>
-                    <CardHeader><CardTitle>Add a New Manual Diet Plan</CardTitle></CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                             <div className="space-y-2">
-                                <Label htmlFor="manual-activity">Activity</Label>
-                                <Select value={activityName} onValueChange={setActivityName}>
-                                    <SelectTrigger id="manual-activity"><SelectValue placeholder="Select activity" /></SelectTrigger>
-                                    <SelectContent>
-                                        {activities.map(activity => <SelectItem key={activity} value={activity}>{activity}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            
-                            {/* Meal Forms */}
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4 p-4 border rounded-lg">
-                                    <h4 className="font-semibold text-lg">Breakfast</h4>
-                                    <div className="space-y-2"><Label>Time</Label><Input value={breakfastTime} onChange={e => setBreakfastTime(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Items (comma-separated)</Label><Textarea value={breakfastItems} onChange={e => setBreakfastItems(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Reasoning</Label><Textarea value={breakfastReason} onChange={e => setBreakfastReason(e.target.value)} /></div>
-                                </div>
-                                 <div className="space-y-4 p-4 border rounded-lg">
-                                    <h4 className="font-semibold text-lg">Lunch</h4>
-                                    <div className="space-y-2"><Label>Time</Label><Input value={lunchTime} onChange={e => setLunchTime(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Items (comma-separated)</Label><Textarea value={lunchItems} onChange={e => setLunchItems(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Reasoning</Label><Textarea value={lunchReason} onChange={e => setLunchReason(e.target.value)} /></div>
-                                </div>
-                                <div className="space-y-4 p-4 border rounded-lg">
-                                    <h4 className="font-semibold text-lg">Snacks</h4>
-                                    <div className="space-y-2"><Label>Time</Label><Input value={snacksTime} onChange={e => setSnacksTime(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Items (comma-separated)</Label><Textarea value={snacksItems} onChange={e => setSnacksItems(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Reasoning</Label><Textarea value={snacksReason} onChange={e => setSnacksReason(e.target.value)} /></div>
-                                </div>
-                                <div className="space-y-4 p-4 border rounded-lg">
-                                    <h4 className="font-semibold text-lg">Dinner</h4>
-                                    <div className="space-y-2"><Label>Time</Label><Input value={dinnerTime} onChange={e => setDinnerTime(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Items (comma-separated)</Label><Textarea value={dinnerItems} onChange={e => setDinnerItems(e.target.value)} /></div>
-                                    <div className="space-y-2"><Label>Reasoning</Label><Textarea value={dinnerReason} onChange={e => setDinnerReason(e.target.value)} /></div>
-                                </div>
-                            </div>
-                            
-                            <Button type="submit" className="w-full">Save Manual Plan</Button>
-                        </form>
-                    </CardContent>
-                </Card>
-            )}
-
-            {filteredPlans.length > 0 ? (
-                filteredPlans.map(plan => (
-                    <div key={plan.id}>
+                {dietPlan && (
+                    <div>
                         <h2 className="text-2xl font-bold text-center mb-4">
-                            Manual Diet Plan for {plan.activityName}
+                        Sample One-Day Diet Plan for {selectedActivity}
                         </h2>
                         <div className="grid md:grid-cols-2 gap-6">
-                            {Object.entries(plan.meals).map(([mealName, mealDetails]) => (
-                                <Card key={mealName}>
-                                <CardHeader className="flex flex-row items-center gap-4">
-                                    {mealIcons[mealName as keyof typeof mealIcons]}
-                                    <div>
-                                    <CardTitle>{mealName}</CardTitle>
-                                    <CardDescription>{mealDetails.time}</CardDescription>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div><h4 className="font-semibold">Items</h4><ul className="list-disc list-inside text-muted-foreground">{mealDetails.items.map((item, index) => (<li key={index}>{item}</li>))}</ul></div>
-                                    <div><h4 className="font-semibold">Reasoning</h4><p className="text-sm text-muted-foreground">{mealDetails.reasoning}</p></div>
-                                </CardContent>
-                                </Card>
-                            ))}
+                        {Object.entries(dietPlan.meals).map(([mealName, mealDetails]) => (
+                            <Card key={mealName}>
+                            <CardHeader className="flex flex-row items-center gap-4">
+                                {mealIcons[mealName as keyof typeof mealIcons]}
+                                <div>
+                                <CardTitle>{mealName}</CardTitle>
+                                <CardDescription>
+                                    {mealDetails.time}
+                                </CardDescription>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <h4 className="font-semibold">Suggested Items</h4>
+                                    <ul className="list-disc list-inside text-muted-foreground">
+                                        {mealDetails.items.map((item, index) => (
+                                            <li key={index}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 className="font-semibold">Reasoning</h4>
+                                    <p className="text-sm text-muted-foreground">{mealDetails.reasoning}</p>
+                                </div>
+                            </CardContent>
+                            </Card>
+                        ))}
                         </div>
                     </div>
-                ))
-            ) : (
-                <div className="text-center py-16 text-muted-foreground">
-                    <p>No manual diet plans found. Add one to get started!</p>
-                </div>
-            )}
-        </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
+
+function PlanTab() {
+    return (
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Dashboard</CardTitle>
+                </CardHeader>
+                <CardContent className="grid sm:grid-cols-3 gap-4">
+                    <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                        <Lightbulb className="h-6 w-6 text-yellow-500" />
+                        <div>
+                            <p className="text-sm font-semibold">Daily Tip</p>
+                            <p className="text-xs text-muted-foreground">Stay hydrated to improve muscle function and energy levels.</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                        <Bell className="h-6 w-6 text-blue-500" />
+                        <div>
+                            <p className="text-sm font-semibold">Quick Reminder</p>
+                            <p className="text-xs text-muted-foreground">Have a light, carb-rich snack 30-60 minutes before your class.</p>
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                        <div>
+                            <p className="text-sm font-semibold">Progress Summary</p>
+                            <p className="text-xs text-muted-foreground">You followed your plan 5/7 days last week!</p>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <AiDietPlanner />
+        </div>
+    )
+}
+
+function PlaceholderTab({ title, description, icon: Icon }: { title: string, description: string, icon: React.ElementType }) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-lg text-center">
+                    <Icon className="h-16 w-16 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground font-semibold">Coming Soon!</p>
+                    <p className="text-sm text-muted-foreground mt-1">This feature is under development.</p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 
 export default function DietPlanningPage() {
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-5xl mx-auto">
       <CardHeader>
         <div className="flex items-center gap-3">
           <Salad className="h-6 w-6" />
           <div>
             <CardTitle>Diet Planning & Chart</CardTitle>
             <CardDescription>
-              Generate AI-powered or manually create activity-specific diet plans for students.
+              A complete nutrition guide to support your artistic and fitness journey.
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="ai-generator">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="ai-generator"><BrainCircuit className="mr-2" />AI Generator</TabsTrigger>
-            <TabsTrigger value="manual-entry"><BookCopy className="mr-2" />Manual Entry</TabsTrigger>
+        <Tabs defaultValue="plan">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="plan"><CalendarDays className="mr-2" />Plan</TabsTrigger>
+            <TabsTrigger value="recipes"><BookCopy className="mr-2" />Recipes</TabsTrigger>
+            <TabsTrigger value="hydration"><Droplets className="mr-2" />Hydration</TabsTrigger>
+            <TabsTrigger value="progress"><TrendingUp className="mr-2" />Progress</TabsTrigger>
           </TabsList>
-          <TabsContent value="ai-generator" className="pt-6">
-            <AiDietPlanner />
+          <TabsContent value="plan" className="pt-6">
+            <PlanTab />
           </TabsContent>
-          <TabsContent value="manual-entry" className="pt-6">
-            <ManualDietPlanner />
+          <TabsContent value="recipes" className="pt-6">
+             <PlaceholderTab 
+                title="Recipe Library" 
+                description="Browse healthy and delicious recipes tailored for your activity." 
+                icon={BookCopy} 
+            />
+          </TabsContent>
+          <TabsContent value="hydration" className="pt-6">
+             <PlaceholderTab 
+                title="Hydration Tracker" 
+                description="Log your daily water intake to stay hydrated and perform your best." 
+                icon={Droplets} 
+            />
+          </TabsContent>
+          <TabsContent value="progress" className="pt-6">
+             <PlaceholderTab 
+                title="Progress Tracking" 
+                description="Monitor your goals, log your meals, and track your nutritional journey." 
+                icon={TrendingUp} 
+            />
           </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   );
 }
-
-    
