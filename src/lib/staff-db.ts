@@ -6,6 +6,7 @@ export type Staff = {
     id: string; // Employee Code
     fullName: string;
     initials: string;
+    designation: string; // Added designation field
     personalInfo: {
         dob: string; // ISO date string
         gender: 'Male' | 'Female' | 'Other';
@@ -46,6 +47,7 @@ const initialStaff: Staff[] = [
         id: "EMP001",
         fullName: "Priya Sharma",
         initials: "PS",
+        designation: "Bharatanatyam Guru",
         personalInfo: {
             dob: "1985-06-15",
             gender: "Female",
@@ -75,6 +77,7 @@ const initialStaff: Staff[] = [
         id: "EMP002",
         fullName: "Ravi Kumar",
         initials: "RK",
+        designation: "Vocal Carnatic Ustad",
         personalInfo: {
             dob: "1990-11-20",
             gender: "Male",
@@ -104,6 +107,7 @@ const initialStaff: Staff[] = [
         id: "EMP003",
         fullName: "Anjali Mehta",
         initials: "AM",
+        designation: "Keyboard & Piano Instructor",
         personalInfo: {
             dob: "1992-04-10",
             gender: "Female",
@@ -133,6 +137,7 @@ const initialStaff: Staff[] = [
         id: "EMP004",
         fullName: "Vikram Singh",
         initials: "VS",
+        designation: "Guitar Teacher",
         personalInfo: {
             dob: "1988-09-05",
             gender: "Male",
@@ -162,6 +167,7 @@ const initialStaff: Staff[] = [
         id: "EMP005",
         fullName: "Sunita Reddy",
         initials: "SR",
+        designation: "Yoga Acharya",
         personalInfo: {
             dob: "1980-12-30",
             gender: "Female",
@@ -191,6 +197,7 @@ const initialStaff: Staff[] = [
         id: "EMP006",
         fullName: "Arjun Desai",
         initials: "AD",
+        designation: "Kalaripayattu Master",
         personalInfo: {
             dob: "1986-07-22",
             gender: "Male",
@@ -220,6 +227,7 @@ const initialStaff: Staff[] = [
         id: "EMP007",
         fullName: "Meera Iyer",
         initials: "MI",
+        designation: "Admin & Operations Head",
         personalInfo: {
             dob: "1982-02-25",
             gender: "Female",
@@ -249,6 +257,7 @@ const initialStaff: Staff[] = [
         id: "EMP008",
         fullName: "Suresh Patil",
         initials: "SP",
+        designation: "Front Desk Executive",
         personalInfo: {
             dob: "1995-03-12",
             gender: "Male",
@@ -278,6 +287,7 @@ const initialStaff: Staff[] = [
         id: "EMP009",
         fullName: "Deepa Nair",
         initials: "DN",
+        designation: "Accountant",
         personalInfo: {
             dob: "1993-08-20",
             gender: "Female",
@@ -307,6 +317,7 @@ const initialStaff: Staff[] = [
         id: "EMP010",
         fullName: "Rajesh Gupta",
         initials: "RG",
+        designation: "Maintenance Staff",
         personalInfo: {
             dob: "1980-01-10",
             gender: "Male",
@@ -336,6 +347,7 @@ const initialStaff: Staff[] = [
         id: "EMP011",
         fullName: "Nandini Rao",
         initials: "NR",
+        designation: "Art & Craft Teacher",
         personalInfo: {
             dob: "1998-05-18",
             gender: "Female",
@@ -365,6 +377,7 @@ const initialStaff: Staff[] = [
         id: "EMP012",
         fullName: "Amit Verma",
         initials: "AV",
+        designation: "Director",
         personalInfo: {
             dob: "1975-10-02",
             gender: "Male",

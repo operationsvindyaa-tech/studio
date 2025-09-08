@@ -28,7 +28,7 @@ export default async function StaffProfilePage({ params: { id } }: { params: { i
         notFound();
     }
 
-    const { fullName, initials, personalInfo, jobDetails, payroll } = staffMember;
+    const { fullName, initials, designation, personalInfo, jobDetails, payroll } = staffMember;
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -65,7 +65,7 @@ export default async function StaffProfilePage({ params: { id } }: { params: { i
                                 <AvatarFallback>{initials}</AvatarFallback>
                             </Avatar>
                             <h2 className="text-2xl font-bold">{fullName}</h2>
-                            <p className="text-muted-foreground">{jobDetails.role}</p>
+                            <p className="text-muted-foreground">{designation}</p>
                             <Badge className="mt-2">{jobDetails.employmentType}</Badge>
                         </CardContent>
                     </Card>
@@ -96,6 +96,7 @@ export default async function StaffProfilePage({ params: { id } }: { params: { i
                                     <InfoField icon={CalendarDays} label="Date of Joining" value={new Date(jobDetails.dateOfJoining).toLocaleDateString()} />
                                     <InfoField icon={MapPin} label="Work Location" value={jobDetails.workLocation} />
                                     <InfoField icon={Briefcase} label="Branch" value={jobDetails.branch} />
+                                    <InfoField icon={Briefcase} label="Role" value={jobDetails.role} />
                                 </div>
                             </div>
                             <div>

@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 const staffFormSchema = z.object({
   photo: z.string().optional(),
   fullName: z.string().min(2, "Name is required."),
+  designation: z.string().min(2, "Designation is required."),
   dob: z.date({ required_error: "Date of birth is required." }),
   gender: z.enum(["Male", "Female", "Other"], { required_error: "Gender is required." }),
   contactNumber: z.string().min(10, "A valid contact number is required."),
@@ -55,6 +56,7 @@ export async function createStaff(prevState: State, formData: FormData): Promise
 
     await addStaff({
       fullName: parsedData.fullName,
+      designation: parsedData.designation,
       personalInfo: {
         dob: parsedData.dob.toISOString(),
         gender: parsedData.gender,

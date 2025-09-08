@@ -46,6 +46,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 const staffFormSchema = z.object({
   photo: z.string().optional(),
   fullName: z.string().min(2, "Name is required."),
+  designation: z.string().min(2, "Designation is required."),
   dob: z.date({ required_error: "Date of birth is required." }),
   gender: z.enum(["Male", "Female", "Other"], { required_error: "Gender is required." }),
   contactNumber: z.string().min(10, "A valid contact number is required."),
@@ -109,6 +110,7 @@ export default function NewStaffPage() {
     resolver: zodResolver(staffFormSchema),
     defaultValues: {
       fullName: "",
+      designation: "",
       contactNumber: "",
       email: "",
       address: "",
@@ -202,9 +204,14 @@ export default function NewStaffPage() {
                 <h3 className="text-xl font-semibold border-b pb-2">Personal Information</h3>
                 <div className="grid md:grid-cols-3 gap-8">
                     <div className="md:col-span-2 space-y-6">
-                         <FormField control={form.control} name="fullName" render={({ field }) => (
-                            <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
+                         <div className="grid md:grid-cols-2 gap-6">
+                            <FormField control={form.control} name="fullName" render={({ field }) => (
+                                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name="designation" render={({ field }) => (
+                                <FormItem><FormLabel>Designation</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                         </div>
                         <div className="grid md:grid-cols-2 gap-6">
                             <FormField control={form.control} name="dob" render={({ field }) => (
                                 <FormItem className="flex flex-col"><FormLabel>Date of Birth</FormLabel>
@@ -265,7 +272,7 @@ export default function NewStaffPage() {
                         <FormItem><FormLabel>Department</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select department" /></SelectTrigger></FormControl><SelectContent><SelectItem value="Academics">Academics</SelectItem><SelectItem value="Administration">Administration</SelectItem><SelectItem value="Support Staff">Support Staff</SelectItem><SelectItem value="Management">Management</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                     )} />
                      <FormField control={form.control} name="role" render={({ field }) => (
-                        <FormItem><FormLabel>Role / Designation</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Role</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                      <FormField control={form.control} name="reportingManager" render={({ field }) => (
                         <FormItem><FormLabel>Reporting Manager</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -49,10 +50,10 @@ export default function StaffPage() {
   const handleExport = () => {
     if (!staff.length) return;
     
-    const headers = ["ID", "Name", "Role", "Department", "Email", "Phone", "Status"];
+    const headers = ["ID", "Name", "Designation", "Department", "Email", "Phone", "Status"];
     const csvContent = [
       headers.join(','),
-      ...staff.map(s => [s.id, `"${s.fullName}"`, s.jobDetails.role, s.jobDetails.department, s.personalInfo.email, s.personalInfo.contactNumber, s.jobDetails.employmentType].join(','))
+      ...staff.map(s => [s.id, `"${s.fullName}"`, s.designation, s.jobDetails.department, s.personalInfo.email, s.personalInfo.contactNumber, s.jobDetails.employmentType].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -133,7 +134,7 @@ export default function StaffPage() {
                           <div>
                             <Link href={`/staff/${member.id}`} className="font-medium hover:underline">{member.fullName}</Link>
                             <div className="text-sm text-muted-foreground">
-                              {member.jobDetails.role}
+                              {member.designation}
                             </div>
                           </div>
                         </div>

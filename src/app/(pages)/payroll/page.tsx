@@ -50,6 +50,7 @@ type StaffStatus = "Paid" | "Pending";
 interface PayrollStaffMember {
   id: string;
   name: string;
+  designation: string;
   role: string;
   avatar: string;
   initials: string;
@@ -118,6 +119,7 @@ export default function PayrollPage() {
             const payrollData = fetchedDbStaff.map(s => ({
                 id: s.id,
                 name: s.fullName,
+                designation: s.designation,
                 role: s.jobDetails.role,
                 avatar: s.personalInfo.photo,
                 initials: s.initials,
@@ -198,10 +200,11 @@ export default function PayrollPage() {
     const formData = new FormData(event.currentTarget);
     const name = formData.get('name') as string;
     const role = formData.get('role') as string;
+    const designation = formData.get('designation') as string;
     const salary = formData.get('salary') as string;
     const department = formData.get('department') as string;
 
-    if (!name || !role || !salary) {
+    if (!name || !role || !salary || !designation) {
       toast({ title: "Error", description: "Please fill out all fields.", variant: "destructive" });
       return;
     }
@@ -211,6 +214,7 @@ export default function PayrollPage() {
             ...s,
             name,
             role,
+            designation,
             department,
             monthlySalary: parseFloat(salary),
         } : s));
@@ -220,6 +224,7 @@ export default function PayrollPage() {
             id: `EMP${String(staff.length + 1).padStart(3, '0')}`,
             name,
             role,
+            designation,
             department,
             avatar: "https://placehold.co/100x100.png",
             initials: name.split(' ').map(n => n[0]).join('').toUpperCase(),
@@ -274,13 +279,13 @@ export default function PayrollPage() {
 
 
   const handleExport = () => {
-    const headers = ["ID", "Name", "Role", "Monthly Salary", "Gross Salary", "PF", "PT", "TDS", "Total Deductions", "Net Salary", "Status"];
+    const headers = ["ID", "Name", "Designation", "Role", "Monthly Salary", "Gross Salary", "PF", "PT", "TDS", "Total Deductions", "Net Salary", "Status"];
     const csvContent = [
       headers.join(','),
       ...staff.map(s => {
         const { grossSalary, providentFund, professionalTax, incomeTax, totalDeductions, netSalary } = calculateNetSalary(s.monthlySalary, s.presentDays);
         return [
-            s.id, `"${s.name}"`, s.role, s.monthlySalary.toFixed(2),
+            s.id, `"${s.name}"`, s.designation, s.role, s.monthlySalary.toFixed(2),
             grossSalary.toFixed(2), providentFund.toFixed(2), professionalTax.toFixed(2), incomeTax.toFixed(2),
             totalDeductions.toFixed(2), netSalary.toFixed(2), s.status,
         ].join(',');
@@ -321,6 +326,7 @@ export default function PayrollPage() {
             return {
                 id: row.ID || `EMP${String(staff.length + index + 1).padStart(3, '0')}`,
                 name: name,
+                designation: row.Designation || row.designation || "N/A",
                 role: row.Role || row.role || "N/A",
                 department: row.Department || row.department || "N/A",
                 monthlySalary: parseFloat(row["Monthly Salary"] || row.monthlySalary || 0),
@@ -437,7 +443,7 @@ export default function PayrollPage() {
                                       </Avatar>
                                       <div>
                                           <div className="font-medium">{s.name}</div>
-                                          <div className="text-sm text-muted-foreground">{s.role}</div>
+                                          <div className="text-sm text-muted-foreground">{s.designation}</div>
                                       </div>
                                   </div>
                               </TableCell>
@@ -535,7 +541,7 @@ export default function PayrollPage() {
                                     <span className="font-medium">{s.fullName}</span>
                                 </div>
                             </TableCell>
-                            <TableCell>{s.jobDetails.role}</TableCell>
+                            <TableCell>{s.designation}</TableCell>
                             <TableCell className="text-right">{formatCurrency(s.payroll.salary)}</TableCell>
                         </TableRow>
                     ))
@@ -564,6 +570,10 @@ export default function PayrollPage() {
                         <Input id="name" name="name" defaultValue={editingStaff?.name} className="col-span-3" placeholder="e.g., John Doe"/>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="designation" className="text-right">Designation</Label>
+                        <Input id="designation" name="designation" defaultValue={editingStaff?.designation} className="col-span-3" placeholder="e.g., Guitar Teacher"/>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="role" className="text-right">Role</Label>
                         <Input id="role" name="role" defaultValue={editingStaff?.role} className="col-span-3" placeholder="e.g., Guitar Teacher"/>
                     </div>
@@ -604,7 +614,7 @@ export default function PayrollPage() {
                     <div className="grid grid-cols-2 gap-x-8 gap-y-2 rounded-lg border p-4">
                         <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee ID:</span> <span className="font-medium">{selectedStaff.id}</span></div>
                         <div className="grid grid-cols-2"><span className="text-muted-foreground">Employee Name:</span> <span className="font-medium">{selectedStaff.name}</span></div>
-                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.role}</span></div>
+                        <div className="grid grid-cols-2"><span className="text-muted-foreground">Designation:</span> <span className="font-medium">{selectedStaff.designation}</span></div>
                         <div className="grid grid-cols-2"><span className="text-muted-foreground">Department:</span> <span className="font-medium">{selectedStaff.department}</span></div>
                         <div className="grid grid-cols-2"><span className="text-muted-foreground">Date of Joining:</span> <span className="font-medium">{new Date(selectedStaff.joiningDate).toLocaleDateString()}</span></div>
                         <div className="grid grid-cols-2"><span className="text-muted-foreground">Bank Account No:</span> <span className="font-medium">{selectedStaff.bankAccount}</span></div>
