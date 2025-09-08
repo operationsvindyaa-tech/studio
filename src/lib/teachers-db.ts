@@ -24,7 +24,7 @@ const initialTeachers: Teacher[] = [
     { id: "T004", name: "Leo Chen", designation: "Art Director", department: "Arts", phone: "(555) 777-8888", classCenter: "Fine Arts Building", noOfBatches: 5, totalStudents: 50, noOfWorkingDays: 5, workingDays: ["Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], email: "l.chen@campus.com", avatar: "https://placehold.co/100x100.png", initials: "LC" },
     { id: "T005", name: "Priya Sharma", designation: "Dance Guru", department: "Performing Arts", phone: "(555) 222-1111", classCenter: "Dance Studio", noOfBatches: 6, totalStudents: 70, noOfWorkingDays: 5, workingDays: ["Monday", "Wednesday", "Thursday", "Friday", "Saturday"], email: "p.sharma@campus.com", avatar: "https://placehold.co/100x100.png", initials: "PS" },
     { id: "T006", name: "Anjali Mehta", designation: "Keyboard Instructor", department: "Academics", phone: "(555) 333-4445", classCenter: "Branch 2 (Marathahalli)", noOfBatches: 4, totalStudents: 45, noOfWorkingDays: 5, workingDays: ["Monday", "Tuesday", "Thursday", "Friday", "Saturday"], email: "a.mehta@campus.com", avatar: "https://placehold.co/100x100.png", initials: "AM" },
-    { id: "T007", name: "Vikram Singh", designation: "Guitar Teacher", department: "Academics", phone: "(555) 444-5556", classCenter: "Branch 3 (Koramangala)", noOfBatches: 5, totalStudents: 55, noOfWorkingDays: 5, workingDays: ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"], email: "v.singh@campus.com", avatar: "https://placehold.co/100x100.png", initials: "VS" },
+    { id: "T007", name: "Vikram Singh", designation: "Guitar Teacher", department: "Academics", phone: "(555) 444-556", classCenter: "Branch 3 (Koramangala)", noOfBatches: 5, totalStudents: 55, noOfWorkingDays: 5, workingDays: ["Monday", "Tuesday", "Wednesday", "Friday", "Saturday"], email: "v.singh@campus.com", avatar: "https://placehold.co/100x100.png", initials: "VS" },
     { id: "T008", name: "Sunita Reddy", designation: "Yoga Acharya", department: "Wellness", phone: "(555) 555-6667", classCenter: "Main Campus", noOfBatches: 3, totalStudents: 90, noOfWorkingDays: 6, workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], email: "s.reddy@campus.com", avatar: "https://placehold.co/100x100.png", initials: "SR" },
     { id: "T009", name: "Ravi Kumar", designation: "Vocal Carnatic Ustad", department: "Academics", phone: "(555) 222-3334", classCenter: "Main Campus", noOfBatches: 4, totalStudents: 60, noOfWorkingDays: 5, workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Saturday"], email: "r.kumar@campus.com", avatar: "https://placehold.co/100x100.png", initials: "RK" },
     { id: "T010", name: "Arjun Desai", designation: "Kalaripayattu Master", department: "Martial Arts", phone: "(555) 666-7778", classCenter: "Branch 4 (Indiranagar)", noOfBatches: 3, totalStudents: 40, noOfWorkingDays: 5, workingDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], email: "a.desai@campus.com", avatar: "https://placehold.co/100x100.png", initials: "AD" },
@@ -48,6 +48,11 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const getTeachers = async (): Promise<Teacher[]> => {
   await delay(500); // Simulate network latency
   return Promise.resolve(teachers);
+};
+
+export const getTeacherById = async (id: string): Promise<Teacher | undefined> => {
+    await delay(300);
+    return Promise.resolve(teachers.find(t => t.id === id));
 };
 
 export type AddTeacherData = Omit<Teacher, 'id' | 'avatar' | 'initials'> & { photo?: string | null };

@@ -19,7 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, PlusCircle, UserPlus, FileDown } from "lucide-react";
+import { MoreHorizontal, PlusCircle, UserPlus, FileDown, Eye } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import {
@@ -51,6 +51,7 @@ import { Form, FormDescription, FormControl, FormField } from "@/components/ui/f
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 
 const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -383,7 +384,7 @@ export default function TeachersPage() {
                           <AvatarFallback>{teacher.initials}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <div className="font-medium">{teacher.name}</div>
+                          <Link href={`/teachers/${teacher.id}`} className="font-medium hover:underline">{teacher.name}</Link>
                           <div className="text-sm text-muted-foreground">
                             {teacher.designation}
                           </div>
@@ -409,6 +410,9 @@ export default function TeachersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/teachers/${teacher.id}`}><Eye className="mr-2 h-4 w-4"/> View Profile</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenDialog(teacher)}>Edit</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleDelete(teacher)} className="text-destructive">
