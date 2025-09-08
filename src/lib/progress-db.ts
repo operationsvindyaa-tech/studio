@@ -142,3 +142,14 @@ export const getProgressReports = async (): Promise<ProgressReport[]> => {
   await delay(500); // Simulate network latency
   return Promise.resolve(progressReports);
 };
+
+export const updateProgressReport = async (reportId: string, updates: Partial<ProgressReport>): Promise<ProgressReport> => {
+    await delay(500);
+    const reportIndex = progressReports.findIndex(r => r.reportId === reportId);
+    if (reportIndex === -1) {
+        throw new Error("Progress report not found");
+    }
+    const updatedReport = { ...progressReports[reportIndex], ...updates };
+    progressReports[reportIndex] = updatedReport;
+    return Promise.resolve(updatedReport);
+};

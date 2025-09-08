@@ -11,8 +11,12 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getStudents, type Student } from "@/lib/db";
-import { getProgressReports, type ProgressReport } from "@/lib/progress-db";
-import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer, CalendarCheck } from "lucide-react";
+import { getProgressReports, updateProgressReport, type ProgressReport } from "@/lib/progress-db";
+import { TrendingUp, Percent, CheckCircle2, MessageSquare, Printer, CalendarCheck, Save } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function ProgressReportPage() {
     const [students, setStudents] = useState<Student[]>([]);
@@ -21,23 +25,26 @@ export default function ProgressReportPage() {
     const [selectedStudentId, setSelectedStudentId] = useState<string>('');
     const [selectedCourse, setSelectedCourse] = useState<string>('');
     const [filteredReport, setFilteredReport] = useState<ProgressReport | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const { toast } = useToast();
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [studentData, reportData] = await Promise.all([getStudents(), getProgressReports()]);
+            setStudents(studentData);
+            setProgressReports(reportData);
+            if (studentData.length > 0) {
+                setSelectedStudentId(studentData[0].id);
+            }
+        } catch (error) {
+            console.error("Failed to load data", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const [studentData, reportData] = await Promise.all([getStudents(), getProgressReports()]);
-                setStudents(studentData);
-                setProgressReports(reportData);
-                if (studentData.length > 0) {
-                    setSelectedStudentId(studentData[0].id);
-                }
-            } catch (error) {
-                console.error("Failed to load data", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, []);
 
@@ -70,6 +77,51 @@ export default function ProgressReportPage() {
         return 'bg-red-100 text-red-800';
     };
 
+    const handleInputChange = (path: string, value: any) => {
+        if (!filteredReport) return;
+
+        const keys = path.split('.');
+        setFilteredReport(prev => {
+            if (!prev) return null;
+            const newReport = JSON.parse(JSON.stringify(prev));
+            let current = newReport;
+            for (let i = 0; i < keys.length - 1; i++) {
+                current = current[keys[i]];
+            }
+            current[keys[keys.length - 1]] = value;
+            return newReport;
+        });
+    };
+
+    const handleModuleScoreChange = (index: number, score: number) => {
+        if (!filteredReport) return;
+        const newModules = [...filteredReport.moduleProgress];
+        newModules[index].score = Math.max(0, Math.min(100, score));
+        handleInputChange('moduleProgress', newModules);
+    };
+
+    const handleSaveChanges = async () => {
+        if (!filteredReport) return;
+        setIsSaving(true);
+        try {
+            await updateProgressReport(filteredReport.reportId, filteredReport);
+            await fetchData(); // Re-fetch all data to ensure consistency
+            toast({
+                title: "Success",
+                description: "Progress report updated successfully.",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to save changes.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+
     return (
         <div className="space-y-6">
             <Card>
@@ -81,7 +133,7 @@ export default function ProgressReportPage() {
                                 Student Progress Report
                             </CardTitle>
                             <CardDescription>
-                                Select a student and course to view their detailed progress.
+                                Select a student and course to view or edit their detailed progress.
                             </CardDescription>
                         </div>
                         <div className="flex gap-2">
@@ -126,40 +178,54 @@ export default function ProgressReportPage() {
                                 <p className="text-muted-foreground">Progress Report for <span className="font-semibold">{filteredReport.course}</span></p>
                             </div>
                         </div>
-                        <Button variant="outline">
-                            <Printer className="mr-2 h-4 w-4" />
-                            Print Report
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline">
+                                <Printer className="mr-2 h-4 w-4" />
+                                Print Report
+                            </Button>
+                            <Button onClick={handleSaveChanges} disabled={isSaving}>
+                                <Save className="mr-2 h-4 w-4" />
+                                {isSaving ? "Saving..." : "Save Changes"}
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="p-6">
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium">Overall Grade</CardTitle>
-                                    <Badge className={getGradeColor(filteredReport.overallGrade)}>{filteredReport.overallGrade}</Badge>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-xs text-muted-foreground">Based on all assessments</p>
+                                     <Select value={filteredReport.overallGrade} onValueChange={(value) => handleInputChange('overallGrade', value)}>
+                                        <SelectTrigger><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {['A+', 'A', 'B+', 'B', 'C', 'D'].map(grade => <SelectItem key={grade} value={grade}>{grade}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                 </CardContent>
                             </Card>
                             <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium">Attendance</CardTitle>
-                                    <Percent className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="text-2xl font-bold">{filteredReport.attendancePercentage}%</div>
-                                    <p className="text-xs text-muted-foreground">{filteredReport.classesAttended} out of {filteredReport.totalClasses} classes attended</p>
+                                <CardContent className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <Label htmlFor="classesAttended" className="text-xs">Attended</Label>
+                                        <Input id="classesAttended" type="number" value={filteredReport.classesAttended} onChange={(e) => handleInputChange('classesAttended', Number(e.target.value))} />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="totalClasses" className="text-xs">Total</Label>
+                                        <Input id="totalClasses" type="number" value={filteredReport.totalClasses} onChange={(e) => handleInputChange('totalClasses', Number(e.target.value))} />
+                                    </div>
                                 </CardContent>
                             </Card>
                              <Card>
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardHeader className="pb-2">
                                     <CardTitle className="text-sm font-medium">Next Assessment</CardTitle>
-                                    <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="text-lg font-bold">{filteredReport.nextAssessment.name}</div>
-                                    <p className="text-xs text-muted-foreground">on {new Date(filteredReport.nextAssessment.date).toLocaleDateString()}</p>
+                                <CardContent className="space-y-2">
+                                     <Input placeholder="Assessment Name" value={filteredReport.nextAssessment.name} onChange={(e) => handleInputChange('nextAssessment.name', e.target.value)} />
+                                     <Input type="date" value={filteredReport.nextAssessment.date.split('T')[0]} onChange={(e) => handleInputChange('nextAssessment.date', new Date(e.target.value).toISOString())} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -172,15 +238,17 @@ export default function ProgressReportPage() {
                                         <TableHeader>
                                             <TableRow>
                                                 <TableHead>Module</TableHead>
-                                                <TableHead className="text-center">Score</TableHead>
+                                                <TableHead className="text-center w-24">Score (%)</TableHead>
                                                 <TableHead>Progress</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {filteredReport.moduleProgress.map(mod => (
+                                            {filteredReport.moduleProgress.map((mod, index) => (
                                                 <TableRow key={mod.moduleName}>
                                                     <TableCell className="font-medium">{mod.moduleName}</TableCell>
-                                                    <TableCell className="text-center">{mod.score}%</TableCell>
+                                                    <TableCell>
+                                                        <Input type="number" value={mod.score} onChange={(e) => handleModuleScoreChange(index, Number(e.target.value))} className="text-center" />
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Progress value={mod.score} className="w-full" />
                                                     </TableCell>
@@ -195,20 +263,17 @@ export default function ProgressReportPage() {
                                 <Card className="bg-muted/30">
                                     <CardContent className="p-4 space-y-4">
                                         <div className="space-y-1">
-                                            <p className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Strengths</p>
-                                            <p className="text-sm text-muted-foreground pl-6">{filteredReport.feedback.strengths}</p>
+                                            <Label className="text-sm font-medium flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" />Strengths</Label>
+                                            <Textarea value={filteredReport.feedback.strengths} onChange={(e) => handleInputChange('feedback.strengths', e.target.value)} />
                                         </div>
                                          <div className="space-y-1">
-                                            <p className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-blue-500" />Areas for Improvement</p>
-                                            <p className="text-sm text-muted-foreground pl-6">{filteredReport.feedback.areasForImprovement}</p>
+                                            <Label className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-blue-500" />Areas for Improvement</Label>
+                                            <Textarea value={filteredReport.feedback.areasForImprovement} onChange={(e) => handleInputChange('feedback.areasForImprovement', e.target.value)} />
                                         </div>
                                          <div className="space-y-1">
-                                            <p className="text-sm font-medium flex items-center gap-2"><MessageSquare className="h-4 w-4 text-gray-500" />General Comments</p>
-                                            <p className="text-sm text-muted-foreground pl-6">{filteredReport.feedback.comments}</p>
+                                            <Label className="text-sm font-medium flex items-center gap-2"><MessageSquare className="h-4 w-4 text-gray-500" />General Comments</Label>
+                                             <Textarea value={filteredReport.feedback.comments} onChange={(e) => handleInputChange('feedback.comments', e.target.value)} />
                                         </div>
-                                        <p className="text-xs text-muted-foreground text-right pt-2 border-t">
-                                            - {filteredReport.teacherName}, {new Date(filteredReport.reportDate).toLocaleDateString()}
-                                        </p>
                                     </CardContent>
                                 </Card>
                             </div>
