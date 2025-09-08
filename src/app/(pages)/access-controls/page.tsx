@@ -166,14 +166,16 @@ export default function AccessControlsPage() {
                         <Tabs value={activeRole?.id || ''} onValueChange={(roleId) => setActiveRole(roles.find(r => r.id === roleId) || null)} className="vertical-tabs flex flex-col md:flex-row gap-6">
                             <TabsList className="flex-col h-auto w-full md:w-48">
                                 {roles.map(role => (
-                                    <TabsTrigger key={role.id} value={role.id} className="w-full justify-start gap-2">
-                                        <Users className="h-4 w-4" />
-                                        <span>{role.name}</span>
-                                        <div className="ml-auto flex gap-1">
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); handleOpenRoleDialog(role); }}><Edit className="h-3 w-3"/></Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground" onClick={(e) => { e.stopPropagation(); setRoleToDelete(role); }}><Trash2 className="h-3 w-3"/></Button>
+                                    <div key={role.id} className="relative group w-full">
+                                        <TabsTrigger value={role.id} className="w-full justify-start gap-2 pr-16">
+                                            <Users className="h-4 w-4" />
+                                            <span>{role.name}</span>
+                                        </TabsTrigger>
+                                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleOpenRoleDialog(role)}><Edit className="h-3 w-3"/></Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-destructive hover:text-destructive-foreground" onClick={() => setRoleToDelete(role)}><Trash2 className="h-3 w-3"/></Button>
                                         </div>
-                                    </TabsTrigger>
+                                    </div>
                                 ))}
                             </TabsList>
 
