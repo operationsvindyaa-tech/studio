@@ -72,6 +72,7 @@ import {
   Home,
   Package,
   BookMarked,
+  Salad,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -155,6 +156,7 @@ const communicationsNavItems = [
 const inventoryStoreNavItems = [
     { href: "/studio-booking", icon: Store, label: "Studio Booking" },
     { href: "/merchandise", icon: ShoppingCart, label: "Merchandise" },
+    { href: "/diet-planning", icon: Salad, label: "Diet Planning" },
 ];
 
 const executiveInsightsNavItems = [
@@ -165,6 +167,11 @@ const executiveInsightsNavItems = [
     { href: "/marketing-growth-report", icon: Megaphone, label: "Marketing" },
     { href: "/strategic-reports", icon: Target, label: "Strategic" },
 ];
+
+const securityNavItems = [
+    { href: "/access-controls", icon: Shield, label: "Access Controls" },
+];
+
 
 const NavGroup = ({ label, items, pathname }: { label: string, items: { href: string, icon: React.ElementType, label: string }[], pathname: string }) => {
     const isExpanded = items.some(item => pathname.startsWith(item.href));
@@ -271,6 +278,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <NavGroup label="Communications" items={communicationsNavItems} pathname={pathname} />
           <SidebarSeparator />
             <NavGroup label="Inventory / Store Management" items={inventoryStoreNavItems} pathname={pathname} />
+           <SidebarSeparator />
+            <NavGroup label="Security" items={securityNavItems} pathname={pathname} />
         </SidebarContent>
         <SidebarFooter>
           <DropdownMenu>
@@ -312,7 +321,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <SidebarTrigger />
                 <h1 className="text-2xl font-headline font-semibold tracking-tight">
                 {
-                    [...navItems, ...studentLifecycleNavItems, ...administrationNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...inventoryStoreNavItems, ...executiveInsightsNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
+                    [...navItems, ...studentLifecycleNavItems, ...administrationNavItems, ...academicsNavItems, ...hrNavItems, ...financeNavItems, ...communicationsNavItems, ...inventoryStoreNavItems, ...executiveInsightsNavItems, ...securityNavItems].find((item) => pathname.startsWith(item.href) && (item.href.length > 1 || pathname === '/'))?.label || "VINDYAA"
                 }
                 </h1>
             </div>
