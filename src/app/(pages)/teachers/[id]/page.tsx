@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTeacherById } from "@/lib/teachers-db";
-import { Building, CalendarDays, ChevronLeft, Edit, Hash, Mail, MapPin, Phone, Trash2, User, Users, Briefcase } from "lucide-react";
+import { Building, CalendarDays, ChevronLeft, Edit, Hash, Mail, MapPin, Phone, Trash2, User, Users, Briefcase, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 function InfoField({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value?: string | number | null | string[] }) {
-    if (!value) return null;
+    if (!value && value !== 0) return null;
     return (
         <div className="flex items-start gap-3">
             <Icon className="h-5 w-5 text-muted-foreground mt-1" />
@@ -76,6 +76,7 @@ export default async function TeacherProfilePage({ params: { id } }: { params: {
                                     <InfoField icon={Hash} label="Teacher ID" value={teacher.id} />
                                     <InfoField icon={Briefcase} label="Department" value={department} />
                                     <InfoField icon={MapPin} label="Class Center" value={classCenter} />
+                                    <InfoField icon={BookOpen} label="Total Batches" value={noOfBatches} />
                                     <InfoField icon={Users} label="Total Students" value={totalStudents} />
                                     <InfoField icon={CalendarDays} label="Working Days" value={`${noOfWorkingDays} days`} />
                                     <InfoField icon={CalendarDays} label="Schedule" value={workingDays} />

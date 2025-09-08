@@ -345,7 +345,7 @@ export default function TeachersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Teacher</TableHead>
-                <TableHead className="hidden md:table-cell">Department</TableHead>
+                <TableHead className="hidden md:table-cell">Workload</TableHead>
                 <TableHead className="hidden md:table-cell">Contact</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -391,7 +391,10 @@ export default function TeachersPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{teacher.department}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        <div>{teacher.noOfBatches} Batches</div>
+                        <div className="text-sm text-muted-foreground">{teacher.totalStudents} Students</div>
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
                         <div>{teacher.email}</div>
                         <div className="text-sm text-muted-foreground">{teacher.phone}</div>
