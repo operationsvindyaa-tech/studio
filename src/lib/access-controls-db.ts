@@ -53,7 +53,6 @@ const administrationNavItems = [
 
 const academicsNavItems = [
     { id: "courses", label: "Courses" },
-    { id: "syllabus", label: "Syllabus" },
     { id: "timetable", label: "Timetable" },
     { id: "exam-students-list", label: "Exam List" },
     { id: "certificates", label: "Certificates" },
@@ -102,7 +101,7 @@ const executiveInsightsNavItems = [
     { id: "strategic-reports", label: "Strategic Reports" },
 ];
 
-export const availablePermissions: Record<string, { id: string; label: string }[]> = {
+export const availablePermissions = {
     "General": navItems,
     "Student Lifecycle": studentLifecycleNavItems,
     "Administration": administrationNavItems,
